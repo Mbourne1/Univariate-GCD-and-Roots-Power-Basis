@@ -82,11 +82,11 @@ otherwise
 end
 
 % Given the roots and multiplicities of f(x), get the coefficients
-fx = get_Coeff(roots_fx);
-gx = get_Coeff(roots_gx);
-dx = get_Coeff(roots_dx);
-ux = get_Coeff(roots_ux);
-vx = get_Coeff(roots_vx);
+fx = GetCoefficients(roots_fx);
+gx = GetCoefficients(roots_gx);
+dx = GetCoefficients(roots_dx);
+ux = GetCoefficients(roots_ux);
+vx = GetCoefficients(roots_vx);
 
 end
 

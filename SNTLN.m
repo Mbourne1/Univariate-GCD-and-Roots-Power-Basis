@@ -147,6 +147,7 @@ test2 = ck;
 
 % Strip the thetas from x vector
 x_ls_wrt_omega = x_ls;
+
 % Get the vector of thetas corresponding to x(\omega), with missing value.
 thetas = [theta.^vecnk ; theta.^vecmk];
 thetas(opt_col,:) = [];

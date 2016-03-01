@@ -24,11 +24,19 @@ switch ex_num
             3   3
             4.5 1
             ];
+    case '4'
+        roots_fx = ...
+            [
+            1.05467 1
+            2.24587 2
+            5.54743 3
+            1.75647 2
+            ];
 end
 
-writeToText(roots_fx,'f')
+PrintFactorization(roots_fx,'f')
 
-fx = get_Coeff(roots_fx);
+fx = GetCoefficients(roots_fx);
 
 PrintPoly(fx,'f')
 

@@ -1,4 +1,4 @@
-function [fx] = get_Coeff(roots_f)
+function [fx] = GetCoefficients(roots_f)
 % Given the roots and multiplicities of a polynomial f(x), calculate the
 % coefficients
 %

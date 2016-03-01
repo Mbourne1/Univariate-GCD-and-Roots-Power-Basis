@@ -1,4 +1,4 @@
-function [] = o_intersection_parametric_parametric()
+function [] = o_IntersectionParametric()
 % Given two integral parametrically defined curves, obtain the points of
 % intersection.
 
@@ -14,24 +14,27 @@ BOOL_PREPROC = 'y';
 C1_xt = [0.1; 0.8; -0.1];
 C1_yt = [0.5; 3; -2.5];
 
-C2_xt = [0; 2];
-C2_yt = [0; 2];
+C2_xt = [0; 2; 0.1];
+C2_yt = [0; 1; 0.1];
 
 % Get the implicit representation of C_{1}(x(t),y(t))
 C1_implicit = Implicitize_Integral_Parametric(C1_xt,C1_yt);
 
-% Get implicit Representation
+% Get implicit Representation, C1 is given by f(x,y) = 0.
 fprintf('The Implicit Equation of C_{1}(x,y) is given by')
 fprintf('\n')
 disp(C1_implicit)
 
+
 PrintCoefficientsBivariate(C1_implicit,'C1')
 
-
+%%
 % Get the number of rows and columns in C1(x,y)
 [r,c] = size(C1_implicit);
 
-poly = 0;
+% Produce the polynomial C3 given by the susbstitution of x(t) and y(t) 
+% into f(x,y) = 0. Where C3 is a curve with variable t.
+C3 = 0;
 
 % for each row in C_{1}(x,y)
 for i = 0:1:r-1
@@ -52,34 +55,36 @@ for i = 0:1:r-1
         
         uij = uij .* C1_implicit(i+1,j+1);
         
-        poly = PolyAdd(poly, uij);
+        C3 = PolyAdd(C3, uij);
     end
 end
 
+% Print the coefficients of the curve C3
 fprintf('The Curve C_{3} is given by \n')
 fprintf('\n')
-PrintPoly(poly,'C3')
-
-% Substitute x(t) and y(t) from C_{2} into implicit representation of C_{1}
+PrintPoly(C3,'C3')
 
 % Get roots of C_{3} in terms of t
-o_roots_mymethod(poly);
-arrRoot = roots(fliplr(poly'));
+o_roots_mymethod(C3);
+
+% Get roots of C_{3} by my method
+vRoots = roots(fliplr(C3'));
 
 fprintf('The roots in terms of t are given by')
 fprintf('\n')
-disp(arrRoot)
+disp(vRoots)
 
-[r,~] = size(arrRoot);
 
-x = zeros(1,r);
-y = zeros(1,r);
+[nRoots,~] = size(vRoots);
 
-% For each root in arrRoot
-for i = 0:1:r-1
+x = zeros(1,nRoots);
+y = zeros(1,nRoots);
+
+% For each root r_{i} in the vector vRoots
+for i = 0:1:nRoots-1
     
     % Get the ith root
-    rt = arrRoot(i+1);
+    rt = vRoots(i+1);
     
     % Substitute in to x(t)
     x_sum = 0;
@@ -98,11 +103,13 @@ for i = 0:1:r-1
     
     y(i+1) = y_sum;
     
+    
 end
 
-fprintf('The intersections are given by')
+
+fprintf('The intersections are given by [x,y]')
 fprintf('\n')
-disp([x;y])
+disp([x' y'])
 
 
 % Substitute root values back into C_{1} x(t) and y(t) to obtain set of
@@ -110,22 +117,23 @@ disp([x;y])
 switch PLOT_GRAPHS
     case 'y'
         
-        t = linspace(-100,100,2000);
-        C1_x_vals = polyval(fliplr(C1_xt'),t);
-        C1_y_vals = polyval(fliplr(C1_yt'),t);
-        
-        C2_x_vals = polyval(fliplr(C2_xt'),t);
-        C2_y_vals = polyval(fliplr(C2_yt'),t);
-        
-        
-        C3 = polyval(fliplr(poly'),t);
-        
+
         figure('name','Plotting C_{1} and C_{2}')
         hold on
-        plot(C1_x_vals,C1_y_vals,'blue')
-        plot(C2_x_vals,C2_y_vals,'red')
-        plot(t,C3,'green')
-        axis([-10,10,-10,10])
+        
+        % Get symbolic expressions for C1 = (x(t),y(t))
+        x1t = poly2sym(flipud(C1_xt));
+        y1t = poly2sym(flipud(C1_yt));
+        
+        % Get symbolic expressions for C2 = (x(t),y(t))
+        x2t = poly2sym(flipud(C2_xt));
+        y2t = poly2sym(flipud(C2_yt));
+        
+        % Plot the Symbolic Curves C1 and C2
+        ezplot(x1t,y1t);
+        ezplot(x2t,y2t);
+        
+        axis([-10,10,-10,10]);
         grid on
         hold off
         

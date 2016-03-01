@@ -1,4 +1,4 @@
-function [res,index] = getMinDistance(Sk)
+function [res,index] = GetMinDistance(Sk)
 % Given a sylvester matrix get the minimum distance for the removal of a
 % column
 

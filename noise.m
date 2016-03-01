@@ -1,4 +1,4 @@
-function [f_noisy,noise_vec] = noise(fx,mu)
+function [f_noisy,noise_vec] = Noise(fx,mu)
 % Given a polynomial f(x), add noise to its coefficients at the level
 % specified by mue.
 %

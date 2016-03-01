@@ -1,4 +1,4 @@
-function [fx_output,gx_output,dx_output, ux_output, vx_output , alpha_output, theta_output] = o1(fx,gx)
+function [fx_output,gx_output,dx_output, ux_output, vx_output , alpha_output, theta_output, t , lambda,mu] = o1(fx,gx)
 % given two polynomials f(x) and g(x) return the gcd d(x)
 global BOOL_PREPROC
 global PLOT_GRAPHS
@@ -78,7 +78,7 @@ end
 
 %%
 % Get the degree of the gcd
-t = getDegree(fw,alpha.*gw);
+t = GetDegree(fw,alpha.*gw);
 
 % Given the degree t, get the optimal column for removal from S_{t}(f,g)
 C_f_preprocessed = BuildC1(fw,n,t);
@@ -87,7 +87,7 @@ St_preprocesed = [C_f_preprocessed alpha.*C_g_preprocessed];
 
 % Get the minimum distance between any one of the columns of S_{k}(f,g) and the
 % remaining columns of S_{k}(f,g)
-[~,opt_col] = getMinDistance(St_preprocesed);
+[~,opt_col] = GetMinDistance(St_preprocesed);
 
 %%
 % Perform SNTLN to obtain low rank approximation

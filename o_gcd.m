@@ -24,16 +24,16 @@ global MAX_ITE_SNTLN
 MAX_ERROR_SNTLN = 1e-12;
 MAX_ITE_SNTLN = 100;
 
-EXAMPLE_TYPE = 'FromRoots';
+EXAMPLE_TYPE = 'FromCoefficients';
 
 switch EXAMPLE_TYPE
     case 'FromRoots'
         % Get inputs f and g and
         [roots_fx,roots_gx,roots_dx] = GCD_Examples(ex_num);
         
-        fx = get_Coeff(roots_fx);
-        gx = get_Coeff(roots_gx);
-        dx = get_Coeff(roots_dx);
+        fx = GetCoefficients(roots_fx);
+        gx = GetCoefficients(roots_gx);
+        dx = GetCoefficients(roots_dx);
         
     case 'FromCoefficients'
         switch ex_num
@@ -52,6 +52,10 @@ switch EXAMPLE_TYPE
                 fx = [-5; 1; -5; 1];
                 gx = [-2; 1; -2; 1];
                 dx = [1; 0; 1];
+                
+            case '4'
+                fx = [6.8; -17.6; 16.5; -6.7 1]
+                gx = [6;   -16  ; 15.5; -6.5 1]
         end
         
 end
@@ -67,8 +71,8 @@ n = r - 1;
 
 switch BOOL_NOISE
     case 'y'
-        [fx,f_noise] = noise(fx,el);
-        [gx,g_noise] = noise(gx,el);
+        [fx,f_noise] = Noise(fx,el);
+        [gx,g_noise] = Noise(gx,el);
         
         switch PLOT_GRAPHS
             case 'y'
