@@ -1,4 +1,4 @@
-function [fx,gx] = Examples_GCD(ex_num)
+function [fx,gx,dx,ux,vx] = Examples_GCD(ex_num)
 % Given an example number, return the coefficients of two polynomials
 
 % Output :
@@ -22,18 +22,7 @@ switch ex_num
             [
             1 2;
             2   1];
-        roots_dx = ...
-            [
-            1 2;
-            ];
-        roots_ux = ...
-            [
-            1.2 1;
-            ];
-        roots_vx = ...
-            [
-            2   1;
-            ];
+       
     case '2'
         roots_fx = ...
             [
@@ -49,20 +38,7 @@ switch ex_num
             0.1564  2;
             0.78615871145   3
             ];
-        roots_dx = ...
-            [
-            0.5     4;
-            0.1564  2;
-            0.78615871145   3
-            ];
-        roots_ux = ...
-            [
-            1.2 3;
-            ];
-        roots_vx = ...
-            [
-            2   2;
-            ];
+       
     
     case 'Sederberg'
         roots_fx = ...
@@ -80,6 +56,10 @@ switch ex_num
 otherwise
         error('not a valid example number')
 end
+
+roots_dx = GetDivisor(roots_fx,roots_gx);
+roots_ux = GetQuotient(roots_fx,roots_dx);
+roots_vx = GetQuotient(roots_gx,roots_dx);
 
 % Given the roots and multiplicities of f(x), get the coefficients
 fx = GetCoefficients(roots_fx);

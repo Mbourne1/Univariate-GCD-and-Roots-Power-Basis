@@ -1,14 +1,17 @@
-function [] = o_IntersectionExplicit(ex_num_f,ex_num_g)
+function [] = o_Intersection_2DCurveExplicit_2DCurveExplicit(ex_num_f,ex_num_g)
 % given two curves f(x) and g(x), calculate their intersection
 
 global PLOT_GRAPHS
 PLOT_GRAPHS = 'y';
 
 global BOOL_PREPROC
-BOOL_PREPROC = 'n';
+BOOL_PREPROC = 'y';
 
 global BOOL_SNTLN
 BOOL_SNTLN = 'n';
+
+global THRESHOLD % Used in GetDegree()
+THRESHOLD = 1;
 
 global MAX_ERROR_SNTLN
 MAX_ERROR_SNTLN = 1e-11;
@@ -19,6 +22,7 @@ MAX_ITE_SNTLN = 50;
 % Get the type of example used
 EXAMPLE_TYPE = 'Roots';
 %EXAMPLE_TYPE = 'Coefficients';
+%EXAMPLE_TYPE = 'SamePoly';
 
 switch EXAMPLE_TYPE
     case 'Coefficients'
@@ -28,12 +32,37 @@ switch EXAMPLE_TYPE
                 gx = [-7776; 25056; -32940;  23004; -9181;  2050; -216;   2; 1];
         end
     case 'Roots'
-        % Get the coefficients of two implicitly defined polynomial curves.
-        fx = Examples_Intersection_Implicit(ex_num_f);
-        gx = Examples_Intersection_Implicit(ex_num_g);
-        PrintPoly(fx,'f');
-        PrintPoly(gx,'g');
         
+        % Get the roots of two implicitly defined polynomial curves.
+        fx_roots = Examples_Univariate_Implicit(ex_num_f);
+        gx_roots = Examples_Univariate_Implicit(ex_num_g);
+        
+        % Print the roots
+        PrintFactorization(fx_roots,'f')
+        PrintFactorization(gx_roots,'g')
+               
+        
+        
+        % Get the coefficients of the polynomails f(x,y) and g(x,y)
+        fx = GetCoefficients(fx_roots);
+        gx = GetCoefficients(gx_roots);
+        
+        % Print the coefficients              
+        PrintCoefficientsBivariate(fx,'f');
+        PrintCoefficientsBivariate(gx,'g');
+        
+        % Add noise to the coefficients
+        el = 1e-10;
+        fx = fx + el.*rand(size(fx));
+        gx = gx + el.*rand(size(gx));
+        
+    case 'SamePoly'
+        fx = Examples_Univariate_Implicit(ex_num_f);
+        % Add noise to fx
+        el = 1e-14;
+        gx = fx + (el.*ones(size(fx)));
+        PrintCoefficientsBivariate(fx,'f')
+        PrintCoefficientsBivariate(gx,'g')
         
 end
 
@@ -73,6 +102,12 @@ switch INTERSECTION_METHOD
         % Get the coefficients h(x)
         hx = fx_inflated - gx_inflated;
         
+        % The degree of fx - gx may be reduced, find the last non-zero
+        % coefficient
+        i2 = find(hx, 1, 'last'); 
+        hx = hx(1:i2);
+
+        
         % Check for zero coefficients
         if hx(end) == 0
             hx(end) = []
@@ -87,8 +122,10 @@ switch INTERSECTION_METHOD
         [~,~,dx, ux, vx , alpha,theta, ~, lambda, mu] = o1(fx,gx);
         
         % Get the roots of polynomial d(x)
-        my_roots = o_roots_mymethod(dx);
-        
+        [t,~] = size(dx);
+        if t >1 
+            my_roots = o_roots_mymethod(dx);
+        end
         % Get degree of u(x)
         [r,~] = size(ux);
         m = r -1;
@@ -123,10 +160,9 @@ if m ~=0
 end
 
 
-% %%
-% Plot f(x), g(x) and h(x)
-% plot f(x) and g(x)
-t = -5:0.01:5;
+
+%% Plot the explicitly defined curves.
+t = -5:0.001:5;
 f_y = polyval(flipud(fx),t);
 g_y = polyval(flipud(gx),t);
 h_y = polyval(flipud(hx),t);
@@ -151,10 +187,14 @@ switch PLOT_GRAPHS
         error('PLOT_GRAPHS is either y or n')
 end
 
+%%
+
 try
 display(roots2)
 catch
+    fprintf('err')
 end
+
 
 
 % Get the points of intersection.

@@ -45,3 +45,6 @@ for i = 1:1:num_roots_f_x
         u_roots = [u_roots; root mult_f];
     end
 end
+
+
+end

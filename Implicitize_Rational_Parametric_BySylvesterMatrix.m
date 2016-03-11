@@ -1,4 +1,5 @@
-function [C1_xy_matrix] = Implicitize_Rational_Parametric(C1_xt,C1_yt,C1_wt)
+function [C1_xy_matrix] = Implicitize_Rational_Parametric_BySylvesterMatrix ...
+    (C1_xt,C1_yt,C1_wt)
 
 % Implicitize the rational parametric curve C1 = x(t)/w(t),y(t)/w(t).
 % Return the matrix of coefficients of C1(x,y)

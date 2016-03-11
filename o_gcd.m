@@ -1,39 +1,31 @@
-function [] = o_gcd(ex_num,preproc,bool_sntln,el)
-% Given two polynomials f(x) and g(x) calculate the gcd d(x).
+function [] = o_gcd(ex_num,el,bool_preproc,low_rank_approx_method)
+% Given two polynomials f(x) and g(x) calculate the GCD d(x).
+%
+% Inputs.
+%
+% ex_num : Example Number
+%
+% el : Noise lower threshold
+%
+% bool_preproc : 'y' or 'n' (Include/ Exclude Preprocessing)
+%
+% low_rank_approx_method: 'Standard SNTLN', 'Standard STLN'
+%   
 
+SetGlobalVariables()
 
-global BOOL_PREPROC
-BOOL_PREPROC = preproc;
-
-global BOOL_SNTLN
-BOOL_SNTLN = bool_sntln;
-
-% Initialise the Seed for random noise generation
-global SEED
-SEED = 1024;
-
-global PLOT_GRAPHS
-PLOT_GRAPHS = 'y';
-
-global BOOL_NOISE
-BOOL_NOISE = 'y';
-
-global MAX_ERROR_SNTLN
-global MAX_ITE_SNTLN
-
-MAX_ERROR_SNTLN = 1e-12;
-MAX_ITE_SNTLN = 100;
-
-EXAMPLE_TYPE = 'FromCoefficients';
+EXAMPLE_TYPE = 'FromRoots';
 
 switch EXAMPLE_TYPE
     case 'FromRoots'
         % Get inputs f and g and
-        [roots_fx,roots_gx,roots_dx] = GCD_Examples(ex_num);
+        [roots_fx,roots_gx,roots_dx,roots_ux,roots_vx] = GCD_Examples(ex_num);
         
         fx = GetCoefficients(roots_fx);
         gx = GetCoefficients(roots_gx);
-        dx = GetCoefficients(roots_dx);
+        dx_exact = GetCoefficients(roots_dx);
+        ux_exact = GetCoefficients(roots_ux);
+        vx_exact = GetCoefficients(roots_vx);
         
     case 'FromCoefficients'
         switch ex_num
@@ -41,24 +33,26 @@ switch EXAMPLE_TYPE
                 
                 fx = [1; 1; -2; -2; 1; 1];
                 gx = [-2; 1; 4; -2; -2; 1];
-                dx = [1; 0; -2; 0; 1];
+                dx_exact = [1; 0; -2; 0; 1];
             case '2'
                 
                 fx = [-1; -1; 1; 1]
                 gx = [2; -1; -2; 1]
-                dx = [-1; 0; 1]
+                dx_exact = [-1; 0; 1]
                 
             case '3'
                 fx = [-5; 1; -5; 1];
                 gx = [-2; 1; -2; 1];
-                dx = [1; 0; 1];
+                dx_exact = [1; 0; 1];
                 
             case '4'
-                fx = [6.8; -17.6; 16.5; -6.7 1]
-                gx = [6;   -16  ; 15.5; -6.5 1]
+                fx = [6.8; -17.6; 16.5; -6.7; 1]
+                gx = [6;   -16  ; 15.5; -6.5; 1]
+                
         end
         
 end
+
 % Get degree of polynomial f
 [r,~] = size(fx);
 m = r - 1;
@@ -69,48 +63,31 @@ n = r - 1;
 
 % Add Noise to the coefficients of f(x) and g(x)
 
-switch BOOL_NOISE
-    case 'y'
-        [fx,f_noise] = Noise(fx,el);
-        [gx,g_noise] = Noise(gx,el);
-        
-        switch PLOT_GRAPHS
-            case 'y'
-                
-                t = linspace(-100,100,200);
-                f_y_noisy = polyval(fx,t);
-                f_y_exact = polyval(fx,t);
-                
-                figure('name','Plotting f vs noisy f')
-                hold on
-                plot(t,f_y_noisy,'blue')
-                plot(t,f_y_exact,'red')
-                hold off
-                
-            case 'n'
-        end
-    case 'n'
-    otherwise
-        error('bool_noise is either y or n')
-end
+
+
+% Add noise at a signal to noise ratio.
+[fx,~] = Noise(fx,el);
+[gx,~] = Noise(gx,el);
 
 % Get the GCD d(x) of f(x) and g(x)
-[fx_calc,gx_calc,dx_calc] = o1(fx,gx);
+[fx_calc,gx_calc,dx_calc,ux_calc,vx_calc,~,~] = o1(fx,gx);
 
-fprintf('Calculated Coefficients of d(x): \n')
-dx_calc = dx_calc./dx_calc(1)
-fprintf('Exact Coefficients of d(x): \n')
-dx./dx(1)
+% Print the coefficients of d(x),u(x) and v(x)
 
 
-% plot f(x) and g(x)
-t = linspace(-10,10,200);
-f_y = polyval(fx,t);
-g_y = polyval(gx,t);
-d_y = polyval(dx_calc,t);
+PrintCoefficients(ux_exact,ux_calc,'u(x)')
+PrintCoefficients(vx_exact,vx_calc,'v(x)')
+PrintCoefficients(dx_exact,dx_calc,'d(x)')
+
+%% Plot the three curves f(x), g(x) and d(x)
 
 switch PLOT_GRAPHS
     case 'y'
+        % plot f(x) and g(x)
+        t = linspace(-10,10,200);
+        f_y = polyval(fx,t);
+        g_y = polyval(gx,t);
+        d_y = polyval(dx_calc,t);
         figure('name','Curve Plot')
         hold on
         plot(t,f_y,'DisplayName','f(y)')
@@ -125,5 +102,22 @@ end
 
 
 
+
+end
+
+function [] = PrintCoefficients(u_exact,u_computed,name)
+
+fprintf('\nCoefficients of %s \n\n',name);
+fprintf('\t Exact \t \t \t \t\t \t \t   Computed \n')
+
+u_exact = normalise(u_exact);
+u_computed = normalise(u_computed);
+
+mat = [real(u_exact(:,1))';  real(u_computed(:,1))' ];
+fprintf('%f \t \t \t \t %f   \t \t \n', mat);
+fprintf('\n');
+
+dist = norm(u_exact - u_computed) ./ norm(u_exact);
+fprintf('Distance between %s exact and %s computed : %2.4e \n \n',name,name,dist)
 
 end

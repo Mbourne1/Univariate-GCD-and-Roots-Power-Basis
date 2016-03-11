@@ -1,13 +1,11 @@
-function [C_f] = BuildC1(fx,n,k)
-% Given the polynomial f(x) build the partition of the Sylvester matrix.
+function [C_f] = BuildC1(fx,n_k)
+% Given the polynomial f(x) build the partition C1 of the Sylvester matrix.
 %
 % Inputs
 %
-% fx :
+% fx    :
 %
-% n  :
-%
-% k  :
+% n_k   :
 %
 
 %%
@@ -16,15 +14,11 @@ function [C_f] = BuildC1(fx,n,k)
 [r,~] = size(fx);
 m = r -1;
 
-C_f = zeros(m+n-k+1,n-k+1);
+C_f = zeros(m+n_k+1,n_k+1);
 
 % for each column
-for i = 0:1:n-k
-   C_f(:,i+1) = [...
-       zeros(i,1);
-       fx;
-       zeros((m+n-k+1)-(m+1)-i,1);...
-       ];
+for i = 0:1:n_k
+   C_f(i+1:i+m+1,i+1) = fx;
 end
 
 end

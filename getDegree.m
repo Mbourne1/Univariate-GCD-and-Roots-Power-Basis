@@ -9,13 +9,6 @@ function t = GetDegree(fw,gw)
 
 global PLOT_GRAPHS
 
-% Set the threshold for determining whether all subresultants are rank
-% defficient or all subresultants are full rank, OR some subresultants are
-% rank deficient, and others are of full rank, meaning degree of GCD can be
-% identified.
-THRESHOLD = 1;
-
-
 % Get Degree of polynomial f(x)
 [r,~] = size(fw);
 m = r - 1;
@@ -26,23 +19,26 @@ n = r - 1;
 
 % Initialise a vector to store the minimum singular values for each
 % S_{k}.
-vMin_sing_val = zeros(1,min(m,n));
+vMinimumSingularValues = zeros(1,min(m,n));
 
 % Initialise a vector to store the minimum distnaces for each S_{k}.
-vMin_distance = zeros(1,min(m,n));
+vMinimumDistance = zeros(1,min(m,n));
 
 matrix = [];
 
 % Build the Sylvester Matrix
-C_f = BuildC1(fw,n,1);
-C_g = BuildC1(gw,m,1);
+k = 1;
+C_f = BuildC1(fw,n-k);
+C_g = BuildC1(gw,m-k);
 Sk = [C_f C_g];
 
 % Get QR Decomposition of Sk
 [Q,R] = qr(Sk);
 
+
 for k = 1:1:min(m,n)
     
+    % If not the first subresultant, build by removing rows and columns.
     if k > 1
         
         % update C_f
@@ -60,80 +56,75 @@ for k = 1:1:min(m,n)
         % Remove last row
         [Q,R] = qrdelete(Q,R,m+n+2-k,'row');
         
-        %[Q,R] = qr(Sk)
     end
     
     
-    % Get the diagonal values in the R Matrix
-    diags = diag(R);
-    num_diags = size(diags,1);
+    % Get the diagonal values in the matrix R_{k} from the QR decomposition
+    % of S_{k}
+    vDiagsR = diag(R);
     
-    % Save the diagonal values
-    matrix = [matrix ;k.*ones(num_diags,1) diags];
+    % Get the number of diagonals in R_{k}
+    nDiagsR = size(vDiagsR,1);
     
-    % Add to the vector of minimum Singular values.
-    vMin_sing_val(k) = min(svd(Sk));
+    % Save the diagonal values into a matrix of all diagonals of R_{k} for
+    % each k
+    matrix = [matrix ;k.*ones(nDiagsR,1) vDiagsR];
+    
+    % Add to the vector of minimum Singular values from SVD of S_{k}.
+    vSingularValues = svd(Sk);
+    
+    % Get the minimum Singular value from SVD of S_{k}
+    vMinimumSingularValues(k) = min(vSingularValues);
     
     % Add to the vector of minimum distances
-    vMin_distance(k) = GetMinDistance(Sk);
+    vMinimumDistance(k) = GetMinDistance(Sk);
     
 end
 
+% Normalise the vector of minimal singular values
+vMinimumSingularValues = vMinimumSingularValues./vMinimumSingularValues(1);
 
-% Check to see if more than one subresultant exsits
-if min(m,n) == 1
-    % Only one subresultant
-    fprintf('Only one subresultant exists. \n')
-    switch PLOT_GRAPHS
-        case 'y'
-            
-            figure('name','getDegree - Singular values of Sk')
-            hold on
-            title('Singular values of S_{1}')
-            plot(log10(svd(Sk)))
-            hold off
-        case 'n'
-    end
+
+% If only one subresultant exists, use an alternative method.
+if min(m,n) == 1 % If only one Subresultant Exists
     
-    % Get the differences between minimum singular value S_{k} and S_{k+1}
-    differences = diff(log10(vMin_sing_val));
-    
-    
-    % Get the index of the largest change in minimum singular values
-    [delta_min_sing_val, index] = max(differences);
-    
-    if delta_min_sing_val < THRESHOLD
-        % The subresultant is of full rank, in which case t = 0
-        t = 0;
-        fprintf('The only Subresultant S_{1} appears to be of full rank. \n');
-        fprintf('Polynomials f(x) and g(x) are coprime \n');
-        return
-    else % val > threshold
-        % The Subresultant is rank deficient, in which case t = 1
-        t = 1;
-        fprintf('The only Subresultant S_{1} appears to be rank deficient \n');
-        fprintf('Polynomials f(x) and g(x) have a GCD of degree 1 \n');
-        return
-    end
+    t = GetRank_One_Subresultant(vSingularValues);
+    return;
     
 end
 
+% Get the type of problem.
+% Problem Type.
+% Singular      : All Subresultants S_{k} are Singular, and rank deficient
+% NonSingular   : All Subresultants S_{k} are Non-Singular, and full rank
+% Mixed         : Some Subresultants are Singular, others are Non-Singular.
+
+[ProblemType,t] = GetProblemType(vMinimumSingularValues);
+
+fprintf('Problem Type : %s \n',ProblemType)
+
+% Print the degree of the GCD
+fprintf('The computed degree of the GCD is %i \n',t);
+
+%% Plot data
 switch PLOT_GRAPHS
     case 'y'
+        
         figure('name','QR Scatter data')
         hold on
         scatter(matrix(:,1),log10(matrix(:,2)))
         hold off
         
-        % plot the minimum singular values
+        % Plot the minimum singular values of S_{k} k=1,...,min(m,n)
         figure('name','Plot Min Sing val')
         hold on
-        plot(log10(vMin_sing_val),'-o')
+        plot(log10(vMinimumSingularValues),'-o')
         hold off
         
+        % Plot the minimum distances of S_{k} k=1,...,min(m,n)
         figure('name','Plot Min Distance')
         hold on
-        plot(log10(vMin_distance) ,'-s')
+        plot(log10(vMinimumDistance) ,'-s')
         hold off
         
     case 'n'
@@ -142,61 +133,101 @@ switch PLOT_GRAPHS
         
 end
 
+end
+
+
+function t = GetRank_One_Subresultant(vMinSingVal)
+% Given the vector
+% Get the rank, where only one subresultant exists.
+global PLOT_GRAPHS
+
+global THRESHOLD
+
+% Only one subresultant
+fprintf('Only one subresultant exists. \n')
+switch PLOT_GRAPHS
+    case 'y'
+        figure('name','GetDegree - One Subresultant - Singular Values of S1')
+        hold on
+        title('Singular values of S_{1}')
+        plot(log10(vMinSingVal))
+        hold off
+    case 'n'
+end
+
+% Get the differences between singular values of S_{1}
+vDiffSingularValues = diff(log10(vMinSingVal));
+
+% Get the index of the largest change in singular values of S_{1}
+[deltaSingularValues, ~] = max(vDiffSingularValues);
+
+% If the change is smaller than the predefined threshold value, then plot
+% is considered 'flat'.
+if deltaSingularValues < THRESHOLD
+    
+    % The subresultant is of full rank, in which case t = 0
+    t = 0;
+    fprintf('The only Subresultant S_{1} appears to be of NonSingular. \n');
+    return
+    
+else % val > threshold
+    
+    % The subresultant S_{1} is rank deficient, in which case t = 1
+    t = 1;
+    fprintf('The only Subresultant S_{1} appears to be Singular \n');
+    return
+    
+end
+end
+
+
+function [ProblemType , t] = GetProblemType(vMinimumSingularValues)
+% Get the problem type, dependent on the vector of singular values from the
+% series s_{k}
+%
+% Get the type of problem.
+% Problem Type.
+% Singular      : All Subresultants S_{k} are Singular, and rank deficient
+% NonSingular   : All Subresultants S_{k} are Non-Singular, and full rank
+% Mixed         : Some Subresultants are Singular, others are Non-Singular.
+
+
+
+global THRESHOLD
+
+min_mn = length(vMinimumSingularValues);
 
 % Get the differences between minimum singular value S_{k} and S_{k+1}
-differences = abs(diff(log10(vMin_sing_val)));
-differences(isnan(differences)) = 0 ;
-differences(differences==inf)=0;
+vDeltaMinSingVal = abs(diff(log10(vMinimumSingularValues)));
+vDeltaMinSingVal(isnan(vDeltaMinSingVal)) = 0 ;
+vDeltaMinSingVal(vDeltaMinSingVal==inf)=0;
+
 % Get the index of the largest change in minimum singular values
-[delta_min_sing_val, index] = max(differences);
+[maxChangeSingularValues, indexMaxChange] = max(vDeltaMinSingVal);
 
-
-
-% if the maximum difference is less than a threshold then all subresultants
-% are of full rank or all subresultants are rank deficient.
-
-
-criterion = abs(delta_min_sing_val);
-
-% Check to see if the largest change in minimum singular value from S_{k}
-% to S_{k+1} is significant. If not significant, must assume that all
-% subresultants are either ALL RANK DEFICIENT or ALL FULL RANK
-
-if  criterion < THRESHOLD
-    fprintf('All subresultants are either full rank, or rank deficient\n')
+if  abs(maxChangeSingularValues) < THRESHOLD
     
-    avgMinSingularValue = log10(norm(vMin_sing_val))
+    % maxChange is insignificant
+    % Get the average minimum singular value
+    avgMinSingularValue = log10(norm(vMinimumSingularValues));
     
-    if  avgMinSingularValue < -12
+    if  avgMinSingularValue > -6
         % if all singular values are close to zero, then rank deficient, degree of
         % gcd is min(m,n)
-        t = min(m,n);
+        ProblemType = 'NonSingular';
+        t = min_mn;
     else
         % if all singular values are not close to zero, then full rank, degree
         % of gcd is 0
-        
+        ProblemType = 'Singular';
         t = 0;
     end
 else
-    %fprintf('The minimal singular values of S_{k} are : \n')
-    %display(vMin_sing_val)
-    fprintf('Significant change in min singular values \n')
-    t = index;
+    % maxChange is signifcant
+    ProblemType = 'Mixed';
+    t = indexMaxChange;
 end
 
-fprintf('The degree of the GCD is %i \n',t)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 end
+
+

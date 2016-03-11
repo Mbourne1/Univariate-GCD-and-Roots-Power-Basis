@@ -1,8 +1,11 @@
-function [fx_output,gx_output,dx_output, ux_output, vx_output , alpha_output, theta_output, t , lambda,mu] = o1(fx,gx)
-% given two polynomials f(x) and g(x) return the gcd d(x)
+function [fx_n,gx_n,dx, ux, vx, alpha, theta, t , lambda,mu] = o1(fx,gx)
+% Given two polynomials f(x) and g(x) return the GCD d(x)
+
 global BOOL_PREPROC
+
 global PLOT_GRAPHS
-global BOOL_SNTLN
+
+global LOW_RANK_APPROXIMATION_METHOD
 
 
 % Get degree of polynomial f(x)
@@ -17,7 +20,7 @@ n = r - 1;
 vecm = (0:1:m)';
 vecn = (0:1:n)';
 
-%% Preprocess the polynomials f(x) and g(x) 
+%% Preprocess the polynomials f(x) and g(x)
 switch BOOL_PREPROC
     case 'y'
         % Apply Preprocessing
@@ -37,27 +40,11 @@ switch BOOL_PREPROC
         fw = fx_n.*(theta.^vecm);
         gw = gx_n.*(theta.^vecn);
         
-        switch PLOT_GRAPHS
-            case 'y'
-                % Plot the coefficients of fx
-                figure('name','Coefficients of f(x)')
-                plot(fx,'-s','DisplayName','Coefficients Before Processing')
-                hold on
-                plot(fw,'-o','DisplayName','Coefficients After Processing')
-                legend(gca,'show');
-                hold off
-                
-                % Plot the coefficients of g(x)
-                figure('name','Coefficients of g(x)')
-                plot(gx,'-s','DisplayName','Coefficients Before Processing')
-                hold on
-                plot(gw,'-o','DisplayName','Coefficients After Processing')
-                legend(gca,'show');
-                hold off
-            case 'n'
-            otherwise
-                error('err : plot graphs either y or n')
-        end
+        % Plot the unprocessed and preprocessed coefficients of
+        % f(x), f(w), g(x) and g(w).
+        plotCoefficients()
+        
+        
         
     case 'n'
         % Dont apply preprocessing
@@ -77,24 +64,44 @@ switch BOOL_PREPROC
 end
 
 %%
-% Get the degree of the gcd
+% Get the degree t of the GCD of f(w) and g(w)
 t = GetDegree(fw,alpha.*gw);
 
 % Given the degree t, get the optimal column for removal from S_{t}(f,g)
-C_f_preprocessed = BuildC1(fw,n,t);
-C_g_preprocessed = BuildC1(gw,m,t);
-St_preprocesed = [C_f_preprocessed alpha.*C_g_preprocessed];
+St_preproc  = BuildSubresultant(fw,gw,t,alpha);
 
 % Get the minimum distance between any one of the columns of S_{k}(f,g) and the
 % remaining columns of S_{k}(f,g)
-[~,opt_col] = GetMinDistance(St_preprocesed);
+[~,opt_col] = GetMinDistance(St_preproc);
 
 %%
 % Perform SNTLN to obtain low rank approximation
-switch BOOL_SNTLN
-    case 'y'
+switch LOW_RANK_APPROXIMATION_METHOD
+    case 'Standard STLN'
         % Get f(x)+\delta x and g(x) + \delta x for which a low rank
         % approximate Sylvester matrix is obtained.
+        
+        % Perform STLN - Structured Total Least Norm
+        [fw_new,a_gw_new] = STLN(fw,alpha.*gw,t);
+        fx_n = fw_new ./ theta.^(0:1:m)';
+        
+        % Get g(x) and g(w)
+        gw_new = a_gw_new./ alpha;
+        gx_n = (a_gw_new ./ theta.^(0:1:n)')./alpha;
+        
+    case 'STLN Root Specific'
+        
+        [fw_new,a_gw_new] = STLN_Derivative_Constraint(fx,t)
+        
+        % Perform STLN - Structured Total Least Norm
+        [fw_new,a_gw_new] = STLN(fw,alpha.*gw,t);
+        fx_n = fw_new ./ theta.^(0:1:m)';
+        
+        % Get g(x) and g(w)
+        gw_new = a_gw_new./ alpha;
+        gx_n = (a_gw_new ./ theta.^(0:1:n)')./alpha;
+        
+    case 'Standard SNTLN'
         [fx_new,gx_new,alpha_new,theta_new] = SNTLN(fx,gx,t,opt_col,lambda,mu,alpha,theta);
         
         fx_n = fx_new;
@@ -104,7 +111,7 @@ switch BOOL_SNTLN
         fw_new = fx_new .* (theta.^vecm);
         gw_new = gx_new .* (theta.^vecn);
         
-    case 'n'
+    case 'None'
         
         fw_new = fw;
         gw_new = gw;
@@ -112,88 +119,33 @@ switch BOOL_SNTLN
         error('error')
 end
 
-C_f_LowRankApprox = BuildC1(fw_new,n,t);
-C_g_LowRankApprox = BuildC1(gw_new,m,t);
-St_LowRankApprox = [C_f_LowRankApprox alpha.*C_g_LowRankApprox];
+St_LowRankApprox = BuildSubresultant(fw_new,gw_new,t,alpha);
 
-%%
 
 % Get the Sylvester matrix of the unprocessed
-C_f_unproc = BuildC1(fx,n,t);
-C_g_unproc = BuildC1(gx,m,t);
-St_Unproc = [C_f_unproc C_g_unproc];
-
-%% 
-% Get Quotients from either the low rank approximation or the Sylvester 
-% Subresultant of the preprocessed polynomials f(\omega) and g(\omega)
-
-switch BOOL_SNTLN
-    case 'y'
-        St = St_LowRankApprox;
-    case 'n'
-        St = St_preprocesed;
-end
+St_Unproc = BuildSubresultant(fx,gx,t,1);
 
 
-% Get Quotient polynomials u(x) and v(x) such that 
-% f(x)/u(x) = g(x)/v(x) = d(x)
+% Get the quotient polynomials u(x) and v(x)
+[ux,vx] = GetQuotients(fx_n,gx_n,t,alpha,theta,opt_col);
 
-% Get the matrix A_{t}(f,g), S_{t} with the optimal column removed
-At = St;
-At(:,opt_col) = [];
-
-% Get the column c_{t} removed from S_{t}
-ct = St(:,opt_col) ;
-
-% Get the vector x from A_{t}x = c_{t}
-x_ls = pinv(At) * ct;
-
-% insert 1 into x_ls in the position corresponding to the col
-x = [x_ls(1:opt_col-1); -1 ; x_ls(opt_col:end)];
-
-% Split x into v(\omega) and u(\omega)
-vw = x(1:n-t+1);
-uw = -x(n-t+2:end);
-
-% Get u(x) and v(x)
-ux = uw./(theta.^((0:1:m-t)'));
-vx = vw./(theta.^((0:1:n-t)'));
+% Get the GCD d(x)
+dx = GetGCD(ux,vx,fx_n,gx_n,t,alpha,theta);
 
 %%
-% Get the GCD d(x) by the APF 
-
-C_u = BuildC1(uw,t,0);
-C_v = BuildC1(vw,t,0);
-
-C1 = ...
-    [
-    C_u;
-    C_v;
-    ];
-
-% Build the Right hand side vector [f(\omega) ; alpha.* g(\omega)]
-rhs_vec = [fw;alpha.*gw];
-
-% Calculate d(\omega)
-dw = pinv(C1)*rhs_vec;
-
-% Get d(x)
-dx = dw./(theta.^(0:1:t))';
-
-%% 
 % Get the singular values for
 % 1 : The Sylvester Subresultant for unprocessed f(x) and g(x)
 % 2 : The Sylvester Subresultant for preprocessed f(\omega) g(\omega)
 % 3 : The Sylvester Subresultant which is a low rank approximation of 2.
 
-sing_vals_unproc = svd(St_Unproc);
-sing_vals_unproc = sing_vals_unproc ./ sing_vals_unproc(1);
+vSingularValues_unproc = svd(St_Unproc);
+vSingularValues_unproc = normalise(vSingularValues_unproc);
 
-sing_vals_preproc = svd(St_preprocesed);
-sing_vals_preproc = sing_vals_preproc ./ sing_vals_preproc(1);
+vSingularValues_preproc = svd(St_preproc);
+vSingularValues_preproc = normalise(vSingularValues_preproc);
 
-sing_vals_LowRankApprox = svd(St_LowRankApprox);
-sing_vals_LowRankApprox = sing_vals_LowRankApprox ./ sing_vals_LowRankApprox(1);
+vSingularValues_lowRank = svd(St_LowRankApprox);
+vSingularValues_lowRank = normalise(vSingularValues_lowRank);
 
 
 %%
@@ -202,9 +154,9 @@ switch PLOT_GRAPHS
     case 'y'
         figure('name','Singular Values')
         hold on
-        plot(log10(sing_vals_unproc),'-s','DisplayName','Unprocessed')
-        plot(log10(sing_vals_preproc),'-o','DisplayName','Preprocessed')
-        plot(log10(sing_vals_LowRankApprox),'-*','DisplayName','Low Rank Approx')
+        plot(log10(vSingularValues_unproc),'-s','DisplayName','Unprocessed')
+        plot(log10(vSingularValues_preproc),'-o','DisplayName','Preprocessed')
+        plot(log10(vSingularValues_lowRank),'-*','DisplayName','Low Rank Approx')
         legend(gca,'show');
         hold off
     case 'n'
@@ -212,14 +164,8 @@ switch PLOT_GRAPHS
         error('error: plot_graphs either y or n')
 end
 
-%% Outputs
-fx_output = fx_n;
-gx_output = gx_n;
-dx_output = dx;
-ux_output = ux;
-vx_output = vx;
-theta_output = theta;
-alpha_output = alpha;
-
-
 end
+
+
+
+

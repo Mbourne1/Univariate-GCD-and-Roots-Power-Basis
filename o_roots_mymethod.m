@@ -1,6 +1,15 @@
-function [roots_calc] = o_roots_mymethod(fx)
+function [root_mult_array] = o_roots_mymethod(fx)
 % Given the polynomial f(x) calculate its real roots by square free 
 % decomposition.
+% 
+% Inputs.
+% 
+% fx : Coefficients of polynomial f(x)
+%
+% Outputs.
+% 
+% root_mult_array : output two columns, the first containing the root, the
+%                   second its corresponding multiplicity.
 
 
 % Initialise an iteration counter
@@ -15,41 +24,26 @@ q{1} = fx;
 vGCD_Degree(1) = length(fx)-1;
 
 % Let theta_vec store all theta values used in each iteration.
-theta_vec(1) = 1;
+vTheta(1) = 1;
 
 % Whilst the most recently calculated GCD has a degree greater than
 % zero. ie is not a constant, perform a gcd calculation on it and its
 % derivative.
 while length(q{ite_num})-1 > 0
     
-    % set polynomial f to be the most recently calculated GCD.
-    fx = q{ite_num};
-    
-    % set polynomial g to be the derivative of the GCD.
-    gx = Differentiate(q{ite_num});
     
     % get degrees m and n of polynomials f and g respectively.
-    m = size(fx,1) - 1;
+    m = size(q{ite_num},1) - 1;
     
     % if degree of f is greater than one
     if m > 1
         
         fprintf('GCD Calculation Loop iteration = %i \n\n',ite_num );
-        [fx,~,dx, ~ ,~,~,theta] = o1(fx,gx);
-        
-        % add the value of theta used in this GCD calculation to the theta
-        % vector
-        theta_vec(ite_num+1) = theta;
+        [q{ite_num},~,q{ite_num+1}, ~ ,~,~,vTheta(ite_num+1)] = o1(q{ite_num},Differentiate(q{ite_num}));
         
         % add the degree of the calculated GCD to the degree vector
-        vGCD_Degree(ite_num+1) = length(dx)-1;
-        
-        % replace input f with updated f
-        q{ite_num} = fx;
-        
-        % add vector dx to the array of gcds 'q'
-        q{ite_num+1} = dx;
-        
+        vGCD_Degree(ite_num+1) = length(q{ite_num+1})-1;
+
         % increment iteration number.
         ite_num = ite_num+1;
         
@@ -60,9 +54,9 @@ while length(q{ite_num})-1 > 0
         dx = 1;
         
         %theta_vec(ite_num+1) = 1;
-        vGCD_Degree(ite_num+1) = length(dx)-1;
+        vGCD_Degree(ite_num+1) = 0;
         
-        q{ite_num+1} = dx;
+        q{ite_num+1} = 1;
         
         ite_num = ite_num+1;
         
@@ -73,99 +67,100 @@ while length(q{ite_num})-1 > 0
 end
 
 
-% Deconvolve the first set of polynomials.
-h1 = Deconvolve(q);
+% Deconvolve the first set of polynomials q_{i}(x), which are the outputs
+% of the series of GCD computations, to obtain the set of polynomaials h_{x}
+hx = Deconvolve(q);
 
-[~,c] = size(h1);
+% Get the number of polynomials in h_{x}
+[~,nCols_hx] = size(hx);
 
-if c == 1
+roots_wrt_x = [];
+
+
+% If only one entry in h_{x}
+% If only one entry in h_{x}
+if nCols_hx == 1
+    
+    
     % if number of cols in h1 is only 1, then do not perform second
     % deconvolution, since only one entry in h1.
     % Note - this is a rare exception.
     vRoots = [];
 
-    factor_x = h1{1};
+    factor_x = hx{1};
+    
     
     % Normalise the polynomial coefficients by the leading coefficient x^m
-    factor_x = factor_x./factor_x(2);
+    factor_x = factor_x./factor_x(end);
     
-        
-    % Initialise a vector of ones
-    one = ones(length(ax_roots),1);
+    % Get the root from the factor ( x - r);
+    rt = - factor_x(1);
     
     % get the roots with respect to y, and their multiplicities all set
     % to one.
-    roots_wrt_z = [ax_roots one];
+    roots_wrt_x = [rt];
         
     % add the roots to the array of roots
-    vRoots = [vRoots ; roots_wrt_z];
+    vRoots = [vRoots ; roots_wrt_x];
 else
-    
     % perform deconvolutions
     
     % Deconvolve the second set of polynomials
-    w1 = Deconvolve(h1);
-    
+    wx = Deconvolve(hx);
     
     % w1 yields the simple, double, triple roots of input polynomial f.
     % w1{i} yields the roots of multiplicity i.
     
     % set the w1{max} = h1{max}
-    w1{ite_num-1} = h1{ite_num-1};
+    wx{ite_num-1} = hx{ite_num-1};
     
     % get number of entries in w1
-    [~,c] = size(w1);
+    [~,ncols_wx] = size(wx);
     
     % initialise an empty set
     vRoots = [];
     
     % for each multiplicity in w1.
-    for i = 1:1:c
+    for i = 1:1:ncols_wx
         
-        % if the polynomial of said multiplicity is of length 2, degree 1, then
-        % only one root exists for this multiplicity. Add it to the list wp1.
-        if (length(w1{i}) == 2)
+        % Get the polynomial w_{i}
+        poly_wi = wx{i};
+        
+        % Get the degree of w_{i}
+        [nRows_wi,~] = size(wx{i});
+        deg_wi = nRows_wi -1;
+        
+        % If w_{i} is of degree one, then is of the form (ax+b)
+        % and has only one root. Add it to the list of roots.
+        if deg_wi == 1;
+                        
+                 
+            % Normalise the coefficients of w_{i} by dividing by the
+            % leading coefficient. Since coefficients are orders in
+            % asending powers, LC is the second coefficient.
+            poly_wi = poly_wi./poly_wi(2);
             
-            
-            % Get the polynomial, whose roots have multiplicty i, in bernstein
-            % form, where coefficients are in terms of (1-y)^{m-i}y^{i}.
-            factor_x = w1{i};
-            
-            % Normalise the polynomial coefficients by the leading
-            % coefficient x so that we have a polynomial (x-r)
-            factor_x = factor_x./factor_x(2);
-            
-            r = - factor_x(1);
+            % Get the root
+            rt = - poly_wi(1);
                       
             % Add the root to the [root, mult] matrix
-            vRoots = [vRoots ; r];
+            vRoots = [vRoots ; rt];
             
-        elseif (length(w1{i}) > 2)
+        elseif (deg_wi > 1)
             % The given multiplicity contains more than one root, such that
             % number of coefficients in greater than 2, use MATLAB roots
             % function to find roots.
-            % display('Multiplicity contains more than one root. ')
+                  
+            % Get the roots in terms of w_{i} using Matlab Roots function.
+            roots_wrt_x = roots(flipud(poly_wi));    
             
-            % get the polynomial a(w), whose roots have multiplicity i, in bernstein
-            % form.
-            factor_x = w1{i};
-            
-            % Normalise the polynomial coefficients
-            factor_x = factor_x./factor_x(2);
-            
-            % get the degree of a(w)
-            n = length(w1{i}) - 1;
-                       
-            % get the roots in terms of z^{i} where z^{i} =(\frac{y}{(1-y)})^{i}.
-            roots_wrt_z = roots(flipud(factor_x));    
-            
-            % add the roots to the array of roots
-            vRoots = [vRoots ; roots_wrt_z];
+            % Add the computed roots to the array of roots.
+            vRoots = [vRoots ; roots_wrt_x];
         end
     end
 end
 
-
+%% Get multiplicities of the roots
 % Obtaining multiplicities of the calculated roots
 roots_multiplicty = [];
 while sum(vGCD_Degree) ~= 0
@@ -179,9 +174,9 @@ end
 
 
 
-roots_calc = [vRoots(:,1) flipud(roots_multiplicty)];
+root_mult_array = [vRoots(:,1) flipud(roots_multiplicty)];
 
 %% Print the calculated roots and the corresponding multiplicities.
-PrintRoots(roots_calc,'MY METHOD');
+PrintRoots(root_mult_array,'MY METHOD');
 
 end

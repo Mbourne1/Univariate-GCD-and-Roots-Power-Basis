@@ -1,130 +1,163 @@
-function [fx_output] = STLN(fx,t)
-% Given the polynomial f(x) and the degree of the GCD of f(x) and its
-% derivative. Calculate the low rank approximation of the Sylvester
-% subresultant matrix S_{t}(f,f')
+function [fx,gx] = STLN(fx,gx,t)
+% Perform STLN with no preprocessors
 
 global MAX_ERROR_SNTLN 
 global MAX_ITE_SNTLN
 
-
 % Get degree of polynomial f(x)
-[r,~] = size(fx);
-m = r - 1;
+[nRows_f,~] = size(fx);
+m = nRows_f - 1;
 
 % Get the derivative of f(x)
-gx = Differentiate(fx);
-n = m -1 ;
+[nRows_g,~] = size(gx);
+n = nRows_g - 1;
 
-% Build the Sylvester matrix
-C1 = BuildC1(fx,n,t);
-C2 = BuildC1(gx,m,t);
+% Initialise the vector of perturbations zf(x)
+zf = zeros(m+1,1);
+% Initialise the vector of perturbations zg(x)
+zg = zeros(n+1,1);
+
+z = [zf ; zg];
+
+% Build the t'th subresultant
+C1 = BuildC1(fx,n-t);
+C2 = BuildC1(gx,m-t);
+
 St = [C1 C2];
+
+% Build the matrix E_{t}(z)
+B1 = BuildC1(zf,n-t);
+B2 = BuildC1(zg,m-t);
+Bt = [B1 B2];
 
 % Get the index of the optimal colummn for removal
 [~,colIndex] = GetMinDistance(St);
 
-% Get Ak
+% Get A_{t} the LHS matrix, equivalent to S_{t} with the optimal column
+% removed.
 At = St;
 At(:,colIndex) = [];
+
+% Get c_{t} the removed column of S_{t} to form A_{t}.
 ct = St(:,colIndex);
 
-% Initialise the matrix and vector of perturbations ht and Et
-[r,c] = size(At);
-Et = zeros(r,c);
+% Get E_{t}, the matrix of strucured perturbations corresponding to A_{t}.
+Et = Bt;
+Et(:,colIndex) = [];
 
-[r,c] = size(ct);
-ht = zeros(r,c);
+% Get h_{t}, the vector of strucutred perturbations corresponding to c_{t}
+ht = Bt(:,colIndex);
 
-Pt = BuildP(colIndex,m,t);
+% Build Pt
+Pt = BuildPt(colIndex,m,n,t);
 
+%test1 = ct
+%test2 = Pt*[fx;gx]
 
-% Initalise the matrix z of structured perturbations to f(x)
-%delta_z = zeros(m+1,1);
-%delta_x = zeros(2*m-2*t+1,1);
+% Get the solution vector x of A_{t}x = c_{t}.
+x_ls = SolveAx_b(At,ct);
 
-% Build the matrix D
-D = ...
-    [
-    m-t             zeros(1,m);
-    zeros(m,1)    (2*m-t*t+1).*eye(m);
-    ];
+% Get initial residual (A_{t}+E_{t})x = (c_{t} + h_{t})
+g = (ct + ht) - At*x_ls;
+
 
 % Build the matrix Y_{t}
-x_ls = pinv(At)*ct;
-x = [x_ls(1:colIndex-1) ;0; x_ls(colIndex:end)];
-Yt = BuildY(x,m,t);
+x = [x_ls(1:colIndex-1) ; 0 ; x_ls(colIndex:end)];
 
 
-% Build the matrix E from the minimsation problem. Minimise Ew-p subject to
-% Cw = q.
-E = [D zeros(m+1,2*m-2*t+1)];
+Yt = BuildYt(x,m,n,t);
 
-% Get the residual vector
-res_vec = (ct+ht) - (At*x_ls);
-
-% Initialise iteration number
-ite = 1;
-% Get termination criterion - Set to the norm of the residual vector
-condition(ite) = norm(res_vec);
-
-% Initialise p vector
-p = zeros(3*m-2*t+1,1);
-
-% Initialise z vector of perturbations to f
-z = zeros(m+1,1);
-
-%H_z = Pt - Yt
-%H_x = At - Et
-
+% Build the matrix C for LSE Problem
 H_z = Yt - Pt;
-H_x = At + Et;
+H_x = At+Et;
+
 C = [H_z H_x];
+
+% Build the matrix E for LSE Problem
+
+E = eye(2*m+2*n-2*t+3);
+
+%E = blkdiag(eye(m+n+2),zeros(m+n-2*t+1,m+n-2*t+1))
+
+% Build the matrix D which accounts for repetitions of z_{i} in B_{k}
+%E = blkdiag(eye(n-t+1),eye(m-t+1));
+
 
 % Define the starting vector for the iterations for the LSE problem.
 start_point     =   ...
-    [
-    z;
+    [...
+    z;...
     x_ls;
     ];
 
+
+
+% Set yy to be the vector which stores all cummulative perturbations.
 yy              =   start_point;
 
+% Set the initial value of vector p to be zero
+f = -(yy-start_point);
+%f = start_point
 
-while condition(ite) > MAX_ERROR_SNTLN && ite < MAX_ITE_SNTLN
+% Initialise the iteration counter
+ite = 1;
+
+% Set the termination criterion
+condition(ite) = norm(g)./ norm(ct);
+
+while condition(ite) >  MAX_ERROR_SNTLN &&  ite < MAX_ITE_SNTLN
+
+    % Increment interation counter
+    ite = ite + 1;
     
+    % Get small petrubations by LSE
+    y_lse = LSE(E,f,C,g);
     
+    %y_lse = lsqlin(E,f,C,g);
     
-    y = LSE(E,p,C,res_vec);
-    delta_z = y(1:m+1,1);
-    delta_x = y(m+2:end,1);
+    % Increment cummulative peturbations
+    yy = yy + y_lse;
     
-    yy = yy + y;
+    % obtain the small changes to z and x
+    delta_zk        = y_lse(1:m+n+2,1);
+    delta_xk        = y_lse((m+n+3):(2*m+2*n-2*t+3),1);
     
-    % (f) set x:=x+\delta x and z:= z+\delta_z
-    % Update z
-    z = z + delta_z;
-    % Update x
-    x_ls = x_ls + delta_x;
+    % Update z and x
+    z = z + delta_zk;
+    x_ls = x_ls + delta_xk;
     
-    % (g) Update E_{t} and h_{t} from z, and Yk from x
+    % Split z into z_f and z_g
+    zf = z(1:m+1); 
+    zg = z(m+2:end);
     
-    % % Build new Et
-    zg = Differentiate(z);
+    % Build the matrix B_{t} = [E1(zf) E2(zg)]
+    E1 = BuildC1(zf,n-t);
+    E2 = BuildC1(zg,m-t);
     
-    % Build the matrix E_{t}
-    E1 = BuildC1(z,m-1,t);
-    E2 = BuildC1(zg,m,t);
+    % Build the matrix B_{t} equivalent to S_{t}
     Bt = [E1 E2];
     
+    % Get the matrix E_{t} with optimal column removed 
     Et = Bt;
     Et(:,colIndex) = [];
-    ht = Bt(:,colIndex);
-
-    % % Build new Yt
-    x = [x_ls(1:colIndex-1) ;0; x_ls(colIndex:end)];
-    Yt = BuildY(x,m,t);
     
-    res_vec = (ct+ht) - ((At+Et)*x_ls);
+    % Get the column vector h_{t}, the optimal column removed from B_{t},
+    % and equivalent to c_{t} removed from S_{t}
+    ht = Bt(:,colIndex);
+    
+    % Get the updated vector x
+    x = ...
+        [
+        x_ls(1:colIndex-1); 
+        0 ;
+        x_ls(colIndex:end);
+        ];
+    
+    % Build the matrix Y_{t} where Y_{t}(x)*z = E_{t}(z) * x
+    Yt = BuildYt(x,m,n,t);
+    
+    % Get the residual vector
+    g = (ct+ht) - ((At+Et)*x_ls);
     
     % Update the matrix C
     H_z = Yt - Pt;
@@ -132,79 +165,72 @@ while condition(ite) > MAX_ERROR_SNTLN && ite < MAX_ITE_SNTLN
     C = [H_z H_x];
     
     
-    rk = res_vec;
-    
     % Update fnew - used in LSE Problem.
-    p = -(yy-start_point);
+    f = -(yy-start_point);
     
-    ite = ite + 1;
-    condition(ite) = norm(rk) ;
-    
-    
+    % Update the termination criterion
+    condition(ite) = norm(g)./norm(ct+ht) ;
     
 end
 
 figure('name','STLN - Residuals')
 hold on
-plot(log10(condition));
+plot(log10(condition),'-s');
 hold off
 
 
 
+if (condition(ite) < condition(1))
+    condition(ite)
+    condition(1)
+    fx = fx + zf;
+    gx = gx + zg;
+else
+    fx = fx;
+    gx = gx;
+end
+
 fprintf('Required number of iterations : %i \n',ite)
 
-% Output coefficients of f(x)
-display(fx);
-
-% Output coefficients of f(x) + delta f(x)
-fx_output = fx + z;
-
 end
 
 
+function Pt = BuildPt(idx_Col,m,n,t)
+% Build the matrix P_{t}, where h_{t} = P_{t}z
 
-
-function Pk = BuildP(colIndex,m,t)
-% Build the matrix P such that a column in Ek, specified by the column index
-% is generated by the matrix vector product P*z, or a column of Ak is given
-% by P*z
-
-if colIndex <= m-t
-    i = colIndex;
-    mat = ...
+if idx_Col <= n-t+1
+    % First Partition
+    i = idx_Col;
+    Pt = ...
         [
-        zeros(i-1,m+1);
-        diag(ones(m+1,1));
-        zeros(m-t-i,m+1);
+            zeros(i-1,m+1)      zeros(i-1,n+1);
+            eye(m+1,m+1)        zeros(m+1,n+1);
+            zeros(n-t-i+1,m+1)  zeros(n-t-i+1,n+1);
         ];
-    Pk = mat;
+else
+    % Second Partition
+    i = idx_Col - (n-t+1);
+    Pt = ...
+        [
+            zeros(i-1,m+1)      zeros(i-1,n+1);
+            zeros(n+1,m+1)      eye(n+1,n+1) 
+            zeros(m-t-i+1,m+1)  zeros(m-t-i+1,n+1);
+        ];
     
-elseif colIndex > m-t && colIndex <= 2*m-2*t+1
-    i = colIndex - (m-t);
-    mat = ...
-        [
-        zeros(i-1,m+1);
-        zeros(m,1) diag(1:1:m);
-        zeros(m-t-i+1,m+1);
-        ];
-    % Remove the first row
-    Pk = mat;
 end
 
 end
 
+function Yt = BuildYt(x,m,n,t)
+% Build the matrix Y_{t}, where Y_{t}z = E_{t}x
 
-function Y = BuildY(x,m,t)
+xa = x(1:n-t+1);
+xb = x(n-t+2:end);
 
-% The first (m-t) coefficients are for the first matrix
-xa = x(1:m-t);
-xb = x(m-t+1:end);
+Y1 = BuildC1(xa,m);
+Y2 = BuildC1(xb,n);
 
-mat1 = BuildC1(xa,m,0);
-mat2 = BuildC1(xb,m-1,0);
+Yt = [Y1 Y2];
 
-mat2 =  [zeros(2*m-t,1) mat2 ] * diag(0:1:m) ;
-
-Y = mat1 + mat2;
 
 end

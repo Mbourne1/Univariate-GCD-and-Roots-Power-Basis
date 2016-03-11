@@ -13,8 +13,13 @@ function [] = PrintCoefficientsBivariate(fxy,f)
 m1 = r - 1 ;
 m2 = c - 1 ;
 
+if m2 == 0
+    str = sprintf('%s(x) = ',f);
+else
 % Initialise output string
 str = sprintf('%s(x,y) = ',f);
+end
+
 
 % for each row of matrix f(x,y)
 for i = 0:1:m1

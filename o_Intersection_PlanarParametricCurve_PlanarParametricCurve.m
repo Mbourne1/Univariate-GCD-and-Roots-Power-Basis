@@ -1,12 +1,12 @@
-function [] = o_IntersectionParametric()
+function [] = o_Intersection_PlanarParametricCurve_PlanarParametricCurve()
 % Given two integral parametrically defined curves, obtain the points of
 % intersection.
 
-global PLOT_GRAPHS
-PLOT_GRAPHS = 'y';
+bool_preproc = 'n'
+low_rank_approx_method = 'None'
+plot_graphs = 'y'
 
-global BOOL_PREPROC
-BOOL_PREPROC = 'y';
+SetGlobals()
 
 
 % fxt : vector of coefficients of x(t) with increasing powers of t.
@@ -17,7 +17,8 @@ C1_yt = [0.5; 3; -2.5];
 C2_xt = [0; 2; 0.1];
 C2_yt = [0; 1; 0.1];
 
-% Get the implicit representation of C_{1}(x(t),y(t))
+% Get the implicit representation of the Integral parametric polynomial
+% C_{1}(x(t),y(t))
 C1_implicit = Implicitize_Integral_Parametric(C1_xt,C1_yt);
 
 % Get implicit Representation, C1 is given by f(x,y) = 0.
@@ -30,16 +31,16 @@ PrintCoefficientsBivariate(C1_implicit,'C1')
 
 %%
 % Get the number of rows and columns in C1(x,y)
-[r,c] = size(C1_implicit);
+[rowsC1,colsC1] = size(C1_implicit);
 
 % Produce the polynomial C3 given by the susbstitution of x(t) and y(t) 
 % into f(x,y) = 0. Where C3 is a curve with variable t.
 C3 = 0;
 
 % for each row in C_{1}(x,y)
-for i = 0:1:r-1
+for i = 0:1:rowsC1-1
     % for each column in C_{1}(x,y)
-    for j = 0:1:c-1
+    for j = 0:1:colsC1-1
         
         x_component = 1;
         for k = 0:1:i
@@ -62,10 +63,10 @@ end
 % Print the coefficients of the curve C3
 fprintf('The Curve C_{3} is given by \n')
 fprintf('\n')
-PrintPoly(C3,'C3')
+PrintCoefficientsBivariate(C3,'C3')
 
 % Get roots of C_{3} in terms of t
-o_roots_mymethod(C3);
+%o_roots_mymethod(C3);
 
 % Get roots of C_{3} by my method
 vRoots = roots(fliplr(C3'));

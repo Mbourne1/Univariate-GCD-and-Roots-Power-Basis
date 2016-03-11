@@ -1,5 +1,5 @@
 
-function [roots_fx,roots_gx,roots_dx,rankloss,roots_ux,roots_vx]=GCD_Examples(n)
+function [roots_fx,roots_gx,roots_dx,roots_ux,roots_vx,rankloss] = GCD_Examples(n)
 % Inputs.
 % n - Index of example to be used
 % Outputs.
@@ -261,15 +261,11 @@ switch n
 end
 
 roots_dx = GetDivisor(roots_fx,roots_gx);
-
 roots_ux = GetQuotient(roots_fx,roots_dx);
-
 roots_vx = GetQuotient(roots_gx,roots_dx);
 
 m = sum(roots_fx(:,2));
-
 n = sum(roots_gx(:,2));
-
 d = sum(roots_dx(:,2));
 rankloss = d;
 
