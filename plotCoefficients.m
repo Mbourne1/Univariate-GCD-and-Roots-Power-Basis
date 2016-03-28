@@ -1,22 +1,25 @@
+function [] = PlotCoefficients(fx,fw,name)
+% Plot the coefficients of the polynomial f(x) and f(w).
+%
+% Inputs.
+% 
+% fx : Coefficients of f(x)
+%
+% fw : Coefficients of f(w)
+%
+% name : name of function
 
-switch PLOT_GRAPHS
-    case 'y'
-        % Plot the coefficients of fx
-        figure('name','Coefficients of f(x)')
-        plot(fx,'-s','DisplayName','Coefficients Before Processing')
-        hold on
-        plot(fw,'-o','DisplayName','Coefficients After Processing')
-        legend(gca,'show');
-        hold off
-        
-        % Plot the coefficients of g(x)
-        figure('name','Coefficients of g(x)')
-        plot(gx,'-s','DisplayName','Coefficients Before Processing')
-        hold on
-        plot(gw,'-o','DisplayName','Coefficients After Processing')
-        legend(gca,'show');
-        hold off
-    case 'n'
-    otherwise
-        error('err : plot graphs either y or n')
+
+str = sprintf('Coefficients of %s',name);
+figure('name',str)
+label1 = sprintf('%s(x)',name);
+label2 = sprintf('%s(\\omega)',name);
+plot(fx,'-s','DisplayName',label1)
+hold on
+plot(fw,'-o','DisplayName',label2)
+legend(gca,'show');
+hold off
+
 end
+
+

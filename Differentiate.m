@@ -9,8 +9,7 @@ function der_f = Differentiate(fx)
 %%
 
 % Get the degree of polynomial f(x)
-[r,~] = size(fx);
-m = r-1;
+m = GetDegree(fx);
 
 % Get the derivative of f(x)
 der_f = ((0:1:m)').*fx;

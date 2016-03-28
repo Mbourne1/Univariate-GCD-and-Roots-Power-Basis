@@ -6,12 +6,12 @@ if size(f,2) >1 || size(g,2) >1
 end
 
 % Get degree of polynomial f(x)
-[r,~] = size(f);
-m = r-1;
+m = GetDegree(f);
+
 
 % Get degree of polynomial g(x)
-[r,~] = size(g);
-n = r-1;
+n = size(g);
+
 
 if m < n
     f = [f; zeros(n-m,1)];

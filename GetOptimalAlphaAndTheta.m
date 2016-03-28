@@ -8,15 +8,12 @@ end
 f = [1 -1 0  0];
 
 % Get degree of polynomial f
-[r,~] = size(fx);
-m = r-1;
+m = GetDegree(fx);
 
 % Get degree of polynomial g
-[r,~] = size(gx);
-n = r-1;
+n = GetDegree(gx);
 
 % Build the first partiion
-
 Part1 = [ones(m+1,1) zeros(m+1,1) -1.*(0:1:m)' zeros(m+1,1)];
 
 Part2 = [ones(n+1,1) zeros(n+1,1) -1.*(0:1:n)' -1.*ones(n+1,1)];

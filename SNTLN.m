@@ -7,13 +7,11 @@ global MAX_ERROR_SNTLN
 global MAX_ITE_SNTLN
 global PLOT_GRAPHS
 
-
-
 % Get degree of polynomial f(x)
-m = size(fx,1) - 1;
+m = GetDegree(fx);
 
 % Get degree of polynomial g(x)
-n = size(gx,1) - 1;
+n = GetDegree(gx);
 
 % Set the initial iteration number
 ite = 1;
@@ -39,39 +37,33 @@ fx_n = fx./lambda;
 gx_n = gx./mu;
 
 % Get f(w) from f(x)
-fw = fx_n .* (theta.^vecm);
+fw = GetWithThetas(fx_n,theta);
 
 % Get partial f(w) wrt \theta
-partial_fw_wrt_theta = vecm.* fx .* (theta.^(-1:1:m-1)');
+fw_wrt_theta = vecm.* fx .* (theta.^(-1:1:m-1)');
 
 % Get partial f(w) wrt \alpha
-partial_fw_wrt_alpha = zeros(m+1,1);
+fw_wrt_alpha = zeros(m+1,1);
 
 % Get g(w)
-gw = gx_n .* (theta.^vecn);
+gw = GetWithThetas(gx_n,theta);
 
 % Get partial g(w) wrt \theta
-partial_gw_wrt_theta = vecn.* gx .* (theta.^(-1:1:n-1)');
+gw_wrt_theta = vecn.* gx .* (theta.^(-1:1:n-1)');
 
 % Get partial g(w) wrt \alpha
-partial_gw_wrt_alpha = gw;
+gw_wrt_alpha = gw;
 
 % Get partial fw wrt alpha
 
 % Get the matrix T, used to construct S_{t}, where S_{t} = DTQ.
-T1 = BuildC1(fw,n-t);
-T2 = BuildC1(gw,m-t);
-T = [T1 alpha.*T2];
+T = BuildT(fw,alpha.*gw,t);
 
 % Get the partial T wrt alpha
-partial_T1_wrt_alpha = BuildC1(partial_fw_wrt_alpha,n-t);
-partial_T2_wrt_alpha = BuildC1(partial_gw_wrt_alpha,m-t);
-partial_T_wrt_alpha = [partial_T1_wrt_alpha partial_T2_wrt_alpha];
+T_wrt_alpha = BuildT(fw_wrt_alpha,gw_wrt_alpha,t);
 
 % Get partial T wrt theta
-partial_T1_wrt_theta = BuildC1(partial_fw_wrt_theta,n-t);
-partial_T2_wrt_theta = BuildC1(partial_gw_wrt_theta,m-t);
-partial_T_wrt_theta = [partial_T1_wrt_theta alpha.* partial_T2_wrt_theta];
+T_wrt_theta = BuildT(fw_wrt_theta, alpha.*gw_wrt_theta,t);
 
 % Get the Matrix A_{t} = Sk with column c_{t} removed
 At = T*M;
@@ -80,10 +72,10 @@ At = T*M;
 ct = T*e;
 
 % Get the column partial c_{t} wrt \alpha
-partial_ct_wrt_alpha = partial_T_wrt_alpha(:,opt_col);
+ct_wrt_alpha = T_wrt_alpha(:,opt_col);
 
 % Get the column partial c_{t} wrt \theta
-Partial_ck_wrt_theta = partial_T_wrt_theta(:,opt_col);
+ct_wrt_theta = T_wrt_theta(:,opt_col);
 
 % Initialise the vector of perturbations z, corresponding to polynomials
 % f and g.
@@ -93,23 +85,22 @@ z_gx = zeros(n+1,1);
 
 
 % Build the matrix N where N has the same structure as T
-N1 = BuildC1(z_fx,n-t);
-N2 = BuildC1(z_gx,m-t);
-N = [N1 alpha.* N2];
+N = BuildT(z_fx,alpha.*z_gx,t);
 
 % Get the partial derivative of N_{t}
-partial_N_wrt_theta = zeros(m+n-t+1, m+n-(2*t)+2);
-partial_N_wrt_alpha = zeros(m+n-t+1, m+n-(2*t)+2);
+N_wrt_theta = zeros(m+n-t+1, m+n-(2*t)+2);
+N_wrt_alpha = zeros(m+n-t+1, m+n-(2*t)+2);
 
 % Get the column h_{t} - s.t h_{t} has the same structure as c_{t}
 ht = N*e;
-partial_h_wrt_alpha     = partial_N_wrt_alpha*e;
-partial_h_wrt_theta     = partial_N_wrt_theta*e;
+h_wrt_alpha     = N_wrt_alpha*e;
+h_wrt_theta     = N_wrt_theta*e;
 
 % Build the matrix T + N
 TN = T + N;
-TN_wrt_alpha = partial_T_wrt_alpha + partial_N_wrt_alpha;
-TN_wrt_theta = partial_T_wrt_theta + partial_N_wrt_theta;
+
+TN_wrt_alpha = T_wrt_alpha + N_wrt_alpha;
+TN_wrt_theta = T_wrt_theta + N_wrt_theta;
 
 % Calculate the initial estimate of x - the vector whcih contains the
 % coefficients of the quotient polynomials u and v.
@@ -117,23 +108,14 @@ x_ls = SolveAx_b(At,ct);
 
 % Build the matrix P_{t} where P_{t}*[f;g] = c_{t}
 Pt = BuildP(m,n,t,alpha(ite),theta(ite),opt_col);
-test1 = Pt*[fx_n;gx_n];
-test2 = ct;
-test3 = test1 - test2;
 
 % Get the vector of thetas corresponding to x(\omega), with missing value.
 thetas = [theta.^vecnk ; theta.^vecmk];
 thetas(opt_col,:) = [];
 x_ls_wrt_x = x_ls./thetas;
 
-
 % Build the matrix Y such that Y*[f;g] = A*x
 Yt = BuildY(m,n,t,x_ls,opt_col,alpha,theta);
-test1 = Yt*[fx_n;gx_n];
-test2 = At*x_ls;
-test3 = test1 - test2;
-
-%%
 
 % Create the matrix C for input into iteration
 
@@ -142,10 +124,10 @@ H_z = GetH_z(opt_col,n,t,Yt,Pt,alpha(ite));
 H_x = TN*M;
 
 H_alpha = TN_wrt_alpha*M*x_ls - ...
-    (partial_ct_wrt_alpha + partial_h_wrt_alpha);
+    (ct_wrt_alpha + h_wrt_alpha);
 
 H_theta = TN_wrt_theta*M*x_ls - ...
-    (Partial_ck_wrt_theta + partial_h_wrt_theta);
+    (ct_wrt_theta + h_wrt_theta);
 
 C = [H_z H_x H_alpha H_theta];
 
@@ -165,19 +147,20 @@ yy  = start_point;
 E = eye(2*m+2*n-2*t+5);
 
 % Set the initial value of vector p to be zero
-f = -(yy - start_point);
+% f = -(yy - start_point);
+f = zeros(2*m+2*n-2*t+5,1);
 
 % Get the initial residual vector
-g = (ct+ht) - (At*x_ls);
+res_vec = (ct+ht) - (At*x_ls);
 
 % Get residual
-condition = norm(g) ./ norm(ct);
+condition = norm(res_vec) ./ norm(ct);
 
 
 while condition(ite) > MAX_ERROR_SNTLN && ite < MAX_ITE_SNTLN
     
     % Perfome LSE Calculation min|Ey-f| subject to Cy=g
-    y_lse = LSE(E,f,C,g);
+    y_lse = LSE(E,f,C,res_vec);
     
     % Increment the iteration number
     ite = ite + 1;
@@ -196,7 +179,7 @@ while condition(ite) > MAX_ERROR_SNTLN && ite < MAX_ITE_SNTLN
     % coefficients u and v.
     z = z + delta_zk;
     
-    x_ls = x_ls + delta_xk;
+    %x_ls = x_ls + delta_xk;
     x_ls = SolveAx_b(TN*M,ct+ht);
     
     % Update \alpha and \theta
@@ -204,38 +187,33 @@ while condition(ite) > MAX_ERROR_SNTLN && ite < MAX_ITE_SNTLN
     theta(ite) = theta(ite-1) + delta_theta;
     
     % Obtain polynomials in modified basis f(w,\theta)
-    fw = fx_n.*(theta(ite).^vecm);
-    gw = gx_n.*(theta(ite).^vecn);
+    fw = GetWithThetas(fx_n,theta(ite));
+    gw = GetWithThetas(gx_n,theta(ite));
     
     % Construct the subresultant matrix of T.
-    T1 = BuildC1(fw,n-t);
-    T2 = BuildC1(gw,m-t);
-    T = [T1 alpha(ite).*T2];
+    T = BuildT(fw,alpha(ite).*gw,t);
     
     % Get new c_{t}
     ct = T*e;
     
     % Calculate the partial derivatives of fw and gw with respect to alpha
-    partial_fw_wrt_alpha    = zeros(1,m+1);
-    partial_gw_wrt_alpha    = gw;
+    fw_wrt_alpha    = zeros(m+1,1);
+    gw_wrt_alpha    = gw;
     
     % Calculate the partial derivatives of fw and gw with respect to theta
-    partial_fw_wrt_theta    = vecm.*fw./theta(ite);
-    partial_gw_wrt_theta    = vecn.*gw./theta(ite);
+    fw_wrt_theta    = vecm.*fw./theta(ite);
+    gw_wrt_theta    = vecn.*gw./theta(ite);
     
     % Calculate the partial derivative of T wrt alpha
-    partial_T1_wrt_alpha    = 0.*BuildC1(fw,n-t);
-    partial_T2_wrt_alpha    = BuildC1(gw,m-t);
-    partial_T_wrt_alpha     = [partial_T1_wrt_alpha partial_T2_wrt_alpha];
-    
+    T_wrt_alpha = BuildT(fw_wrt_alpha,gw_wrt_alpha,t);
+            
     % Calculate the partial derivative of T wrt theta
-    partial_T1_wrt_theta    = BuildC1(partial_fw_wrt_theta,n-t);
-    partial_T2_wrt_theta    = BuildC1(partial_gw_wrt_theta,m-t);
-    partial_T_wrt_theta     = [partial_T1_wrt_theta alpha(ite).* partial_T2_wrt_theta];
+    T_wrt_theta = BuildT(fw_wrt_theta, alpha(ite).*gw_wrt_theta,t);
+    
 
     % Calculate the derivatives of c_{k} with respect to \alpha and \theta
-    partial_ct_wrt_alpha     = partial_T_wrt_alpha*e;
-    partial_ct_wrt_theta     = partial_T_wrt_theta*e;
+    ct_wrt_alpha     = T_wrt_alpha*e;
+    ct_wrt_theta     = T_wrt_theta*e;
     
     % Create the vector of structured perturbations zf and zg applied
     % to F and G.
@@ -243,8 +221,8 @@ while condition(ite) > MAX_ERROR_SNTLN && ite < MAX_ITE_SNTLN
     z_gx      = z(m+2:end);
     
     % Calculate the subresultant matrix of the structured perturbations.
-    z_fw     = z_fx.*(theta(ite).^vecm);
-    z_gw     = z_gx.*(theta(ite).^vecn);
+    z_fw = GetWithThetas(z_fx,theta(ite));
+    z_gw = GetWithThetas(z_gx,theta(ite));
     
     % Calculate the derivatives of z_fw and z_gw with repect to alpha.
     partial_zfw_wrt_alpha    = zeros(m+1,1);
@@ -256,54 +234,40 @@ while condition(ite) > MAX_ERROR_SNTLN && ite < MAX_ITE_SNTLN
     
     % Build the Coefficient Matrix N, of structured perturbations, with
     % same structure as T.
-    N1 = BuildC1(z_fw,n-t);
-    N2 = BuildC1(z_gw,m-t);
-    N = [N1 alpha(ite).*N2];
+    N = BuildT(z_fw,alpha(ite).*z_gw,t);
     
-    partial_N1_wrt_alpha = BuildC1(partial_zfw_wrt_alpha,n-t);
-    partial_N2_wrt_alpha = BuildC1(partial_zgw_wrt_alpha,m-t);
-    partial_N_wrt_alpha = [partial_N1_wrt_alpha partial_N2_wrt_alpha];
+    % Build the Sylvester matrix 
+    N_wrt_alpha = BuildT(partial_zfw_wrt_alpha, partial_zgw_wrt_alpha,t);
     
-    partial_N1_wrt_theta = BuildC1(partial_zfw_wrt_theta,n-t);
-    partial_N2_wrt_theta = BuildC1(partial_zgw_wrt_theta,m-t);
-    partial_N_wrt_theta = [partial_N1_wrt_theta alpha(ite).*partial_N2_wrt_theta];
+    %
+    N_wrt_theta = BuildT(partial_zfw_wrt_theta, alpha(ite).*partial_zgw_wrt_theta,t);
     
     % update h - the vector of structured perturbations equivalent to ck
     ht = N*e;
     
     % Calculate the derivative of h with respect to alpha
-    h_alpha = partial_N_wrt_alpha*e;
+    h_alpha = N_wrt_alpha*e;
     
     % Calculate the derivative of h with respect to theta
-    h_theta = partial_N_wrt_theta*e;
+    h_theta = N_wrt_theta*e;
     
     % Update T+N
     TN = T + N;
     
     % Update parital derivative of T+N wrt alpha
-    TN_alpha = partial_T_wrt_alpha + partial_N_wrt_alpha;
+    TN_alpha = T_wrt_alpha + N_wrt_alpha;
     
     % Update parital derivative of T+N wrt theta
-    TN_theta = partial_T_wrt_theta + partial_N_wrt_theta;
+    TN_theta = T_wrt_theta + N_wrt_theta;
     
     % Calculate the matrix DY where Y is the Matrix such that E_{k}x = Y_{k}z.
     Yt = BuildY(m,n,t,x_ls,opt_col,alpha(ite),theta(ite));
     
-    
-    test1 = Yt*[fx_n;gx_n];
-    test2 = (T*M)*x_ls;
-    ct;
-    test3 = test1-test2;
-    
     % Calculate the matrix P where P is the matrix such that c = P[f;g]
     Pt = BuildP(m,n,t,alpha(ite),theta(ite),opt_col);
-    test1 = Pt*[fx_n;gx_n];
-    test2 = ct;
-    test3 = test1 - test2;
-    
-    
+       
     % Calculate the residual g
-    g = (ct+ht) - ((TN * M) * x_ls);
+    res_vec = (ct+ht) - ((TN * M) * x_ls);
     
     % Create the matrix C. This is made up of four submatrices, HZ, Hx,
     % H_alpha and H_theta.
@@ -312,14 +276,14 @@ while condition(ite) > MAX_ERROR_SNTLN && ite < MAX_ITE_SNTLN
     
     Hx      = TN*M;
     
-    H_alpha = TN_alpha*M*x_ls - (partial_ct_wrt_alpha + h_alpha);
+    H_alpha = TN_alpha*M*x_ls - (ct_wrt_alpha + h_alpha);
     
-    H_theta = TN_theta*M*x_ls - (Partial_ck_wrt_theta + h_theta);
+    H_theta = TN_theta*M*x_ls - (ct_wrt_theta + h_theta);
     
     C = [Hz,Hx,H_alpha,H_theta];  % the matrix C
     
     % Calculate the normalised residual of the solution.
-    condition(ite) = norm(g) ./ norm(ct+ht) ;
+    condition(ite) = norm(res_vec) ./ norm(ct+ht) ;
     
     % Update fnew - used in LSE Problem.
     f = -(yy-start_point);

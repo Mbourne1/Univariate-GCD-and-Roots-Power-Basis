@@ -12,7 +12,9 @@ function [] = o_gcd(ex_num,el,bool_preproc,low_rank_approx_method)
 % low_rank_approx_method: 'Standard SNTLN', 'Standard STLN'
 %   
 
-SetGlobalVariables()
+global PLOT_GRAPHS
+
+SetGlobalVariables(bool_preproc,low_rank_approx_method)
 
 EXAMPLE_TYPE = 'FromRoots';
 
@@ -54,12 +56,10 @@ switch EXAMPLE_TYPE
 end
 
 % Get degree of polynomial f
-[r,~] = size(fx);
-m = r - 1;
+m = GetDegree(fx);
 
 % Get degree of polynomial g
-[r,~] = size(gx);
-n = r - 1;
+n = GetDegree(gx);
 
 % Add Noise to the coefficients of f(x) and g(x)
 
@@ -110,8 +110,8 @@ function [] = PrintCoefficients(u_exact,u_computed,name)
 fprintf('\nCoefficients of %s \n\n',name);
 fprintf('\t Exact \t \t \t \t\t \t \t   Computed \n')
 
-u_exact = normalise(u_exact);
-u_computed = normalise(u_computed);
+u_exact = Normalise(u_exact);
+u_computed = Normalise(u_computed);
 
 mat = [real(u_exact(:,1))';  real(u_computed(:,1))' ];
 fprintf('%f \t \t \t \t %f   \t \t \n', mat);

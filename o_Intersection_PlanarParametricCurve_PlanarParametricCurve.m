@@ -1,13 +1,8 @@
-function [] = o_Intersection_PlanarParametricCurve_PlanarParametricCurve()
+function [] = o_Intersection_PlanarParametricCurve_PlanarParametricCurve(bool_preproc,low_rank_approx_method)
 % Given two integral parametrically defined curves, obtain the points of
 % intersection.
 
-bool_preproc = 'n'
-low_rank_approx_method = 'None'
-plot_graphs = 'y'
-
-SetGlobals()
-
+SetGlobalVariables()
 
 % fxt : vector of coefficients of x(t) with increasing powers of t.
 % fyt : vector of coefficients of y(t) with increasing powers of t.
@@ -66,7 +61,9 @@ fprintf('\n')
 PrintCoefficientsBivariate(C3,'C3')
 
 % Get roots of C_{3} in terms of t
-%o_roots_mymethod(C3);
+fprintf('roots by my method \n')
+[root_mult_array] = o_roots_mymethod(C3);
+display(root_mult_array);
 
 % Get roots of C_{3} by my method
 vRoots = roots(fliplr(C3'));

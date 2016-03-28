@@ -1,4 +1,4 @@
-function [fx] = GetCoefficients(roots_f)
+function [fx] = GetCoefficients(root_mutl_arr_f)
 % Given the roots and multiplicities of a polynomial f(x), calculate the
 % coefficients
 %
@@ -6,22 +6,21 @@ function [fx] = GetCoefficients(roots_f)
 %
 %   roots_f : Matrix consisting of rows of [root multiplicity] pairs
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Get the number of distinct roots
-[nRoots,~] = size(roots_f);
+[nDistinctRoots,~] = size(root_mutl_arr_f);
 
 % Initialise the polynomials
 Poly = 1;
 
 % for each distinct root
-for i = 1:1:nRoots
+for i = 1:1:nDistinctRoots
     
     % Get the root
-    r = roots_f(i,1);
+    r = root_mutl_arr_f(i,1);
     
     % Get the multiplicity
-    m = roots_f(i,2);
+    m = root_mutl_arr_f(i,2);
     
     % Multiply poly by the factor (x-r) m times
     for j = 1:1:m
@@ -30,8 +29,6 @@ for i = 1:1:nRoots
     end
     
 end
-
-fx = Poly;
 
 fx = flipud(Poly);
 end

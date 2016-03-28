@@ -1,24 +1,27 @@
 function [fx_n,gx_n,dx, ux, vx, alpha, theta, t , lambda,mu] = o1(fx,gx)
+% o1(fx,gx)
+%
 % Given two polynomials f(x) and g(x) return the GCD d(x)
+% 
+% Inputs.
+%
+% fx : Coefficients of polynomial f(x).
+%
+% gx : Coefficients of polynomial g(x).
 
+
+% Global variables
 global BOOL_PREPROC
-
 global PLOT_GRAPHS
-
 global LOW_RANK_APPROXIMATION_METHOD
 
 
 % Get degree of polynomial f(x)
-[r,~] = size(fx);
-m = r - 1;
+m = GetDegree(fx);
 
 % Get degree of polynomial g(x)
-[r,~] = size(gx) ;
-n = r - 1;
+n = GetDegree(gx) ;
 
-% Initialise useful vectors
-vecm = (0:1:m)';
-vecn = (0:1:n)';
 
 %% Preprocess the polynomials f(x) and g(x)
 switch BOOL_PREPROC
@@ -36,13 +39,14 @@ switch BOOL_PREPROC
         % Get opitmal values of alpha and theta
         [alpha, theta] = GetOptimalAlphaAndTheta(fx_n,gx_n);
         
-        % Obtain f(w) and g(w) from f(x) and g(x)
-        fw = fx_n.*(theta.^vecm);
-        gw = gx_n.*(theta.^vecn);
+        % Obtain f(w) and g(w) from f(x) and g(x)]
+        fw = GetWithThetas(fx,theta);
+        gw = GetWithThetas(gx,theta);
         
         % Plot the unprocessed and preprocessed coefficients of
         % f(x), f(w), g(x) and g(w).
-        plotCoefficients()
+        PlotCoefficients(fx,fw,'f');
+        PlotCoefficients(gx,gw,'g');
         
         
         
@@ -65,10 +69,10 @@ end
 
 %%
 % Get the degree t of the GCD of f(w) and g(w)
-t = GetDegree(fw,alpha.*gw);
+t = GetGCDDegree(fw,alpha.*gw);
 
 % Given the degree t, get the optimal column for removal from S_{t}(f,g)
-St_preproc  = BuildSubresultant(fw,gw,t,alpha);
+St_preproc  = BuildT(fw,alpha.*gw,t);
 
 % Get the minimum distance between any one of the columns of S_{k}(f,g) and the
 % remaining columns of S_{k}(f,g)
@@ -83,11 +87,13 @@ switch LOW_RANK_APPROXIMATION_METHOD
         
         % Perform STLN - Structured Total Least Norm
         [fw_new,a_gw_new] = STLN(fw,alpha.*gw,t);
-        fx_n = fw_new ./ theta.^(0:1:m)';
+        
+        fx_n = GetWithoutThetas(fw_new,theta);
+               
         
         % Get g(x) and g(w)
         gw_new = a_gw_new./ alpha;
-        gx_n = (a_gw_new ./ theta.^(0:1:n)')./alpha;
+        gx_n = GetWithoutThetas(gw_new,theta);
         
     case 'STLN Root Specific'
         
@@ -95,11 +101,11 @@ switch LOW_RANK_APPROXIMATION_METHOD
         
         % Perform STLN - Structured Total Least Norm
         [fw_new,a_gw_new] = STLN(fw,alpha.*gw,t);
-        fx_n = fw_new ./ theta.^(0:1:m)';
+        fx_n = GetWithoutThetas(fw_new,theta);
         
         % Get g(x) and g(w)
         gw_new = a_gw_new./ alpha;
-        gx_n = (a_gw_new ./ theta.^(0:1:n)')./alpha;
+        gx_n = GetWithoutThetas(gw_new,theta);
         
     case 'Standard SNTLN'
         [fx_new,gx_new,alpha_new,theta_new] = SNTLN(fx,gx,t,opt_col,lambda,mu,alpha,theta);
@@ -108,8 +114,10 @@ switch LOW_RANK_APPROXIMATION_METHOD
         gx_n = gx_new;
         theta = theta_new;
         alpha = alpha_new;
-        fw_new = fx_new .* (theta.^vecm);
-        gw_new = gx_new .* (theta.^vecn);
+        
+        fw_new = GetWithThetas(fx_new,theta);
+        gw_new = GetWithThetas(gx_new,theta);
+        
         
     case 'None'
         
@@ -119,11 +127,11 @@ switch LOW_RANK_APPROXIMATION_METHOD
         error('error')
 end
 
-St_LowRankApprox = BuildSubresultant(fw_new,gw_new,t,alpha);
+St_LowRankApprox = BuildT(fw_new,alpha.*gw_new,t);
 
 
 % Get the Sylvester matrix of the unprocessed
-St_Unproc = BuildSubresultant(fx,gx,t,1);
+St_Unproc = BuildT(fx,gx,t);
 
 
 % Get the quotient polynomials u(x) and v(x)
@@ -139,13 +147,13 @@ dx = GetGCD(ux,vx,fx_n,gx_n,t,alpha,theta);
 % 3 : The Sylvester Subresultant which is a low rank approximation of 2.
 
 vSingularValues_unproc = svd(St_Unproc);
-vSingularValues_unproc = normalise(vSingularValues_unproc);
+vSingularValues_unproc = Normalise(vSingularValues_unproc);
 
 vSingularValues_preproc = svd(St_preproc);
-vSingularValues_preproc = normalise(vSingularValues_preproc);
+vSingularValues_preproc = Normalise(vSingularValues_preproc);
 
 vSingularValues_lowRank = svd(St_LowRankApprox);
-vSingularValues_lowRank = normalise(vSingularValues_lowRank);
+vSingularValues_lowRank = Normalise(vSingularValues_lowRank);
 
 
 %%

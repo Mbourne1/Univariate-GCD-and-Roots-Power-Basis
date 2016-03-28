@@ -8,15 +8,15 @@ global MAX_ITE_SNTLN
 
 
 % Get degree of polynomial f(x)
-m = size(fx,1)-1;
+m = GetDegree(fx);
 
 % Get the derivative of f(x)
 gx = Differentiate(fx);
 n = m -1 ;
 
 % Build the Sylvester matrix
-C1 = BuildC1(fx,n-t);
-C2 = BuildC1(gx,m-t);
+C1 = BuildT1(fx,n-t);
+C2 = BuildT1(gx,m-t);
 St = [C1 C2];
 
 % Get the index of the optimal colummn for removal
@@ -64,7 +64,7 @@ res_vec = (ct+ht) - (At*x_ls);
 % Initialise iteration number
 ite = 1;
 % Get termination criterion - Set to the norm of the residual vector
-condition(ite) = norm(res_vec);
+condition(ite) = norm(res_vec) ./ norm(ct);
 
 % Initialise p vector
 p = zeros(3*m-2*t+1,1);
@@ -113,8 +113,8 @@ while condition(ite) > MAX_ERROR_SNTLN && ite < MAX_ITE_SNTLN
     zg = Differentiate(z);
     
     % Build the matrix E_{t}
-    E1 = BuildC1(z,m-1-t);
-    E2 = BuildC1(zg,m-t);
+    E1 = BuildT1(z,m-1-t);
+    E2 = BuildT1(zg,m-t);
     Bt = [E1 E2];
     
     Et = Bt;
@@ -140,7 +140,7 @@ while condition(ite) > MAX_ERROR_SNTLN && ite < MAX_ITE_SNTLN
     p = -(yy-start_point);
     
     ite = ite + 1;
-    condition(ite) = norm(rk) ;
+    condition(ite) = norm(rk) ./ norm(ct+ht) ;
     
     
     
@@ -201,8 +201,8 @@ function Y = BuildY(x,m,t)
 xa = x(1:m-t);
 xb = x(m-t+1:end);
 
-mat1 = BuildC1(xa,m);
-mat2 = BuildC1(xb,m-1);
+mat1 = BuildT1(xa,m);
+mat2 = BuildT1(xb,m-1);
 
 mat2 =  [zeros(2*m-t,1) mat2 ] * diag(0:1:m) ;
 

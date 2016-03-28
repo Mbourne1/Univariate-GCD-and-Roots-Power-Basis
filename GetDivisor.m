@@ -1,8 +1,17 @@
 function arrRoots_d = GetDivisor(arrRoots_f,arrRoots_g)
 % Given two sets of roots for polynomials f and g,
 % Compare the sets of roots and return the common roots.
+% 
+% Inputs.
+% 
+% arrRoots_f : Array of roots of f(x) and corresponding multiplicities.
+% 
+% arrRoots_g : Array of roots of g(x) and corresponding multiplicities.
+% 
+% Outputs.
+%
+% arrRoots_d : Array of roots of d(x) and corresponding multiplicities.
 
-%%
 % Get the number of roots in polynomial f(x,y)
 num_roots_f = size(arrRoots_f,1);
 

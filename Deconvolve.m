@@ -13,32 +13,16 @@ end
 
 function [h] = Deconvolve_Separate(f,g)
 
-% Get degree of polynomial f(x)
-[r,~] = size(f);
-m = r-1;
+% Get degree of polynomial f(x).
+m = GetDegree(f);
 
-C_g = BuildC(g,m);
+% Get degree of polynomial g(x).
+n = GetDegree(g);
 
-h = pinv(C_g)*f;
+% Build the matrix C(g
+C_g = BuildT1(g,m-n);
 
-end
-
-function C_g = BuildC(g,m)
-% Build the matrix C such that C(f)*h = g, where h is an unknown vector.
-%
-% Inputs
-%
-% g : Input polynomial
-%
-% m : Degree of polynomial f
-
-% Get the degree of polynomial g(x)
-[r,~] = size(g);
-n = r-1;
-
-% For each column of C(g)
-for j = 0:1:m-n
-   C_g(j+1:j+1+n,j+1) = g;
-end
+% Solve C(g)*h = f
+h = SolveAx_b(C_g,f);
 
 end

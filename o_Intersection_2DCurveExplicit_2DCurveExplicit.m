@@ -1,61 +1,59 @@
-function [] = o_Intersection_2DCurveExplicit_2DCurveExplicit(ex_num_f,ex_num_g)
-% given two curves f(x) and g(x), calculate their intersection
+function [] = o_Intersection_2DCurveExplicit_2DCurveExplicit(ex_num_f,ex_num_g,el,bool_preproc,low_rank_approx_method)
+% o_Intersection_2DCurveExplicit_2DCurveExplicit...
+%       (ex_num_f,ex_num_g,bool_preproc,low_rank_approx_method)
+% Given two explicitly defined curves f(x) and g(x) in power form,
+% calculate their intersections.
 
+
+SetGlobalVariables(bool_preproc,low_rank_approx_method);
 global PLOT_GRAPHS
-PLOT_GRAPHS = 'y';
 
-global BOOL_PREPROC
-BOOL_PREPROC = 'y';
-
-global BOOL_SNTLN
-BOOL_SNTLN = 'n';
-
-global THRESHOLD % Used in GetDegree()
-THRESHOLD = 1;
-
-global MAX_ERROR_SNTLN
-MAX_ERROR_SNTLN = 1e-11;
-
-global MAX_ITE_SNTLN
-MAX_ITE_SNTLN = 50;
 
 % Get the type of example used
-EXAMPLE_TYPE = 'Roots';
-%EXAMPLE_TYPE = 'Coefficients';
+EXAMPLE_TYPE = 'Coefficients';
 %EXAMPLE_TYPE = 'SamePoly';
 
 switch EXAMPLE_TYPE
     case 'Coefficients'
-        switch ex_num
+        switch ex_num_f
+           
             case '1'
-                fx = [  972; -5076;  10503; -11502;  7415; -2916;  689; -90; 5];
-                gx = [-7776; 25056; -32940;  23004; -9181;  2050; -216;   2; 1];
+                % f = (x-2)^2 (x-3)^3 (2x+3)
+                % f = 2 x^6-23 x^5+95 x^4-141 x^3-81 x^2+432 x-324
+                fx = [-324; 432; -81; -141; 95; -23; 2];
+                
+                % g = (x-2)^2 (x-3)^3 (x+4)
+                % g = x^6-9 x^5+15 x^4+97 x^3-468 x^2+756 x-432
+                gx = [-432; 756; -468; 97; 15; -9; 1];
+                
+                % f-g = (x-2)^2 (x-3)^3 (x-1)
+                % f-g = x^6-14 x^5+80 x^4-238 x^3+387 x^2-324 x+108
+                % [108; -324; 387; -238;80;-14;1]
+
+
         end
     case 'Roots'
         
         % Get the roots of two implicitly defined polynomial curves.
-        fx_roots = Examples_Univariate_Implicit(ex_num_f);
-        gx_roots = Examples_Univariate_Implicit(ex_num_g);
+        fx_root_mult_arr = Examples_Univariate_Implicit(ex_num_f);
+        gx_root_mult_arr = Examples_Univariate_Implicit(ex_num_g);
         
-        % Print the roots
-        PrintFactorization(fx_roots,'f')
-        PrintFactorization(gx_roots,'g')
+        % Print the factorisation of f(x) and g(x)
+        PrintFactorization(fx_root_mult_arr,'f')
+        PrintFactorization(gx_root_mult_arr,'g')
                
+        % Get the coefficients of the polynomails f(x) and g(x)
+        fx = GetCoefficients(fx_root_mult_arr);
+        gx = GetCoefficients(gx_root_mult_arr);
         
-        
-        % Get the coefficients of the polynomails f(x,y) and g(x,y)
-        fx = GetCoefficients(fx_roots);
-        gx = GetCoefficients(gx_roots);
-        
-        % Print the coefficients              
+        % Print the coefficients of f(x) and g(x)             
         PrintCoefficientsBivariate(fx,'f');
         PrintCoefficientsBivariate(gx,'g');
         
         % Add noise to the coefficients
-        el = 1e-10;
-        fx = fx + el.*rand(size(fx));
-        gx = gx + el.*rand(size(gx));
-        
+        fx = Noise(fx,el);
+        gx = Noise(gx,el);
+                
     case 'SamePoly'
         fx = Examples_Univariate_Implicit(ex_num_f);
         % Add noise to fx
@@ -67,17 +65,36 @@ switch EXAMPLE_TYPE
 end
 
 % Get degree of polynomial f(x)
-[r,~] = size(fx);
-m = r - 1;
+m = GetDegree(fx);
 
 % Get degree of polynomial g(x)
-[r,~] = size(gx);
-n = r - 1;
+n = GetDegree(gx);
 
 %%
+%% Plot the explicitly defined curves.
+t = -5:0.001:5;
+f_y = polyval(flipud(fx),t);
+g_y = polyval(flipud(gx),t);
 
+
+switch PLOT_GRAPHS
+    case 'y'
+        figure('name','Curve Plot : f(y) and g(y)')
+        hold on
+        plot(t,f_y,'DisplayName','f(y)')
+        plot(t,g_y,'DisplayName','g(y)')
+        legend(gca,'show');
+        hold off
+
+    case 'n'
+    otherwise
+        error('PLOT_GRAPHS is either y or n')
+end
+
+
+%%
 INTERSECTION_METHOD = 'Common Factors First';
-%INTERSECTION_METHOD = 'All Roots';
+INTERSECTION_METHOD = 'All Roots';
 
 switch INTERSECTION_METHOD
     case 'All Roots'
@@ -126,13 +143,14 @@ switch INTERSECTION_METHOD
         if t >1 
             my_roots = o_roots_mymethod(dx);
         end
+        
         % Get degree of u(x)
-        [r,~] = size(ux);
-        m = r -1;
+        m = GetDegree(ux);
         
         % Get degree of v(x)
-        [r,~] = size(vx);
-        n = r - 1;
+        n = GetDegree(vx);
+        
+        % % Subtract u(x) from v(x)
         
         vZeros = zeros(max(m,n),1);
         u = vZeros;
@@ -141,9 +159,8 @@ switch INTERSECTION_METHOD
         v = vZeros;
         v(1:n+1) = vx;
         
-        
         % Get the coefficients h(x).
-        hx = ux - vx;
+        hx = u - v;
         
         % Check for zero coefficients
         if hx(end) == 0
@@ -152,40 +169,15 @@ switch INTERSECTION_METHOD
 end
 
 % Get the degree of h(x)
-[r,~] = size(hx);
-m = r-1;
+m = GetDegree(hx);
 if m ~=0
     % Get the roots of h(x)
     roots2 = o_roots_mymethod(hx);
 end
 
 
+o_roots_matlab(fx);
 
-%% Plot the explicitly defined curves.
-t = -5:0.001:5;
-f_y = polyval(flipud(fx),t);
-g_y = polyval(flipud(gx),t);
-h_y = polyval(flipud(hx),t);
-
-switch PLOT_GRAPHS
-    case 'y'
-        figure('name','Curve Plot : f(y) and g(y)')
-        hold on
-        plot(t,f_y,'DisplayName','f(y)')
-        plot(t,g_y,'DisplayName','g(y)')
-        ylim([-1,1])
-        legend(gca,'show');
-        hold off
-        
-        figure('name','Curve Plot : f(y)-g(y)')
-        hold on
-        plot(t,h_y,'DisplayName','h(y)')
-        ylim([-1,1])
-        hold off
-    case 'n'
-    otherwise
-        error('PLOT_GRAPHS is either y or n')
-end
 
 %%
 
@@ -194,6 +186,29 @@ display(roots2)
 catch
     fprintf('err')
 end
+
+% % Given the roots in x, calculat the corresonding y values
+
+% Get number of roots
+[nEntries,~] = size(roots2);
+
+% Initialise a matrix to store (x,y) pairs
+xy_pairs = zeros(nEntries,2);
+
+% For each root
+for i = 1:1:nEntries
+    
+    % Get x coordinate
+    x_val = roots2(i);
+    
+    % Evaluate polynomial f(x) at x_{i}
+    y_val = polyval(flipud(fx),x_val);
+    
+    % Add to matrix of intersection coordinate pairs.
+    xy_pairs(i,:) = [x_val, y_val];
+end
+
+display(xy_pairs)
 
 
 

@@ -5,29 +5,27 @@ global MAX_ERROR_SNTLN
 global MAX_ITE_SNTLN
 
 % Get degree of polynomial f(x)
-[nRows_f,~] = size(fx);
-m = nRows_f - 1;
+m = GetDegree(fx);
 
 % Get the derivative of f(x)
-[nRows_g,~] = size(gx);
-n = nRows_g - 1;
+n = GetDegree(gx);
 
 % Initialise the vector of perturbations zf(x)
 zf = zeros(m+1,1);
+
 % Initialise the vector of perturbations zg(x)
 zg = zeros(n+1,1);
 
 z = [zf ; zg];
 
 % Build the t'th subresultant
-C1 = BuildC1(fx,n-t);
-C2 = BuildC1(gx,m-t);
-
+C1 = BuildT1(fx,n-t);
+C2 = BuildT1(gx,m-t);
 St = [C1 C2];
 
 % Build the matrix E_{t}(z)
-B1 = BuildC1(zf,n-t);
-B2 = BuildC1(zg,m-t);
+B1 = BuildT1(zf,n-t);
+B2 = BuildT1(zg,m-t);
 Bt = [B1 B2];
 
 % Get the index of the optimal colummn for removal
@@ -51,19 +49,14 @@ ht = Bt(:,colIndex);
 % Build Pt
 Pt = BuildPt(colIndex,m,n,t);
 
-%test1 = ct
-%test2 = Pt*[fx;gx]
-
 % Get the solution vector x of A_{t}x = c_{t}.
 x_ls = SolveAx_b(At,ct);
 
 % Get initial residual (A_{t}+E_{t})x = (c_{t} + h_{t})
 g = (ct + ht) - At*x_ls;
 
-
 % Build the matrix Y_{t}
 x = [x_ls(1:colIndex-1) ; 0 ; x_ls(colIndex:end)];
-
 
 Yt = BuildYt(x,m,n,t);
 
@@ -74,11 +67,8 @@ H_x = At+Et;
 C = [H_z H_x];
 
 % Build the matrix E for LSE Problem
-
 E = eye(2*m+2*n-2*t+3);
-
 %E = blkdiag(eye(m+n+2),zeros(m+n-2*t+1,m+n-2*t+1))
-
 % Build the matrix D which accounts for repetitions of z_{i} in B_{k}
 %E = blkdiag(eye(n-t+1),eye(m-t+1));
 
@@ -90,10 +80,8 @@ start_point     =   ...
     x_ls;
     ];
 
-
-
 % Set yy to be the vector which stores all cummulative perturbations.
-yy              =   start_point;
+yy = start_point;
 
 % Set the initial value of vector p to be zero
 f = -(yy-start_point);
@@ -131,11 +119,7 @@ while condition(ite) >  MAX_ERROR_SNTLN &&  ite < MAX_ITE_SNTLN
     zg = z(m+2:end);
     
     % Build the matrix B_{t} = [E1(zf) E2(zg)]
-    E1 = BuildC1(zf,n-t);
-    E2 = BuildC1(zg,m-t);
-    
-    % Build the matrix B_{t} equivalent to S_{t}
-    Bt = [E1 E2];
+    Bt = BuildT(zf,zg,t);
     
     % Get the matrix E_{t} with optimal column removed 
     Et = Bt;
@@ -186,8 +170,7 @@ if (condition(ite) < condition(1))
     fx = fx + zf;
     gx = gx + zg;
 else
-    fx = fx;
-    gx = gx;
+  % Do nothing
 end
 
 fprintf('Required number of iterations : %i \n',ite)
@@ -227,8 +210,8 @@ function Yt = BuildYt(x,m,n,t)
 xa = x(1:n-t+1);
 xb = x(n-t+2:end);
 
-Y1 = BuildC1(xa,m);
-Y2 = BuildC1(xb,n);
+Y1 = BuildT1(xa,m);
+Y2 = BuildT1(xb,n);
 
 Yt = [Y1 Y2];
 

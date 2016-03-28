@@ -1,16 +1,23 @@
 
 function [roots_fx,roots_gx,roots_dx,roots_ux,roots_vx,rankloss] = GCD_Examples(n)
+% Given an example number. 
+%
 % Inputs.
-% n - Index of example to be used
+%
+% n : Index of example to be used
+%
 % Outputs.
-% a - Roots and multiplicities of polynomial f.
-% b - Roots and multiplicities of polynomial g.
-% c - Roots and multiplicities of polynomial d, the GCD of f and g.
-% u - Roots and multiplicities of quotient polynomial f/u = d.
-% v - Roots and multiplicities of quotient polynomial g/v = d.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-global SEED
+%
+% a : Roots and multiplicities of polynomial f.
+%
+% b : Roots and multiplicities of polynomial g.
+%
+% c : Roots and multiplicities of polynomial d, the GCD of f and g.
+%
+% u : Roots and multiplicities of quotient polynomial f/u = d.
+%
+% v : Roots and multiplicities of quotient polynomial g/v = d.
+%
 
 switch n
     
@@ -27,7 +34,7 @@ switch n
             -0.5   1;
             0.5    1;
             ];
-    
+        
     case '-1'
         roots_fx = [
             -1      1;
@@ -45,7 +52,7 @@ switch n
             3      1;
             -3     1;
             ];
-
+        
     case '0'
         roots_fx = [
             0.10    30
@@ -60,7 +67,7 @@ switch n
             0.56    4
             0.69    2
             ];
-
+        
         
         
     case '1'
@@ -77,7 +84,7 @@ switch n
             0.9 1
             0.3 1
             ];
-
+        
         
     case '2'
         roots_fx = [
@@ -89,7 +96,7 @@ switch n
         
         roots_gx = [0.2 1
             0.3 1];
-               
+        
     case '3'
         roots_fx = [
             0.56 20
@@ -105,7 +112,7 @@ switch n
             0.12    3
             0.20    3
             ];
-     
+        
     case '4'
         
         roots_fx = [0.1    20
@@ -145,7 +152,7 @@ switch n
             2.12    3
             1.20    3
             ];
-              
+        
     case '7'
         roots_fx = [
             0.23   4
@@ -161,7 +168,7 @@ switch n
             0.92   2
             1.20   5
             ];
-         
+        
     case '8'
         roots_fx = [0.1  5
             0.56 4
@@ -175,8 +182,8 @@ switch n
             1.37 3
             2.12 3
             1.20 3];
-
-    % Example 6.2
+        
+        % Example 6.2
     case '9'
         roots_fx = [
             0.14    3
@@ -194,7 +201,7 @@ switch n
             -1.24   2
             -3.61   7
             ];
-
+        
     case '10'
         roots_fx = [
             0.14    3
@@ -211,7 +218,7 @@ switch n
             ];
         
         
-    % Example 6.2
+        % Example 6.2
     case '11'
         roots_fx = [
             0.10    3
@@ -233,29 +240,28 @@ switch n
         roots_fx = [
             0.10    1;
             0.50    1;
-        ];
-    
+            ];
+        
         roots_gx = [
             ];
         
-    case '999'
-        % Degree of f(x)
-        m = 6;
         
-        % Degree of g(x)
-        n = 5;
+    case 'custom'
+        intvl_low = -1;
+        intvl_high = 1;
         
-        % Degree of GCD
-        t = 3;
+        prompt = 'Enter the degree of Polynomial f(x) :';
+        m = input(prompt);
         
-        % Upper and lower bound of roots
-        interval_low    = -10;
-        interval_high   =  10;
+        prompt = 'Enter the degree of Polynomial g(x) :';
+        n = input(prompt);
         
-        % Get roots and multiplicities
-        [roots_fx,roots_gx] = ...
-            BuildRandomPolynomials(m,n,t,interval_low,interval_high,SEED);
+        prompt = 'Enter the degree of Polynomial d(x) :';
+        t = input(prompt);
         
+        
+        
+        [roots_fx,roots_gx] = BuildRandomPolynomials(m,n,t,intvl_low, intvl_high)
         
         
 end

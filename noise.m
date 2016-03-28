@@ -17,8 +17,7 @@ global SEED
 rng(SEED)
 
 % Get the degree of the polynomial f(x)
-[r,~] = size(fx);
-m = r-1;
+m = GetDegree(fx);
 
 % Generate a vector of random numbers between -1 and 1
 a = -1;

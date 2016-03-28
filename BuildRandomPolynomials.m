@@ -1,14 +1,29 @@
-function [f_roots,g_roots] = BuildRandomPolynomials(m,n,t,intvl_low,intvl_high,seed)
-% Build two random polynomials f and g with a gcd
+function [f_roots,g_roots] = BuildRandomPolynomials(m,n,t,intvl_low,intvl_high)
+% Build two random polynomials f(x) and g(x) with a gcd d(x)
 % Note this function does not allow multiple roots
 % Note this function allows roots to be 'close'.
 % define t, the degree of the gcd
+%
+% Input
+%
+% m : Degree of Polynomial f(x)
+%
+% n : Degree of polynomial g(x)
+%
+% t : Degree of GCD(f,g) d(x)
+%
+% intvl_low : lowest root
+%
+% intvl_high : highest root
+
+
+global SEED
+rng(SEED)
+
 
 % for each degree t, get a root in the interval [0,1]
 a = intvl_low ;
 b = intvl_high;
-
-rng(seed)
 
 d_roots = zeros(t,2);
 

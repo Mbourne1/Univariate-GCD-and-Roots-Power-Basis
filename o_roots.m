@@ -9,7 +9,7 @@ function [] = o_roots(ex_num,el,bool_preproc,low_rank_approx_method)
 %   el : Lower Noise Level
 
 %%
-SetGlobals()
+SetGlobalVariables(bool_preproc,low_rank_approx_method)
 
 %%
 % Get polynomial f(x)

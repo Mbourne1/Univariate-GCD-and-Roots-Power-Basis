@@ -1,41 +1,35 @@
 function [dx] = GetGCD(ux,vx,fx,gx,t,alpha,theta)
-% Get the GCD of f(x) and g(x), given u(x) and v(x).
+% Get the coefficients of the GCD d(x), of f(x) and g(x), given u(x) and v(x).
 %
 %   Inputs.
 %
-%   ux      :
+%   ux      : Coefficients of input polynomial u(x)
 %
-%   vx      : 
+%   vx      : Coefficients of input polynomial v(x)
 %
-%   fx      :
+%   fx      : Coefficients of polynomial f(x)
 %
-%   gx      :
+%   gx      : Coefficients of polynomial g(x)
 %
-%   t       : 
+%   t       : Degree of the GCD d(x)
 %
-%   alpha   :
+%   alpha   : Optimal value of \alpha for Sylvester matrix S(f,\alpha g)
 %
-%   theta   :
+%   theta   : Optimal value of \theta s.t f(x) -> f(\theta,\omega) 
+%             and g(x) -> g(\theta,\omega)
 
-% Get degree of polynomial f(x)
-[rows_f,~] = size(fx);
-m = rows_f -1;
-
-% Get degree of polynomial g(x)
-[rows_g,~] = size(gx);
-n = rows_g -1;
 
 % Get u(w) and v(w)
-uw = ux .* (theta.^(0:1:m-t)');
-vw = vx .* (theta.^(0:1:n-t)');
+uw = GetWithThetas(ux,theta);
+vw = GetWithThetas(vx,theta);
 
 % Get f(w) and g(w)
-fw = fx .* theta.^(0:1:m)';
-gw = gx .* theta.^(0:1:n)';
+fw = GetWithThetas(fx,theta);
+gw = GetWithThetas(gx,theta);
 
 % Get the GCD d(x) by the APF
-C_u = BuildC1(uw,t);
-C_v = BuildC1(vw,t);
+C_u = BuildT1(uw,t);
+C_v = BuildT1(vw,t);
 
 C1 = ...
     [
@@ -47,10 +41,10 @@ C1 = ...
 rhs_vec = [fw;alpha.*gw];
 
 % Get the vector d.
-d_ls = SolveAx_b(C1,rhs_vec)
+d_ls = SolveAx_b(C1,rhs_vec);
 
 % Calculate d(\omega)
 dw = d_ls;
 
 % Get d(x)
-dx = dw./(theta.^(0:1:t))';
+dx = GetWithoutThetas(dw,theta);
