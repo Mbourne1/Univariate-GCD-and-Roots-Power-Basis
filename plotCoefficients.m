@@ -9,14 +9,15 @@ function [] = PlotCoefficients(fx,fw,name)
 %
 % name : name of function
 
+% //TODO
 
 str = sprintf('Coefficients of %s',name);
 figure('name',str)
 label1 = sprintf('%s(x)',name);
 label2 = sprintf('%s(\\omega)',name);
-plot(fx,'-s','DisplayName',label1)
+plot((fx),'-s','DisplayName',label1)
 hold on
-plot(fw,'-o','DisplayName',label2)
+plot((fw),'-o','DisplayName',label2)
 legend(gca,'show');
 hold off
 

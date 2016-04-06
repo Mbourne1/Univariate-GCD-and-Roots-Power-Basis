@@ -4,8 +4,10 @@ function [res,index] = GetMinDistance(Sk)
 %
 % Inputs.
 %
-% Sk : The k-th Sylvester subresultant matrix S_{k}(f,g)
-%
+% Sk :
+
+
+
 
 % Get the number of columns in Sk
 [~,nColsSk] = size(Sk);

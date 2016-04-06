@@ -27,6 +27,42 @@ mu_vec = gx;
 rho_vec = fx;
 tau_vec = gx;
 
+
+
+%% 
+% Must first remove any zeros from lambda_vec, and corresponding rows in 
+% Part one
+
+% Get the index of the zero rows in lambda
+index_zero_lambda = find(lambda_vec==0);
+% Remove the corresponding zeros from lambda
+lambda_vec(index_zero_lambda,:) = [];
+% Remove the corresponding rows from PartOne Matrix
+Part1(index_zero_lambda,:) = [];
+
+% Get the index of the zero rows in lambda
+index_zero_mu = find(mu_vec==0);
+% Remove the corresponding zeros from lambda
+mu_vec(index_zero_mu,:) = [];
+% Remove the corresponding rows from PartOne Matrix
+Part2(index_zero_mu,:) = [];
+
+% Get the index of the zero rows in lambda
+index_zero_rho = find(rho_vec==0);
+% Remove the corresponding zeros from lambda
+rho_vec(index_zero_rho,:) = [];
+% Remove the corresponding rows from PartOne Matrix
+Part3(index_zero_rho,:) = [];
+
+% Get the index of the zero rows in lambda
+index_zero_tau = find(tau_vec==0);
+% Remove the corresponding zeros from lambda
+tau_vec(index_zero_tau,:) = [];
+% Remove the corresponding rows from PartOne Matrix
+Part4(index_zero_tau,:) = [];
+
+
+
 A = -[Part1; Part2; Part3; Part4];
 
 

@@ -1,9 +1,11 @@
-function [] = o_Intersection_2DCurveExplicit_2DCurveExplicit(ex_num_f,ex_num_g,el,bool_preproc,low_rank_approx_method)
+function [] = o_Intersection_2DCurveExplicit_2DCurveExplicit(...
+    ex_num_f,ex_num_g,el,bool_preproc,low_rank_approx_method)
 % o_Intersection_2DCurveExplicit_2DCurveExplicit...
 %       (ex_num_f,ex_num_g,bool_preproc,low_rank_approx_method)
+%
 % Given two explicitly defined curves f(x) and g(x) in power form,
 % calculate their intersections.
-
+%
 
 SetGlobalVariables(bool_preproc,low_rank_approx_method);
 global PLOT_GRAPHS
@@ -73,6 +75,7 @@ n = GetDegree(gx);
 %%
 %% Plot the explicitly defined curves.
 t = -5:0.001:5;
+
 f_y = polyval(flipud(fx),t);
 g_y = polyval(flipud(gx),t);
 

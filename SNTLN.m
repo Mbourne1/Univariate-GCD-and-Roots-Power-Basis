@@ -16,12 +16,6 @@ n = GetDegree(gx);
 % Set the initial iteration number
 ite = 1;
 
-% Initialise useful vectors
-vecm = (0:1:m)';
-vecn = (0:1:n)';
-vecnk = (0:1:n-t)';
-vecmk = (0:1:m-t)';
-
 % Create the identity matrix I, such that S*I = S
 I = eye(m+n-2*t+2);
 
@@ -40,7 +34,7 @@ gx_n = gx./mu;
 fw = GetWithThetas(fx_n,theta);
 
 % Get partial f(w) wrt \theta
-fw_wrt_theta = vecm.* fx .* (theta.^(-1:1:m-1)');
+fw_wrt_theta = Differentiate_wrt_theta(fw,theta);
 
 % Get partial f(w) wrt \alpha
 fw_wrt_alpha = zeros(m+1,1);
@@ -49,12 +43,10 @@ fw_wrt_alpha = zeros(m+1,1);
 gw = GetWithThetas(gx_n,theta);
 
 % Get partial g(w) wrt \theta
-gw_wrt_theta = vecn.* gx .* (theta.^(-1:1:n-1)');
+gw_wrt_theta = Differentiate_wrt_theta(gw,theta);
 
 % Get partial g(w) wrt \alpha
 gw_wrt_alpha = gw;
-
-% Get partial fw wrt alpha
 
 % Get the matrix T, used to construct S_{t}, where S_{t} = DTQ.
 T = BuildT(fw,alpha.*gw,t);
@@ -83,7 +75,6 @@ z = zeros(m+n+2,1);
 z_fx = zeros(m+1,1);
 z_gx = zeros(n+1,1);
 
-
 % Build the matrix N where N has the same structure as T
 N = BuildT(z_fx,alpha.*z_gx,t);
 
@@ -108,11 +99,6 @@ x_ls = SolveAx_b(At,ct);
 
 % Build the matrix P_{t} where P_{t}*[f;g] = c_{t}
 Pt = BuildP(m,n,t,alpha(ite),theta(ite),opt_col);
-
-% Get the vector of thetas corresponding to x(\omega), with missing value.
-thetas = [theta.^vecnk ; theta.^vecmk];
-thetas(opt_col,:) = [];
-x_ls_wrt_x = x_ls./thetas;
 
 % Build the matrix Y such that Y*[f;g] = A*x
 Yt = BuildY(m,n,t,x_ls,opt_col,alpha,theta);
@@ -201,8 +187,8 @@ while condition(ite) > MAX_ERROR_SNTLN && ite < MAX_ITE_SNTLN
     gw_wrt_alpha    = gw;
     
     % Calculate the partial derivatives of fw and gw with respect to theta
-    fw_wrt_theta    = vecm.*fw./theta(ite);
-    gw_wrt_theta    = vecn.*gw./theta(ite);
+    fw_wrt_theta = Differentiate_wrt_theta(fw,theta(ite));
+    gw_wrt_theta = Differentiate_wrt_theta(gw,theta(ite));
     
     % Calculate the partial derivative of T wrt alpha
     T_wrt_alpha = BuildT(fw_wrt_alpha,gw_wrt_alpha,t);
@@ -229,9 +215,9 @@ while condition(ite) > MAX_ERROR_SNTLN && ite < MAX_ITE_SNTLN
     partial_zgw_wrt_alpha    = z_gw;
     
     % Calculate the derivatives of z_fw and z_gw with respect to theta.
-    partial_zfw_wrt_theta    = vecm.*(z_fw./theta(ite));
-    partial_zgw_wrt_theta    = vecn.*(z_gw./theta(ite));
-    
+    partial_zfw_wrt_theta = Differentiate_wrt_theta(z_fw,theta(ite));
+    partial_zgw_wrt_theta = Differentiate_wrt_theta(z_gw,theta(ite));   
+        
     % Build the Coefficient Matrix N, of structured perturbations, with
     % same structure as T.
     N = BuildT(z_fw,alpha(ite).*z_gw,t);
@@ -239,7 +225,7 @@ while condition(ite) > MAX_ERROR_SNTLN && ite < MAX_ITE_SNTLN
     % Build the Sylvester matrix 
     N_wrt_alpha = BuildT(partial_zfw_wrt_alpha, partial_zgw_wrt_alpha,t);
     
-    %
+    % Build the Syvlester matrix
     N_wrt_theta = BuildT(partial_zfw_wrt_theta, alpha(ite).*partial_zgw_wrt_theta,t);
     
     % update h - the vector of structured perturbations equivalent to ck

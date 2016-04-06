@@ -11,61 +11,18 @@ function [fx_n,gx_n,dx, ux, vx, alpha, theta, t , lambda,mu] = o1(fx,gx)
 
 
 % Global variables
-global BOOL_PREPROC
 global PLOT_GRAPHS
 global LOW_RANK_APPROXIMATION_METHOD
 
 
-% Get degree of polynomial f(x)
-m = GetDegree(fx);
-
-% Get degree of polynomial g(x)
-n = GetDegree(gx) ;
-
-
 %% Preprocess the polynomials f(x) and g(x)
-switch BOOL_PREPROC
-    case 'y'
-        % Apply Preprocessing
-        
-        % Get geometric mean
-        lambda  = geomean(abs(fx(fx~=0)));
-        mu      = geomean(abs(gx(gx~=0)));
-        
-        % Divide f(x) and g(x) by geometric mean
-        fx_n = fx./ lambda;
-        gx_n = gx./ mu;
-        
-        % Get opitmal values of alpha and theta
-        [alpha, theta] = GetOptimalAlphaAndTheta(fx_n,gx_n);
-        
-        % Obtain f(w) and g(w) from f(x) and g(x)]
-        fw = GetWithThetas(fx,theta);
-        gw = GetWithThetas(gx,theta);
-        
-        % Plot the unprocessed and preprocessed coefficients of
-        % f(x), f(w), g(x) and g(w).
-        PlotCoefficients(fx,fw,'f');
-        PlotCoefficients(gx,gw,'g');
-        
-        
-        
-    case 'n'
-        % Dont apply preprocessing
-        fx_n = fx;
-        gx_n = gx;
-        fw = fx;
-        gw = gx;
-        
-        lambda = 1;
-        mu = 1;
-        
-        theta = 1;
-        alpha = 1;
-        
-    otherwise
-        error('bool_preproc either y or n');
-end
+[lambda,mu,alpha,theta] = Preproccess(fx,gx);
+
+fx_n = fx./lambda;
+gx_n = gx./mu;
+fw = GetWithThetas(fx_n,theta);
+gw = GetWithThetas(gx_n,theta);
+
 
 %%
 % Get the degree t of the GCD of f(w) and g(w)
@@ -73,6 +30,10 @@ t = GetGCDDegree(fw,alpha.*gw);
 
 % Given the degree t, get the optimal column for removal from S_{t}(f,g)
 St_preproc  = BuildT(fw,alpha.*gw,t);
+
+% Build the Sylvester subresultant matrix for the unprocessed polynomials
+% f(x) and g(x) 
+S1_preproc = BuildT(fw,alpha.*gw,1);
 
 % Get the minimum distance between any one of the columns of S_{k}(f,g) and the
 % remaining columns of S_{k}(f,g)
@@ -90,7 +51,6 @@ switch LOW_RANK_APPROXIMATION_METHOD
         
         fx_n = GetWithoutThetas(fw_new,theta);
                
-        
         % Get g(x) and g(w)
         gw_new = a_gw_new./ alpha;
         gx_n = GetWithoutThetas(gw_new,theta);
@@ -127,11 +87,11 @@ switch LOW_RANK_APPROXIMATION_METHOD
         error('error')
 end
 
-St_LowRankApprox = BuildT(fw_new,alpha.*gw_new,t);
+S1_LowRankApprox = BuildT(fw_new,alpha.*gw_new,1);
 
 
 % Get the Sylvester matrix of the unprocessed
-St_Unproc = BuildT(fx,gx,t);
+S1_Unproc = BuildT(fx,gx,1);
 
 
 % Get the quotient polynomials u(x) and v(x)
@@ -146,13 +106,13 @@ dx = GetGCD(ux,vx,fx_n,gx_n,t,alpha,theta);
 % 2 : The Sylvester Subresultant for preprocessed f(\omega) g(\omega)
 % 3 : The Sylvester Subresultant which is a low rank approximation of 2.
 
-vSingularValues_unproc = svd(St_Unproc);
+vSingularValues_unproc = svd(S1_Unproc);
 vSingularValues_unproc = Normalise(vSingularValues_unproc);
 
-vSingularValues_preproc = svd(St_preproc);
+vSingularValues_preproc = svd(S1_preproc);
 vSingularValues_preproc = Normalise(vSingularValues_preproc);
 
-vSingularValues_lowRank = svd(St_LowRankApprox);
+vSingularValues_lowRank = svd(S1_LowRankApprox);
 vSingularValues_lowRank = Normalise(vSingularValues_lowRank);
 
 
