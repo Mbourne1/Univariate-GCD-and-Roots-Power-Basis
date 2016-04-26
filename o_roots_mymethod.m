@@ -13,52 +13,85 @@ function [root_mult_array] = o_roots_mymethod(fx)
 
 
 % Initialise an iteration counter
-ite_num = 1;
+ite = 1;
 
 % Initialise an array 'q' which stores the gcd outputs from each gcd
 % calculation
-q{1} = fx;
+f{1} = fx;
 
 % let vGCD_Degree store the degrees corresponding to the array of
 % GCDs stored in q.
-vGCD_Degree(1) = length(fx)-1;
+M(1) = GetDegree(f{1});
 
 % Let theta_vec store all theta values used in each iteration.
 vTheta(1) = 1;
 
+% Get the number of distinct roots of f_{1}. Since this is unknown at this
+% time, set number of distinct roots to be m_{1} = deg(f_{1}).
+d(1) = GetDegree(fx);
+
 % Whilst the most recently calculated GCD has a degree greater than
 % zero. ie is not a constant, perform a gcd calculation on it and its
 % derivative.
-while length(q{ite_num})-1 > 0
+
+while length(f{ite})-1 > 0
     
+   
     
-    % get degrees m and n of polynomials f and g respectively.
-    m = size(q{ite_num},1) - 1;
-    
-    % if degree of f is greater than one
-    if m > 1
+    % if degree of f(ite_num) is greater than one
+    if M(ite) > 1
         
-        fprintf('GCD Calculation Loop iteration = %i \n\n',ite_num );
-        [q{ite_num},~,q{ite_num+1}, ~ ,~,~,vTheta(ite_num+1)] = o1(q{ite_num},Differentiate(q{ite_num}));
+        fprintf('GCD Calculation Loop iteration = %i \n', ite );
+        fprintf('Compute GCD of f_{%i} and derivative f_{%i}\n\n',ite,ite);
         
-        % add the degree of the calculated GCD to the degree vector
-        vGCD_Degree(ite_num+1) = length(q{ite_num+1})-1;
+        
+        % Perform GCD computation
+        
+        % Get upper and lower bounds of the next GCD computation
+        % M_{i+1} > M_{i} - d_{i-1}
+        try
+            fprintf('Minimum degree of f_{%i}: %i \n', ite+1, M(ite)-d(ite-1));
+            fprintf('Maximum degree of f_{%i}: %i \n', ite+1, M(ite)-1);
+        catch
+        end
+        
+        if (ite > 1)
+            n_distinct_roots = d(ite-1);
+        else
+            n_distinct_roots = M(ite);
+        end
+            
+        % (fx_n,gx_n,dx, ux, vx, alpha, theta, t , lambda,mu)
+        [f{ite},~,f{ite+1}, ~ ,~,~,vTheta(ite+1),M(ite+1),~,~] ...
+            = o1(f{ite},Differentiate(f{ite}),n_distinct_roots);
+        
+        % Get number of distinct roots of f(ite)
+        d(ite) = M(ite) - M(ite+1);
+        
+        
+       
+        fprintf('The computed deg(GCD(f_{%i},f_{%i}) is : %i \n',ite,ite,M(ite+1))
+        
+        fprintf('Number of distinct roots in f_{%i} : %i \n',ite,d(ite))
+        
+        fprintf('Degree of f_{%i} : %i \n',ite + 1, M(ite+1))
+        
 
         % increment iteration number.
-        ite_num = ite_num+1;
+        ite = ite+1;
         
         
-    elseif m == 1
+    elseif M(ite) == 1
         
         % if m=1, then n = 0, GCD has maximum degree 0.
         dx = 1;
         
         %theta_vec(ite_num+1) = 1;
-        vGCD_Degree(ite_num+1) = 0;
+        M(ite+1) = 0;
         
-        q{ite_num+1} = 1;
+        f{ite+1} = 1;
         
-        ite_num = ite_num+1;
+        ite = ite+1;
         
         break;
         
@@ -69,7 +102,7 @@ end
 
 % Deconvolve the first set of polynomials q_{i}(x), which are the outputs
 % of the series of GCD computations, to obtain the set of polynomaials h_{x}
-hx = Deconvolve(q);
+hx = Deconvolve(f);
 
 % Get the number of polynomials in h_{x}
 [~,nCols_hx] = size(hx);
@@ -112,7 +145,7 @@ else
     % w1{i} yields the roots of multiplicity i.
     
     % set the w1{max} = h1{max}
-    wx{ite_num-1} = hx{ite_num-1};
+    wx{ite-1} = hx{ite-1};
     
     % get number of entries in w1
     [~,ncols_wx] = size(wx);
@@ -163,12 +196,13 @@ end
 %% Get multiplicities of the roots
 % Obtaining multiplicities of the calculated roots
 roots_multiplicty = [];
-while sum(vGCD_Degree) ~= 0
+
+while sum(M) ~= 0
     % Get index of first zero.;
-    index = min(find(vGCD_Degree==0)) - 1;
-    minus_vector = zeros(1,length(vGCD_Degree));
+    index = min(find(M==0)) - 1;
+    minus_vector = zeros(1,length(M));
     minus_vector(1,1:index) = index:-1:1;
-    vGCD_Degree = vGCD_Degree - minus_vector;
+    M = M - minus_vector;
     roots_multiplicty = [roots_multiplicty ; index];
 end
 

@@ -1,5 +1,5 @@
 function [fx_new,gx_new,alpha_new,theta_new] = ...
-    SNTLN(fx,gx,t,opt_col,lambda,mu,alpha,theta)
+    SNTLN(fx_n,gx_n,alpha,theta,t)
 % Given two input polynomials and the degree of their GCD, Obtain the Low
 % Rank Approximation Sylvester Matrix
 
@@ -19,16 +19,6 @@ ite = 1;
 % Create the identity matrix I, such that S*I = S
 I = eye(m+n-2*t+2);
 
-% Create the matrix M, such that S_{t}*M = A_{t}
-M = I;
-M(:,opt_col) = [];
-
-% Create the matrix e, such that S_{t}*e = c_{t}
-e = I(:,opt_col);
-
-% Normalise coefficients by geometric mean
-fx_n = fx./lambda;
-gx_n = gx./mu;
 
 % Get f(w) from f(x)
 fw = GetWithThetas(fx_n,theta);
@@ -50,6 +40,16 @@ gw_wrt_alpha = gw;
 
 % Get the matrix T, used to construct S_{t}, where S_{t} = DTQ.
 T = BuildT(fw,alpha.*gw,t);
+
+% Get the index of the optimal colummn for removal
+[~,opt_col] = GetMinDistance(T);
+
+% Create the matrix M, such that S_{t}*M = A_{t}
+M = I;
+M(:,opt_col) = [];
+
+% Create the matrix e, such that S_{t}*e = c_{t}
+e = I(:,opt_col);
 
 % Get the partial T wrt alpha
 T_wrt_alpha = BuildT(fw_wrt_alpha,gw_wrt_alpha,t);

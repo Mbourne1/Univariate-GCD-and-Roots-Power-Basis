@@ -11,20 +11,25 @@ function [lambda,mu,alpha,theta] = Preproccess(fx,gx)
 %
 % gx : Vector of coefficients of polynomial g(x)
 
+global BOOL_ALPHA_THETA
 
-global BOOL_PREPROC
-switch BOOL_PREPROC
+m = GetDegree(fx);
+n = GetDegree(gx);
+
+
+% Get Mean of entries of f(x) in C_{n-k}(f)
+lambda = GetMean(fx,n-1);
+
+% Get Mean of entries of g(x) in C_{m-k}(g)
+mu = GetMean(gx,m-1);
+  
+% Divide f(x) and g(x) by geometric mean
+fx_n = fx./ lambda;
+gx_n = gx./ mu;
+
+switch BOOL_ALPHA_THETA
     case 'y'
-        % Apply Preprocessing
-        
-        % Get geometric mean
-        lambda  = geomean(abs(fx(fx~=0)));
-        mu      = geomean(abs(gx(gx~=0)));
-        
-        % Divide f(x) and g(x) by geometric mean
-        fx_n = fx./ lambda;
-        gx_n = gx./ mu;
-        
+
         % Get opitmal values of alpha and theta
         [alpha, theta] = GetOptimalAlphaAndTheta(fx_n,gx_n);
 
@@ -38,11 +43,8 @@ switch BOOL_PREPROC
         PlotCoefficients(gx,gw,'g');
         
     case 'n'
-        % Dont apply preprocessing
-   
-        lambda = 1;
-        mu = 1;
         
+        % Dont apply preprocessing        
         theta = 1;
         alpha = 1;
         

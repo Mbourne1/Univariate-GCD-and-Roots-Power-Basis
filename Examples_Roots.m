@@ -9,7 +9,7 @@ switch ex_num
             0.2 2;
             0.5 3;
             ];
-    case '1b'
+    case '2'
         roots_fx = ...
             [
             0.1 1;
@@ -17,14 +17,14 @@ switch ex_num
             0.9 3;
             ];
         
-    case '2'   
+    case '3'   
     roots_fx = ...
             [
-                6   2;
+                6   10;
                 -3  3;
                 -7  1;
             ];
-    case '3'
+    case '4'
         roots_fx = ...
             [
             1   1
@@ -32,7 +32,7 @@ switch ex_num
             3   3
             4.5 1
             ];
-    case '4'
+    case '5'
         roots_fx = ...
             [
             1.05467 1
@@ -40,7 +40,7 @@ switch ex_num
             5.54743 3
             1.75647 2
             ];
-    case '4b'
+    case '6'
         roots_fx = ...
             [
             1.05467 1

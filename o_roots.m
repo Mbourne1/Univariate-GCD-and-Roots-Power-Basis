@@ -1,4 +1,7 @@
-function [] = o_roots(ex_num,el,bool_preproc,low_rank_approx_method)
+function [] = o_roots(ex_num,el,mean_method,bool_alpha_theta,low_rank_approx_method)
+% o_roots(ex_num,el,mean_method,bool_alpha_theta,low_rank_approx_method)
+%
+%
 % Calculate the roots of a polynomial f(x) by a series of methods.
 %
 % Inputs.
@@ -7,15 +10,35 @@ function [] = o_roots(ex_num,el,bool_preproc,low_rank_approx_method)
 %
 % el : Lower Noise Level
 % 
-% bool_preproc :
+% mean_method : Method of mean used to divide coefficients of Sylvester 
+%               Matrix as part of preprocessing.
+% 'None' : No mean method is used
+% 'Geometric Mean Matlab Method' : Divide by Geometric Mean
+%
+% bool_alpha_theta : 
+%   'y' : Include Preprocessing
+%   'n' : Exclude Preprocessing
 % 
 % low_rank_approx_method : 
+%   'None'
+%   'Standard STLN'
+%   'Standard SNTLN'
+%   'Root Specific SNTLN'
+%
+%
+% % Example
+% o_roots('1',1e-10,'Geometric Mean Matlab Method', 'y','Standard STLN')
+% 
+
 
 % %
 % Set global variables.
-SetGlobalVariables(bool_preproc,low_rank_approx_method)
+SetGlobalVariables(mean_method,bool_alpha_theta,low_rank_approx_method)
 
-%%
+global GCD_OR_ROOTS
+GCD_OR_ROOTS = 'Roots';
+
+% %
 % Get polynomial f(x)
 
 EXAMPLE_TYPE = 'FromRoots';
@@ -55,6 +78,8 @@ fx = Noise(fx_exact,el);
 %% MY METHOD
 % Get roots by my method and compare the computed f(x) with the exact f(x)
 [computed_root_mult_array_mymethod] = o_roots_mymethod(fx);
+
+
 fx_computed_mymethod = GetCoefficients(computed_root_mult_array_mymethod);
 fprintf('Distance between f_exact and f_computed mymethod : \n')
 display(norm(fx_exact - fx_computed_mymethod) ./ norm(fx_exact));

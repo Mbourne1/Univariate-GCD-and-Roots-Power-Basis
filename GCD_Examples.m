@@ -57,7 +57,7 @@ switch n
         
     case '3'
         root_mult_arr_fx = [
-            0.10    30
+            0.10    10
             0.56    4
             0.40    4
             0.79    3
@@ -65,7 +65,7 @@ switch n
             ];
         
         root_mult_arr_gx = [
-            0.10    40
+            0.10    10
             0.56    4
             0.69    2
             ];

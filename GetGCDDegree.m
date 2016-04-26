@@ -1,12 +1,23 @@
-function t = GetGCDDegree(fx,gx)
+function t = GetGCDDegree(fx,gx,nDistinctRoots)
+%  GetGCDDegree(fx,gx)
+% 
 % Get the degree of the GCD d(x) of f(x) and g(x), by Sylvester matrix method.
 %
-%   Inputs
+% Inputs.
 %
-%   fw : Coefficients of polynomial f(x)
+% fw : Coefficients of polynomial f(w)
 %
-%   gw : Coefficietns of polynomial g(x)
+% gw : Coefficietns of polynomial g(w)
+%
+% nDistinctRoots : Number of distinct roots in previous computation.
+%
+% Outputs.
+%
+% t : Degree of GCD of f(x) and g(x)
 
+
+
+% Global Variables
 global PLOT_GRAPHS
 
 % Get Degree of polynomial f(x)
@@ -15,12 +26,22 @@ m = GetDegree(fx);
 % Get degree of polynomial g(x)
 n = GetDegree(gx);
 
+if nDistinctRoots ==1
+    t = n;
+    return;
+end
+
 % Initialise a vector to store the minimum singular values for each
 % S_{k}.
 vMinimumSingularValues = zeros(1,min(m,n));
 
 % Initialise a vector to store the minimum distnaces for each S_{k}.
 vMinimumDistance = zeros(1,min(m,n));
+vMax_Diag_R1 = zeros(1,min(m,n));
+vMin_Diag_R1 = zeros(1,min(m,n));
+
+vMax_R1_RowNorm = zeros(1,min(m,n));
+vMin_R1_RowNorm = zeros(1,min(m,n));
 
 matrix = [];
 
@@ -28,15 +49,12 @@ matrix = [];
 k = 1;
 
 % Build the Sylvester Matrix
-
 C_f = BuildT1(fx,n-k);
 C_g = BuildT1(gx,m-k);
-
 Sk = [C_f C_g];
 
-% Get QR Decomposition of Sk
+% Get QR Decomposition of S_k(f,g)
 [Q,R] = qr(Sk);
-
 
 % For each possible value of k, k = 0,...,min(m,n)
 for k = 1:1:min(m,n)
@@ -63,17 +81,28 @@ for k = 1:1:min(m,n)
         
     end
     
+    [Q,R] = qr(Sk);
+    
+    % Take absolute values of R_{k}
+    abs_R = abs(R);
+
+    % Get number of rows in R1_{k}
+    [nRowsR1,~] = size(diag(abs_R));
+
+    % Obtain R1 the top square of the |R| matrix.
+    R1 = abs_R(1:nRowsR1,1:nRowsR1);    
     
     % Get the diagonal values in the matrix R_{k} from the QR decomposition
     % of S_{k}
-    vDiagsR = diag(R);
+    vDiagsR1 = diag(R1);
+    vDiagsR1_norm = vDiagsR1 ./ norm(vDiagsR1);
     
     % Get the number of diagonals in R_{k}
-    nDiagsR = size(vDiagsR,1);
+    nDiagsR1 = size(vDiagsR1,1);
     
     % Save the diagonal values into a matrix of all diagonals of R_{k} for
     % each k
-    matrix = [matrix ;k.*ones(nDiagsR,1) vDiagsR];
+    matrix = [matrix ;k.*ones(nDiagsR1,1) vDiagsR1];
     
     % Add to the vector of minimum Singular values from SVD of S_{k}.
     vSingularValues = svd(Sk);
@@ -84,11 +113,28 @@ for k = 1:1:min(m,n)
     % Add to the vector of minimum distances
     vMinimumDistance(k) = GetMinDistance(Sk);
     
+    % Get maximum and minimum row diagonals of R1
+    vMax_Diag_R1(k) = max(vDiagsR1);
+    vMin_Diag_R1(k) = min(vDiagsR1);
+    
+    % Get Norms of each row in the matrix R1
+    vR1_RowNorms = sqrt(sum(R1.^2,2))./norm(R1);
+    
+    % Get maximum and minimum row norms of rows of R1.
+    vMax_R1_RowNorm(k) = max(vR1_RowNorms);
+    vMin_R1_RowNorm(k) = min(vR1_RowNorms);
+    
 end
 
 % Normalise the vector of minimal singular values
 
-vMinimumSingularValues = Normalise(vMinimumSingularValues);
+% Get ratio of max:min diagonals of R1
+vRatio_MaxMin_Diagonals_R = vMax_Diag_R1 ./ vMin_Diag_R1;
+vRatio_MaxMin_Diagonals_R = sanitize(vRatio_MaxMin_Diagonals_R);
+
+
+vRatio_MaxMin_RowNorm_R = vMax_R1_RowNorm ./ vMin_R1_RowNorm;
+
 
 % If only one subresultant exists, use an alternative method.
 if min(m,n) == 1 % If only one Subresultant Exists
@@ -103,40 +149,61 @@ end
 % Singular      : All Subresultants S_{k} are Singular, and rank deficient
 % NonSingular   : All Subresultants S_{k} are Non-Singular, and full rank
 % Mixed         : Some Subresultants are Singular, others are Non-Singular.
-
-[ProblemType,t] = GetProblemType(vMinimumSingularValues);
-
-fprintf('Problem Type : %s \n',ProblemType)
-
-% Print the degree of the GCD
-fprintf('The computed degree of the GCD is %i \n',t);
-
 %% Plot data
 switch PLOT_GRAPHS
     case 'y'
         
-        figure('name','Get Degree : QR Scatter data')
+        figure_name = sprintf('%s : Plot QR Scatter Data',mfilename);
+        figure('name',figure_name)
         hold on
         scatter(matrix(:,1),log10(matrix(:,2)))
         hold off
         
         % Plot the minimum singular values of S_{k} k=1,...,min(m,n)
-        figure('name','Get Degree : Plot Min Sing val')
+        figure_name = sprintf('%s : Plot Min Sing Val',mfilename);
+        figure('name',figure_name)
         hold on
         plot(log10(vMinimumSingularValues),'-o')
         hold off
         
         % Plot the minimum distances of S_{k} k=1,...,min(m,n)
-        figure('name','Get Degree : Plot Min Distance')
+        figure_name = sprintf('%s : Plot Min Distance',mfilename);
+        figure('name',figure_name)
         hold on
         plot(log10(vMinimumDistance) ,'-s')
         hold off
+        
+        figure_name = sprintf('%s : Max:min Row Diagonals',mfilename);
+        figure('name',figure_name)
+        x = 1:min(m,n);
+        plot(x,log10(vRatio_MaxMin_Diagonals_R),'red-s');
+        hold on
+        axis([1,min(m,n),0,inf])
+        legend('Max:Min diag element of subresultant S_{k}');
+        title('Max:Min diagonal elements of R1 from the QR decomposition of S_{k} (Original)');
+        ylabel('log_{10} max:min diag element')
+        hold off
+        
+        % Plot Graph of ratio of max : min row sum in R1 from the QR decompositions.
+        figure_name = sprintf('%s : Max:min Row Norms',mfilename);
+        figure('name',figure_name)
+        x = 1:1:min(m,n);
+        plot(x,log10(vRatio_MaxMin_RowNorm_R),'red-s');
+        hold on
+        axis([1,min(m,n),0,inf])
+        legend('Max:Min Row Norms of Rows in R1 from the QR decomposition of S_{k}');
+        title('Max:Min Row Norms of Rows in R1 from the QR Decomposition of S_{k} (Original)');
+        hold off
+        
         
     case 'n'
     otherwise
         error('error: plot_graphs either y or n')
         
 end
+
+[ProblemType,t] = GetProblemType(vMinimumSingularValues);
+
 
 end
 
@@ -216,20 +283,23 @@ if  abs(maxChangeSingularValues) < THRESHOLD
     % Get the average minimum singular value
     avgMinSingularValue = log10(norm(vMinimumSingularValues));
     
-    if  avgMinSingularValue > -6
-        % if all singular values are close to zero, then rank deficient, degree of
+    if  avgMinSingularValue < -6
+        % If all singular values are close to zero, then rank deficient, degree of
         % gcd is min(m,n)
         ProblemType = 'NonSingular';
+        fprintf('NonSingular \n')
         t = min_mn;
     else
         % if all singular values are not close to zero, then full rank, degree
         % of gcd is 0
         ProblemType = 'Singular';
+        fprintf('Singular \n')
         t = 0;
     end
 else
     % maxChange is signifcant
     ProblemType = 'Mixed';
+    fprintf('Mixed \n')
     t = indexMaxChange;
 end
 

@@ -2,13 +2,21 @@ function [h] = Deconvolve(q)
 % Deconvolve the set of polynomials q{i}
 
 % Get the number of polynomials in q
-[~,c] = size(q);
-nPolys = c;
+[~,nPolys] = size(q);
 
-for i = 1:1:nPolys-1
-   h{i} = Deconvolve_Separate(q{i},q{i+1}) ;
+global DECONVOLVE_METHOD
+
+switch DECONVOLVE_METHOD
+    case 'Single'
+        for i = 1:1:nPolys-1
+            h{i} = Deconvolve_Separate(q{i},q{i+1}) ;
+        end
+        
+    case 'Batch'
+        h = Deconvolve_Batch(q);
+    otherwise
+        error('err')
 end
-
 end
 
 function [h] = Deconvolve_Separate(f,g)

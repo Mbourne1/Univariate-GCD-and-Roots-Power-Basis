@@ -1,5 +1,5 @@
-function [] = o_gcd(ex_num,el,bool_preproc,low_rank_approx_method)
-% o_gcd(ex_num,el,bool_preproc,low_rank_approx_method)
+function [] = o_gcd(ex_num,el,mean_method, bool_alpha_theta,low_rank_approx_method)
+% o_gcd(ex_num,el,mean_method, bool_alpha_theta,low_rank_approx_method)
 %
 % Given two polynomials f(x) and g(x) calculate the GCD d(x).
 %
@@ -14,11 +14,14 @@ function [] = o_gcd(ex_num,el,bool_preproc,low_rank_approx_method)
 % low_rank_approx_method: 'Standard SNTLN', 'Standard STLN'
 %
 
+global GCD_OR_ROOTS
+GCD_OR_ROOTS = 'GCD';
+
 global PLOT_GRAPHS
 global NOISE 
 NOISE = el;
 
-SetGlobalVariables(bool_preproc,low_rank_approx_method)
+SetGlobalVariables(mean_method,bool_alpha_theta,low_rank_approx_method)
 
 EXAMPLE_TYPE = 'FromRoots';
 
@@ -45,10 +48,10 @@ end
 [gx,~] = Noise(gx,el);
 
 % Get GCD by Zeng method
-[u,v,w] = o_gcd_zeng(fx,gx);
+%[u,v,w] = o_gcd_zeng(fx,gx);
 
 % Get the GCD d(x) of f(x) and g(x)
-[~,~,dx_calc,ux_calc,vx_calc,~,~] = o1(fx,gx);
+[~,~,dx_calc,ux_calc,vx_calc,~,~] = o1(fx,gx,GetDegree(fx));
 
 
 
