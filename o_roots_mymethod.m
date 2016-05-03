@@ -1,4 +1,4 @@
-function [root_mult_array] = o_roots_mymethod(fx)
+function [root_mult_array] = o_roots_mymethod(f)
 % Given the polynomial f(x) calculate its real roots by square free 
 % decomposition.
 % 
@@ -17,11 +17,11 @@ ite = 1;
 
 % Initialise an array 'q' which stores the gcd outputs from each gcd
 % calculation
-f{1} = fx;
+fx{1} = f;
 
 % let vGCD_Degree store the degrees corresponding to the array of
 % GCDs stored in q.
-M(1) = GetDegree(f{1});
+M(1) = GetDegree(fx{1});
 
 % Let theta_vec store all theta values used in each iteration.
 vTheta(1) = 1;
@@ -34,10 +34,8 @@ d(1) = GetDegree(fx);
 % zero. ie is not a constant, perform a gcd calculation on it and its
 % derivative.
 
-while length(f{ite})-1 > 0
-    
-   
-    
+while length(fx{ite})-1 > 0
+
     % if degree of f(ite_num) is greater than one
     if M(ite) > 1
         
@@ -50,20 +48,19 @@ while length(f{ite})-1 > 0
         % Get upper and lower bounds of the next GCD computation
         % M_{i+1} > M_{i} - d_{i-1}
         try
+            lower_lim = M(ite)-d(ite-1);
+            upper_lim = M(ite)-1;
             fprintf('Minimum degree of f_{%i}: %i \n', ite+1, M(ite)-d(ite-1));
             fprintf('Maximum degree of f_{%i}: %i \n', ite+1, M(ite)-1);
         catch
+            lower_lim = 1;
+            upper_lim = M(ite)-1;
         end
-        
-        if (ite > 1)
-            n_distinct_roots = d(ite-1);
-        else
-            n_distinct_roots = M(ite);
-        end
+
             
         % (fx_n,gx_n,dx, ux, vx, alpha, theta, t , lambda,mu)
-        [f{ite},~,f{ite+1}, ~ ,~,~,vTheta(ite+1),M(ite+1),~,~] ...
-            = o1(f{ite},Differentiate(f{ite}),n_distinct_roots);
+        [fx{ite},~,fx{ite+1}, ux{ite} ,vx{ite},~,vTheta(ite+1),M(ite+1),~,~] ...
+            = o_gcd_mymethod( fx{ite} , Differentiate(fx{ite}) , [lower_lim,upper_lim]);
         
         % Get number of distinct roots of f(ite)
         d(ite) = M(ite) - M(ite+1);
@@ -89,8 +86,8 @@ while length(f{ite})-1 > 0
         %theta_vec(ite_num+1) = 1;
         M(ite+1) = 0;
         
-        f{ite+1} = 1;
-        
+        fx{ite+1} = 1;
+        ux{ite} = fx{ite}
         ite = ite+1;
         
         break;
@@ -100,9 +97,48 @@ while length(f{ite})-1 > 0
 end
 
 
+% Get the degree structure of the polynomials h_{i}
+deg_struct_h = diff([M]);
+
+% Get the degree structure of the polynomials w_{i}
+deg_struct_w = diff([deg_struct_h 0]);
+
+vMultiplicities = find(deg_struct_w~=0);
+
+
 % Deconvolve the first set of polynomials q_{i}(x), which are the outputs
 % of the series of GCD computations, to obtain the set of polynomaials h_{x}
-hx = Deconvolve(f);
+
+% We can either obtain h(x) from the series of deconvolutions on f(x){i} or
+% we can use the already calculated values ux{i}
+method = 'By Deconvolution';
+switch method
+    case 'By Deconvolution'
+        hx = Deconvolve(fx);
+        
+    
+        hx_new = Deconvolve_Batch_Constrained(fx,vMultiplicities);
+        
+        arr_wx_new = Deconvolve(hx_new);
+        display(arr_wx_new)
+        
+        % set the w1{max} = h1{max}
+        arr_wx_new{length(arr_wx_new)+1} = hx{length(hx)};
+        
+    case 'From ux'
+        hx = ux;
+    otherwise
+        error('err')
+        
+end
+
+% for each w_{i}
+for i = 1:1:length(arr_wx_new)
+    wx_new = arr_wx_new{i}
+    wx_new = wx_new./wx_new(2)
+
+end
+
 
 % Get the number of polynomials in h_{x}
 [~,nCols_hx] = size(hx);
@@ -195,20 +231,24 @@ end
 
 %% Get multiplicities of the roots
 % Obtaining multiplicities of the calculated roots
-roots_multiplicty = [];
 
-while sum(M) ~= 0
-    % Get index of first zero.;
-    index = min(find(M==0)) - 1;
-    minus_vector = zeros(1,length(M));
-    minus_vector(1,1:index) = index:-1:1;
-    M = M - minus_vector;
-    roots_multiplicty = [roots_multiplicty ; index];
+
+
+% create a matrix where the first column contains the multiplicities, and
+% the second column contains the number of roots of that multiplicity
+nPolys_wi = length(deg_struct_w);
+mat = [(1:1:nPolys_wi)' deg_struct_w'];
+
+count = 1;
+root_mult_array = [];
+for i = 1:1:size(mat,1)
+    % Get the number of roots of multiplicity i
+    nRoots_of_Multi = mat(i,2);
+    for j = 1:1:nRoots_of_Multi
+        root_mult_array = [root_mult_array ; vRoots(count,1) i];
+        count= count +1;
+    end
 end
-
-
-
-root_mult_array = [vRoots(:,1) flipud(roots_multiplicty)];
 
 %% Print the calculated roots and the corresponding multiplicities.
 PrintRoots(root_mult_array,'MY METHOD');

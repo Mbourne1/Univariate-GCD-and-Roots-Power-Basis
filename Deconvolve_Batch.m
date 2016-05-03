@@ -55,7 +55,7 @@ for i = 1:1:nPolys_f - 1;
     RHS_vec = [RHS_vec; fw];
 end
 
-vec_h = SolveAx_b(T,RHS_vec)
+vec_h = SolveAx_b(T,RHS_vec);
 
 % Split vec h in to an array of polynomials.
 for i = 1:1:nPolys_f-1
@@ -67,7 +67,7 @@ for i = 1:1:nPolys_f-1
     h{i} = vec_h(1:deg_hw+1);
     
     % Remove the coefficients from the solution vector
-    vec_h(1:deg_hw+1) = []
+    vec_h(1:deg_hw+1) = [];
 end
 
 end

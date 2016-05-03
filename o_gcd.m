@@ -3,16 +3,27 @@ function [] = o_gcd(ex_num,el,mean_method, bool_alpha_theta,low_rank_approx_meth
 %
 % Given two polynomials f(x) and g(x) calculate the GCD d(x).
 %
-% Inputs.
+% % Inputs.
 %
 % ex_num : Example Number
 %
 % el : Noise lower threshold
 %
-% bool_preproc : 'y' or 'n' (Include/ Exclude Preprocessing)
+% mean_method :
+%       'None'
+%       'Geometric Mean Matlab Method'
+%       'Geometric Mean My Method'
 %
-% low_rank_approx_method: 'Standard SNTLN', 'Standard STLN'
+% bool_alpha_theta : 'y' or 'n' (Include/ Exclude Preprocessing)
 %
+% low_rank_approx_method: 
+%       'Standard SNTLN'
+%       'Standard STLN'
+%       'None'
+%
+%
+% % Example
+% o_gcd('1',1e-12,'Geometric Mean Matlab Method', 'y','Standard STLN')
 
 global GCD_OR_ROOTS
 GCD_OR_ROOTS = 'GCD';
@@ -29,6 +40,9 @@ switch EXAMPLE_TYPE
     case 'FromRoots'
         % Get inputs f and g and
         [roots_fx,roots_gx,roots_dx,roots_ux,roots_vx] = GCD_Examples(ex_num);
+        
+        display(roots_fx)
+        display(roots_gx)
         
         fx = GetCoefficients(roots_fx);
         gx = GetCoefficients(roots_gx);
@@ -47,11 +61,22 @@ end
 [fx,~] = Noise(fx,el);
 [gx,~] = Noise(gx,el);
 
-% Get GCD by Zeng method
-%[u,v,w] = o_gcd_zeng(fx,gx);
+% % 
+% % 
+% %
+% Get the GCD by Zeng method
+[u,v,w,res,cond] = o_gcd_zeng(fx,gx);
 
-% Get the GCD d(x) of f(x) and g(x)
-[~,~,dx_calc,ux_calc,vx_calc,~,~] = o1(fx,gx,GetDegree(fx));
+% % 
+% Get the GCD d(x) of f(x) and g(x) by my method
+
+% Get upper and lower bound of degree of GCD.
+upper_bound = min(GetDegree(fx),GetDegree(gx));
+lower_bound = 1;
+deg_limits = [lower_bound,upper_bound];
+
+% Compute degree of gcd by my method
+[~,~,dx_calc,ux_calc,vx_calc,~,~] = o_gcd_mymethod(fx,gx,deg_limits);
 
 
 

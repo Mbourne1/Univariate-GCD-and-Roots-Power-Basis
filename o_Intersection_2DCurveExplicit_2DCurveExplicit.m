@@ -139,7 +139,7 @@ switch INTERSECTION_METHOD
     case 'Common Factors First'
         
         % Get the GCD of f(x) and g(x)
-        [~,~,dx, ux, vx , alpha,theta, ~, lambda, mu] = o1(fx,gx);
+        [~,~,dx, ux, vx , alpha,theta, ~, lambda, mu] = o_gcd_mymethod(fx,gx);
         
         % Get the roots of polynomial d(x)
         [t,~] = size(dx);

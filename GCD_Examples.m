@@ -255,8 +255,8 @@ switch n
         
         
     case 'Custom'
-        intvl_low = -1;
-        intvl_high = 1;
+        intvl_low = -5;
+        intvl_high = 5;
         
         prompt = 'Enter the degree of Polynomial f(x) :';
         m = input(prompt);

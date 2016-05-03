@@ -22,29 +22,35 @@ lambda = GetMean(fx,n-1);
 
 % Get Mean of entries of g(x) in C_{m-k}(g)
 mu = GetMean(gx,m-1);
-  
+
 % Divide f(x) and g(x) by geometric mean
 fx_n = fx./ lambda;
 gx_n = gx./ mu;
 
 switch BOOL_ALPHA_THETA
     case 'y'
-
+        
         % Get opitmal values of alpha and theta
         [alpha, theta] = GetOptimalAlphaAndTheta(fx_n,gx_n);
-
+        
         % Obtain f(w) and g(w) from f(x) and g(x)]
         fw = GetWithThetas(fx_n,theta);
         gw = GetWithThetas(gx_n,theta);
         
         % Plot the unprocessed and preprocessed coefficients of
         % f(x), f(w), g(x) and g(w).
-        PlotCoefficients(fx,fw,'f');
-        PlotCoefficients(gx,gw,'g');
-        
+        global PLOT_GRAPHS
+        switch PLOT_GRAPHS
+            case 'y'
+                PlotCoefficients(fx,fw,'f');
+                PlotCoefficients(gx,gw,'g');
+            case 'n'
+            otherwise
+                error('err')
+        end
     case 'n'
         
-        % Dont apply preprocessing        
+        % Dont apply preprocessing
         theta = 1;
         alpha = 1;
         

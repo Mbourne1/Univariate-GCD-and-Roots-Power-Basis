@@ -1,11 +1,11 @@
-function [u,v,w] = o_gcd_zeng(fx,gx)
+function [u,v,w,res,cond] = o_gcd_zeng(fx,gx)
 % Given two polynomials, get the gcd using zeng method
 % Note Zengs method takes strings as inputs, so must first convert to
 % string from vector form
 
 addpath('NAClabForMatlab2013');
 
-
+ 
 % Get symbolic expression for f(x)
 sym_fx = GetSymbolicFromCoefficients(fx);
 

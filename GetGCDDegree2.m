@@ -1,4 +1,4 @@
-function t = GetGCDDegree(fx,gx,deg_limits)
+function t = GetGCDDegree2(fx,gx,deg_limits)
 %  GetGCDDegree(fx,gx)
 % 
 % Get the degree of the GCD d(x) of f(x) and g(x), by Sylvester matrix method.
@@ -28,31 +28,45 @@ n = GetDegree(gx);
 
 % If the number of distinct roots in f(x) is one, then the degree of the
 % GCD of f(x) and f'(x) = m-1 = n.
-% Set the upper bound of the GCD
 lower_lim = deg_limits(1);
 upper_lim = deg_limits(2);
+
 if (upper_lim == lower_lim)
     t = upper_lim;
     return;
 end
 
+% if the lower limit is zero, ie - deg(GCD) = 0, then set to 1, since we
+% are only interested in Sylvester matrices S_{1},...
+if lower_lim == 0
+    lower_lim = 0;
+    possible_coprime = true;
+else 
+    possible_coprime = false;
+end
+
+% Get the number of subresultants which must be constructed.
+nSubresultants = upper_lim - lower_lim +1 ;
 
 % Initialise a vector to store the minimum singular values for each
 % S_{k}.
-vMinimumSingularValues = zeros(1,min(m,n));
+
+vMinimumSingularValues = zeros(1,nSubresultants);
+
 
 % Initialise a vector to store the minimum distnaces for each S_{k}.
-vMinimumDistance = zeros(1,min(m,n));
-vMax_Diag_R1 = zeros(1,min(m,n));
-vMin_Diag_R1 = zeros(1,min(m,n));
+vMinimumDistance = zeros(1,nSubresultants);
+vMax_Diag_R1 = zeros(1,nSubresultants);
+vMin_Diag_R1 = zeros(1,nSubresultants);
 
-vMax_R1_RowNorm = zeros(1,min(m,n));
-vMin_R1_RowNorm = zeros(1,min(m,n));
+vMax_R1_RowNorm = zeros(1,nSubresultants);
+vMin_R1_RowNorm = zeros(1,nSubresultants);
 
 matrix = [];
 
-% Set the initial value of k = 1.
-k = 1;
+% Set the initial value of k to be the lower limit of the possible degree
+% of the GCD.
+k = lower_lim;
 
 % Build the Sylvester Matrix
 C_f = BuildT1(fx,n-k);
@@ -63,10 +77,12 @@ Sk = [C_f C_g];
 [Q,R] = qr(Sk);
 
 % For each possible value of k, k = 0,...,min(m,n)
-for k = 1:1:min(m,n)
+for k = lower_lim:1:upper_lim
+    
+    i = k - lower_lim + 1;
     
     % If not the first subresultant, build by removing rows and columns.
-    if k > 1
+    if i > 1
         
         % update C_f and C_g by removing rows and columns
         C_f = C_f(1:m+n-k+1,1:n-k+1);
@@ -114,21 +130,21 @@ for k = 1:1:min(m,n)
     vSingularValues = svd(Sk);
     
     % Get the minimum Singular value from SVD of S_{k}
-    vMinimumSingularValues(k) = min(vSingularValues);
+    vMinimumSingularValues(i) = min(vSingularValues);
     
     % Add to the vector of minimum distances
-    vMinimumDistance(k) = GetMinDistance(Sk);
+    vMinimumDistance(i) = GetMinDistance(Sk);
     
     % Get maximum and minimum row diagonals of R1
-    vMax_Diag_R1(k) = max(vDiagsR1);
-    vMin_Diag_R1(k) = min(vDiagsR1);
+    vMax_Diag_R1(i) = max(vDiagsR1);
+    vMin_Diag_R1(i) = min(vDiagsR1);
     
     % Get Norms of each row in the matrix R1
     vR1_RowNorms = sqrt(sum(R1.^2,2))./norm(R1);
     
     % Get maximum and minimum row norms of rows of R1.
-    vMax_R1_RowNorm(k) = max(vR1_RowNorms);
-    vMin_R1_RowNorm(k) = min(vR1_RowNorms);
+    vMax_R1_RowNorm(i) = max(vR1_RowNorms);
+    vMin_R1_RowNorm(i) = min(vR1_RowNorms);
     
 end
 
@@ -143,11 +159,9 @@ vRatio_MaxMin_RowNorm_R = vMax_R1_RowNorm ./ vMin_R1_RowNorm;
 
 
 % If only one subresultant exists, use an alternative method.
-if min(m,n) == 1 % If only one Subresultant Exists
-    
-    t = GetRank_One_Subresultant(vSingularValues);
+if (upper_lim -lower_lim == 0 ) % If only one Subresultant Exists
+     t = GetRank_One_Subresultant(vSingularValues);
     return;
-    
 end
 
 % Get the type of problem.
@@ -159,6 +173,8 @@ end
 switch PLOT_GRAPHS
     case 'y'
         
+        x = lower_lim:1:upper_lim;
+        
         figure_name = sprintf('%s : Plot QR Scatter Data',mfilename);
         figure('name',figure_name)
         hold on
@@ -169,22 +185,22 @@ switch PLOT_GRAPHS
         figure_name = sprintf('%s : Plot Min Sing Val',mfilename);
         figure('name',figure_name)
         hold on
-        plot(log10(vMinimumSingularValues),'-o')
+        plot(x,log10(vMinimumSingularValues),'-o')
         hold off
         
         % Plot the minimum distances of S_{k} k=1,...,min(m,n)
         figure_name = sprintf('%s : Plot Min Distance',mfilename);
         figure('name',figure_name)
         hold on
-        plot(log10(vMinimumDistance) ,'-s')
+        plot(x,log10(vMinimumDistance) ,'-s')
         hold off
         
         figure_name = sprintf('%s : Max:min Row Diagonals',mfilename);
         figure('name',figure_name)
-        x = 1:min(m,n);
+        
         plot(x,log10(vRatio_MaxMin_Diagonals_R),'red-s');
         hold on
-        axis([1,min(m,n),0,inf])
+        axis([lower_lim,upper_lim,0,inf])
         legend('Max:Min diag element of subresultant S_{k}');
         title('Max:Min diagonal elements of R1 from the QR decomposition of S_{k} (Original)');
         ylabel('log_{10} max:min diag element')
@@ -193,10 +209,10 @@ switch PLOT_GRAPHS
         % Plot Graph of ratio of max : min row sum in R1 from the QR decompositions.
         figure_name = sprintf('%s : Max:min Row Norms',mfilename);
         figure('name',figure_name)
-        x = 1:1:min(m,n);
+        
         plot(x,log10(vRatio_MaxMin_RowNorm_R),'red-s');
         hold on
-        axis([1,min(m,n),0,inf])
+        axis([lower_lim,upper_lim,0,inf])
         legend('Max:Min Row Norms of Rows in R1 from the QR decomposition of S_{k}');
         title('Max:Min Row Norms of Rows in R1 from the QR Decomposition of S_{k} (Original)');
         hold off
@@ -208,7 +224,7 @@ switch PLOT_GRAPHS
         
 end
 
-[ProblemType,t] = GetProblemType(vMinimumSingularValues);
+[ProblemType,t] = GetProblemType(vMinimumSingularValues,lower_lim);
 
 
 end
@@ -259,7 +275,7 @@ end
 end
 
 
-function [ProblemType , t] = GetProblemType(vMinimumSingularValues)
+function [ProblemType , t] = GetProblemType(vMinimumSingularValues,lower_lim)
 % Get the problem type, dependent on the vector of singular values from the
 % series s_{k}
 %
@@ -273,7 +289,7 @@ function [ProblemType , t] = GetProblemType(vMinimumSingularValues)
 
 global THRESHOLD
 
-min_mn = length(vMinimumSingularValues);
+min_mn = lower_lim + length(vMinimumSingularValues) - 1;
 
 % Get the differences between minimum singular value S_{k} and S_{k+1}
 vDeltaMinSingVal = abs(diff(log10(vMinimumSingularValues)));
@@ -306,7 +322,7 @@ else
     % maxChange is signifcant
     ProblemType = 'Mixed';
     fprintf('Mixed \n')
-    t = indexMaxChange;
+    t = lower_lim + indexMaxChange - 1;
 end
 
 end

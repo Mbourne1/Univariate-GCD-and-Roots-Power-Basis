@@ -1,14 +1,18 @@
 function [fx_n,gx_n,dx, ux, vx, alpha, theta, t , lambda,mu] =...
-    o1(fx,gx,nDistinctRoots)
-% o1(fx,gx)
+    o_gcd_mymethod(fx,gx,deg_limits)
+% o_gcd_mymethod(fx,gx,deg_limits)
 %
 % Given two polynomials f(x) and g(x) return the GCD d(x)
 %
-% Inputs.
+% % Inputs.
 %
 % fx : Coefficients of polynomial f(x).
 %
 % gx : Coefficients of polynomial g(x).
+%
+% deg_limits : Specifiy upper and lower bound of the degree of the GCD
+% d(x), typically set when o_gcd_mymethod() is called from a root solving
+% problem, where deg_limits have been predetermined.
 
 
 % Global variables
@@ -33,15 +37,27 @@ gw = GetWithThetas(gx_n,theta);
 % %
 % %
 % Get the degree t of the GCD of f(w) and g(w)
-if (nDistinctRoots == 1)
-    fprintf('Only one distinct root \n')
-    fprintf('Degree of GCD is equal to g(x)')
-end
+%if (nDistinctRoots == 1)
+%    fprintf('Only one distinct root \n')
+%    fprintf('Degree of GCD is equal to g(x)')
+%end
 
 % %
 % %
 % Get the degree of the GCD
-t = GetGCDDegree(fw,alpha.*gw,nDistinctRoots);
+tic;
+t_old = GetGCDDegree(fw,alpha.*gw,deg_limits);
+toc;
+
+% Get the degree of the GCD with limits defined
+tic;
+t = GetGCDDegree2(fw,alpha.*gw,deg_limits);
+toc;
+%  if(t ~= t2)
+%      t
+%     t2
+%      error('err')
+%  end
 
 % Given the degree t, get the optimal column for removal from S_{t}(f,g)
 St_preproc  = BuildT(fw,alpha.*gw,t);

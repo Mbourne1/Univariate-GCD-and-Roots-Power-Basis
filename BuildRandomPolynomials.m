@@ -1,48 +1,138 @@
-function [f_roots,g_roots] = BuildRandomPolynomials(m,n,t,intvl_low,intvl_high)
-% Build two random polynomials f(x) and g(x) with a gcd d(x)
-% Note this function does not allow multiple roots
-% Note this function allows roots to be 'close'.
-% define t, the degree of the gcd
+function [f_root_mult_arr,g_root_mult_array] = BuildRandomPolynomials(m,n,t,intvl_low,intvl_high)
+% Given the degree of two polynomials, construct two sets of roots
+% 
+% % Inputs.
+% 
 %
-% Input
-%
-% m : Degree of Polynomial f(x)
+% m : Degree of polynomial f(x)
 %
 % n : Degree of polynomial g(x)
 %
-% t : Degree of GCD(f,g) d(x)
+% t : Degree of polynomial d(x)
 %
-% intvl_low : lowest root
+% intvl_low : Lowest allowed root value
 %
-% intvl_high : highest root
-
+% intvl_high : Highest allowed root value
+%
+% % Outputs.
+%
+%
+% f_root_mult_arr : root and multiplicity array for polynomial f.
+%
+% g_root_mult_arr : root and multiplicity array for polynomial g.
 
 global SEED
-rng(SEED)
 
-
-% for each degree t, get a root in the interval [0,1]
-a = intvl_low ;
+a = intvl_low;
 b = intvl_high;
 
-d_roots = zeros(t,2);
-
-roots = a + (b-a).*rand(t,1);
-d_roots = [roots ones(t,1)];
-
-% % % Build set of roots of f
-
-% include the roots of d
-f_roots = d_roots;
-roots = a + (b-a) .* rand(m-t,1);
-f_roots = [d_roots; roots ones(m-t,1)]
-
-% Build set of roots of g
-g_roots = d_roots;
-roots = a + (b-a) .* rand(n-t,1);
-g_roots = [d_roots; roots ones(n-t,1)]
-
-f_roots;
-g_roots;
+format long
+% Get the multiplicity structure of the roots of the GCD d of degree
+% t. t = t1 + t2 + ... + t_{r}
+% We want more lower multiplicity roots. so skew this way.
+prob_arr = zeros(1,t);
+for i = 1:1:t
+    prob_arr(i) = i./ nchoosek(t+1,2);
+end
+prob_arr = fliplr(prob_arr);
+rng(SEED);
 
 
+% Get the multiplicity structure of d.
+total = 0;
+i = 1;
+while total < t
+    r = rand;
+    prob = prob_arr;
+    x = sum(r >= cumsum([0, prob]));
+    if (total + x) <= t
+        mult_arr_d(i) = x;
+        total = total + x;
+        i = i+1;
+    end
+end
+
+% get the number of roots of d
+num_roots_t = length(mult_arr_d);
+
+
+% get multiplicity structure for the remaining roots of f
+% initialise a probability vector so that lower multiplicities are
+% preferred.
+prob_arr = zeros(1,m-t);
+for i = 1:1:(m-t)
+    prob_arr(i) = i./ nchoosek((m-t)+1,2);
+end
+
+prob_arr = fliplr(prob_arr);
+
+total = 0;
+i = 1;
+while total < m-t
+    r = rand;
+    prob = prob_arr;
+    x = sum(r >= cumsum([0, prob]));
+    if (total + x) <= m-t
+        mult_arr_f(i) = x;
+        total = total + x;
+        i = i+1;
+    end
+end
+
+num_roots_f = length(mult_arr_f);
+mult_arr_f = [mult_arr_d mult_arr_f];
+
+
+% % Get multiplicity structure of g
+% initialise a probability vector so that lower multiplicities are
+% preferred
+prob_arr = zeros(1,n-t);
+for i = 1:1:(n-t)
+    prob_arr(i) = i./ nchoosek((n-t)+1,2);
+end
+format short
+prob_arr = fliplr(prob_arr);
+
+mult_arr_g = [];
+
+
+total = 0;
+i = 1;
+while total < n-t
+    r = rand;
+    prob = prob_arr;
+    x = sum(r >= cumsum([0, prob]));
+    if (total + x) <= n-t
+        mult_arr_g(i) = x;
+        total = total + x;
+        i = i+1;
+    end
+end
+
+num_roots_g = length(mult_arr_g);
+mult_arr_g = [mult_arr_d mult_arr_g];
+
+
+% Get a set of unique roots
+% the 1000 and 1000 contain the roots to the unit interval
+detail = 100;
+format 'long';
+
+
+
+roots = a + randperm(detail,num_roots_t+num_roots_g + num_roots_f)./(detail./(b-a));
+
+
+roots_d = roots(1:num_roots_t);
+roots(1:num_roots_t) = [];
+roots_f = roots(1:num_roots_f);
+roots(1:num_roots_f) = [];
+roots_g = roots(1:num_roots_g);
+
+
+f_root_mult_arr = [[roots_d'; roots_f'] mult_arr_f'];
+g_root_mult_array = [[roots_d'; roots_g'] mult_arr_g'];
+
+
+
+end

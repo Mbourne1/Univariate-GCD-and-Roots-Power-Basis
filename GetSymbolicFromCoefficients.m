@@ -18,7 +18,7 @@ function fx_sym = GetSymbolicFromCoefficients(fx)
 x = sym('x');
 
 % Get the degree of f(x)
-m = GetDegree(fx)
+m = GetDegree(fx);
 
 % Get symbolic vector
 sym_vector = diag(x.^(0:1:m)) * fx;
