@@ -3,7 +3,7 @@ function [x] = SolveAx_b(A,b)
 
 
 % Get the residuals associated with both QR and Pinv methods
-
+warning('off','all')
 [~,n2] = size(A);
 [Q2,R] = qr(A);
 R1 = R(1:n2,:);
@@ -23,7 +23,7 @@ else
     %winner = 'QR';
     x = x_QR;
 end
-
+warning('on','all')
 
 %fprintf('Minimum residual obtained by %s', winner)
 

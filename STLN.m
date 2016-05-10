@@ -1,8 +1,23 @@
 function [fx,gx] = STLN(fx,gx,t)
-% Perform STLN with no preprocessors
+% Perform Structured Total Least Norm to obtain a low rank approximation 
+% of the t-th Sylvester matrix. Note this is a linear problem, any
+% alpha and theta values are already included in f(x) and g(x).
+% 
+%
+% % Inputs.
+%
+% fx : Coefficients of polynomial f(x)
+%
+% gx : Coefficients of polynomial g(x)
+%
+% t : Degree of GCD(f(x),g(x))
+%
+% % Outputs.
+%
+% fx : Coefficients of f(x) after refinement f(x) + \delta
+%
+% gx : coefficients of g(x) after refinement g(x) + \delta
 
-global MAX_ERROR_SNTLN 
-global MAX_ITE_SNTLN
 
 % Get degree of polynomial f(x)
 m = GetDegree(fx);
@@ -92,8 +107,8 @@ ite = 1;
 
 % Set the termination criterion
 condition(ite) = norm(g)./ norm(ct);
-
-while condition(ite) >  MAX_ERROR_SNTLN &&  ite < MAX_ITE_SNTLN
+global SETTINGS
+while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTLN
 
     % Increment interation counter
     ite = ite + 1;
@@ -157,23 +172,28 @@ while condition(ite) >  MAX_ERROR_SNTLN &&  ite < MAX_ITE_SNTLN
     
 end
 
-figure('name','STLN - Residuals')
-hold on
-plot(log10(condition),'-s');
-hold off
+global SETTINGS
+switch SETTINGS.PLOT_GRAPHS
+    case 'y'
+        figure_name = sprintf('%s - Residuals',mfilename);
+        figure('name',figure_name)
+        hold on
+        plot(log10(condition),'-s');
+        hold off
+        
+    case 'n'
+end
 
-
-
+% If the final condition is less than the original, output the new values,
+% otherwise output the old values for f(x) and g(x).
 if (condition(ite) < condition(1))
-    condition(ite)
-    condition(1)
     fx = fx + zf;
     gx = gx + zg;
 else
   % Do nothing
 end
 
-fprintf('Required number of iterations : %i \n',ite)
+fprintf([mfilename ' : ' sprintf('Required number of iterations : %i \n',ite)])
 
 end
 

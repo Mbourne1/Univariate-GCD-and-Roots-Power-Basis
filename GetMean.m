@@ -2,14 +2,16 @@ function lambda = GetMean(fx,n_k)
 % Compute the mean of the non-zero entries of C_{n-k}(f).
 
 
-global MEAN_METHOD
-switch MEAN_METHOD
+global SETTINGS
+switch SETTINGS.MEAN_METHOD
     case 'Geometric Mean Matlab Method'
         
         % Get geometric mean
-        lambda  = geomean(abs(fx(fx~=0)));       
+        lambda  = geomean(abs(fx(fx~=0)));   
+    case 'None'
+        lambda = 1;
     otherwise
-        error('err')
+        error('Error SETTINGS.MEAN_METHOD must be valid')
         
 end
 

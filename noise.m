@@ -2,19 +2,29 @@ function [f_noisy,noise_vec] = Noise(fx,mu)
 % Given a polynomial f(x), add noise to its coefficients at the level
 % specified by mue.
 %
-%   Inputs;
+% % Inputs;
 %
-%   fx : 
+% fx : Column vector of coefficients of polynomial f(x).
 %
-%   mu :
+% mu : Lower noise level.
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Outputs
+%
+% f_noisy : Column vector of noisy coefficients of polynomial f(x)
+%
+% noise_vec : Noise added to coefficients of f(x)
+%
+%
+% % Example
+% 
+% Add noise to a polynomial at a level of 1e-10.
+% >> Noise([1.1 ; 2.2 ; 3.3], 1e-10)
 
 % Initialise the global variables
-global SEED
+global SETTINGS
 
 % Set the random number generator.
-rng(SEED)
+rng(SETTINGS.SEED)
 
 % Get the degree of the polynomial f(x)
 m = GetDegree(fx);

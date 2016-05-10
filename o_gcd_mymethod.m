@@ -16,7 +16,7 @@ function [fx_n,gx_n,dx, ux, vx, alpha, theta, t , lambda,mu] =...
 
 
 % Global variables
-global PLOT_GRAPHS
+global SETTINGS
 
 
 % Preprocess the polynomials f(x) and g(x)
@@ -45,19 +45,24 @@ gw = GetWithThetas(gx_n,theta);
 % %
 % %
 % Get the degree of the GCD
-tic;
+LineBreakSmall();
 t_old = GetGCDDegree(fw,alpha.*gw,deg_limits);
-toc;
+LineBreakSmall();
 
 % Get the degree of the GCD with limits defined
-tic;
-t = GetGCDDegree2(fw,alpha.*gw,deg_limits);
-toc;
+t_new = GetGCDDegree2(fw,alpha.*gw,deg_limits);
+LineBreakSmall();
+
+
+t = t_new;
 %  if(t ~= t2)
 %      t
 %     t2
 %      error('err')
 %  end
+
+% Print the degree of the GCD
+fprintf([mfilename ' : ' sprintf('Degree of GCD : % i \n',t)]);
 
 % Given the degree t, get the optimal column for removal from S_{t}(f,g)
 St_preproc  = BuildT(fw,alpha.*gw,t);
@@ -116,7 +121,7 @@ vSingularValues_lowRank = Normalise(vSingularValues_lowRank);
 % %
 % %
 % Plot Singular values of unproc, preproc, lowrank approx
-switch PLOT_GRAPHS
+switch SETTINGS.PLOT_GRAPHS
     case 'y'
         figure('name','Singular Values')
         hold on
@@ -127,7 +132,7 @@ switch PLOT_GRAPHS
         hold off
     case 'n'
     otherwise
-        error('error: plot_graphs either y or n')
+        error('error: SETTINGS.PLOT_GRAPHS is either y or n')
 end
 
 end

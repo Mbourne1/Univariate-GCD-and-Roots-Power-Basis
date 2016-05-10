@@ -1,36 +1,26 @@
-function [] = SetGlobalVariables(mean_method, bool_alpha_theta, low_rank_approx_method)
+function [] = SetGlobalVariables(ex_num,el,mean_method, bool_alpha_theta, low_rank_approx_method)
+global SETTINGS;
 
-global MEAN_METHOD
-MEAN_METHOD = mean_method;
+SETTINGS.EX_NUM = ex_num;
+SETTINGS.NOISE = el;
+SETTINGS.MEAN_METHOD = mean_method;
+SETTINGS.BOOL_ALPHA_THETA = bool_alpha_theta;
+SETTINGS.LOW_RANK_APPROXIMATION_METHOD = low_rank_approx_method;
 
-global BOOL_ALPHA_THETA
-BOOL_ALPHA_THETA = bool_alpha_theta;
+SETTINGS.SEED = 1024;
+SETTINGS.THRESHOLD = 4;
+SETTINGS.PLOT_GRAPHS = 'n';
+SETTINGS.BOOL_NOISE = 'y';
 
-global LOW_RANK_APPROXIMATION_METHOD
-LOW_RANK_APPROXIMATION_METHOD = low_rank_approx_method;
-
-% Initialise the Seed for random noise generation
-global SEED
-SEED = 1024;
-
-% Set the Threshold value for the GetGCDDegree function
-global THRESHOLD
-THRESHOLD = 3;
-
-global PLOT_GRAPHS
-PLOT_GRAPHS = 'y';
-
-global BOOL_NOISE
-BOOL_NOISE = 'y';
-
-global MAX_ERROR_SNTLN
-global MAX_ITE_SNTLN
-
-MAX_ERROR_SNTLN = 1e-14;
-MAX_ITE_SNTLN = 100;
-
-global DECONVOLVE_METHOD 
-DECONVOLVE_METHOD = 'Batch';
+SETTINGS.MAX_ERROR_SNTLN = 1e-15;
+SETTINGS.MAX_ITE_SNTLN = 100;
+SETTINGS.MAX_ERROR_DECONVOLUTIONS = 1e-10;
+SETTINGS.MAX_ITERATIONS_DECONVOLUTIONS = 20;
+SETTINGS.DECONVOLVE_METHOD = 'Batch';
 
 
 end
+
+
+
+

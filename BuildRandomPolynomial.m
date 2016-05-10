@@ -12,7 +12,7 @@ function [root_mult_arr] = BuildRandomPolynomial(m,int_low,int_up)
 %
 % Example: BuildRandomPolynomial(10,-5,5)
 
-global SEED
+global SETTINGS
 
 % Set the upper and lower bound
 a = int_low;
@@ -29,7 +29,7 @@ b = int_up;
     
     prob_arr = fliplr(prob_arr);
     
-    rng(SEED);
+    rng(SETTINGS.SEED);
     
     % Get the multiplicity structure of d.
     total = 0;

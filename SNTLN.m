@@ -3,15 +3,17 @@ function [fx_new,gx_new,alpha_new,theta_new] = ...
 % Given two input polynomials and the degree of their GCD, Obtain the Low
 % Rank Approximation Sylvester Matrix
 
+
+% Set global Variables
 global MAX_ERROR_SNTLN
 global MAX_ITE_SNTLN
 global PLOT_GRAPHS
 
 % Get degree of polynomial f(x)
-m = GetDegree(fx);
+m = GetDegree(fx_n);
 
 % Get degree of polynomial g(x)
-n = GetDegree(gx);
+n = GetDegree(gx_n);
 
 % Set the initial iteration number
 ite = 1;

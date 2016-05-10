@@ -1,9 +1,9 @@
 function [fx_n,gx_n,alpha,theta] = LowRankApprox(fx_n,gx_n,alpha,theta,t)
 
-global LOW_RANK_APPROXIMATION_METHOD
+global SETTINGS
 
 % Perform SNTLN to obtain low rank approximation
-switch LOW_RANK_APPROXIMATION_METHOD
+switch SETTINGS.LOW_RANK_APPROXIMATION_METHOD
     case 'Standard STLN'
         
         fw = GetWithThetas(fx_n,theta);
@@ -42,10 +42,6 @@ switch LOW_RANK_APPROXIMATION_METHOD
         
     case 'None'
         
-        fx_n = fx_n;
-        gx_n = gx_n;
-        alpha = alpha;
-        theta = theta;
     otherwise
         error('error')
 end

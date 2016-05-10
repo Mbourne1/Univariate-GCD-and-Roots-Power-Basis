@@ -11,7 +11,7 @@ function [lambda,mu,alpha,theta] = Preproccess(fx,gx)
 %
 % gx : Vector of coefficients of polynomial g(x)
 
-global BOOL_ALPHA_THETA
+global SETTINGS
 
 m = GetDegree(fx);
 n = GetDegree(gx);
@@ -27,7 +27,7 @@ mu = GetMean(gx,m-1);
 fx_n = fx./ lambda;
 gx_n = gx./ mu;
 
-switch BOOL_ALPHA_THETA
+switch SETTINGS.BOOL_ALPHA_THETA
     case 'y'
         
         % Get opitmal values of alpha and theta
@@ -39,8 +39,8 @@ switch BOOL_ALPHA_THETA
         
         % Plot the unprocessed and preprocessed coefficients of
         % f(x), f(w), g(x) and g(w).
-        global PLOT_GRAPHS
-        switch PLOT_GRAPHS
+        
+        switch SETTINGS.PLOT_GRAPHS
             case 'y'
                 PlotCoefficients(fx,fw,'f');
                 PlotCoefficients(gx,gw,'g');

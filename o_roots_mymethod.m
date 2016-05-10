@@ -34,29 +34,31 @@ d(1) = GetDegree(fx);
 % zero. ie is not a constant, perform a gcd calculation on it and its
 % derivative.
 
-while length(fx{ite})-1 > 0
+while GetDegree(fx{ite}) > 0
 
     % if degree of f(ite_num) is greater than one
     if M(ite) > 1
         
-        fprintf('GCD Calculation Loop iteration = %i \n', ite );
-        fprintf('Compute GCD of f_{%i} and derivative f_{%i}\n\n',ite,ite);
+        
+        fprintf(['\n' mfilename ' : ' sprintf('Compute GCD of f_{%i} and derivative f_{%i}\n\n',ite,ite)]);
         
         
         % Perform GCD computation
         
         % Get upper and lower bounds of the next GCD computation
         % M_{i+1} > M_{i} - d_{i-1}
-        try
-            lower_lim = M(ite)-d(ite-1);
+        if ite > 1
+            lower_lim = max(M(ite)-d(ite-1),1);
             upper_lim = M(ite)-1;
-            fprintf('Minimum degree of f_{%i}: %i \n', ite+1, M(ite)-d(ite-1));
-            fprintf('Maximum degree of f_{%i}: %i \n', ite+1, M(ite)-1);
-        catch
+        else
             lower_lim = 1;
             upper_lim = M(ite)-1;
         end
-
+        
+        
+        
+        fprintf([ mfilename ' : ' sprintf('Minimum degree of f_{%i}: %i \n', ite+1, lower_lim)]);
+        fprintf([ mfilename ' : ' sprintf('Maximum degree of f_{%i}: %i \n\n', ite+1, upper_lim)]);
             
         % (fx_n,gx_n,dx, ux, vx, alpha, theta, t , lambda,mu)
         [fx{ite},~,fx{ite+1}, ux{ite} ,vx{ite},~,vTheta(ite+1),M(ite+1),~,~] ...
@@ -66,28 +68,22 @@ while length(fx{ite})-1 > 0
         d(ite) = M(ite) - M(ite+1);
         
         
-       
-        fprintf('The computed deg(GCD(f_{%i},f_{%i}) is : %i \n',ite,ite,M(ite+1))
-        
-        fprintf('Number of distinct roots in f_{%i} : %i \n',ite,d(ite))
-        
-        fprintf('Degree of f_{%i} : %i \n',ite + 1, M(ite+1))
-        
+        fprintf([ mfilename ' : ' sprintf('Number of distinct roots in f_{%i} : %i \n',ite,d(ite))]);
 
         % increment iteration number.
         ite = ite+1;
         
+        LineBreakMedium();
         
     elseif M(ite) == 1
-        
-        % if m=1, then n = 0, GCD has maximum degree 0.
+        % if m = 1, then n = 0, GCD has maximum degree 0.
         dx = 1;
         
         %theta_vec(ite_num+1) = 1;
         M(ite+1) = 0;
         
         fx{ite+1} = 1;
-        ux{ite} = fx{ite}
+        ux{ite} = fx{ite};
         ite = ite+1;
         
         break;
@@ -98,7 +94,7 @@ end
 
 
 % Get the degree structure of the polynomials h_{i}
-deg_struct_h = diff([M]);
+deg_struct_h = diff(M);
 
 % Get the degree structure of the polynomials w_{i}
 deg_struct_w = diff([deg_struct_h 0]);
@@ -111,19 +107,21 @@ vMultiplicities = find(deg_struct_w~=0);
 
 % We can either obtain h(x) from the series of deconvolutions on f(x){i} or
 % we can use the already calculated values ux{i}
-method = 'By Deconvolution';
+%method = 'By Deconvolution';
+method = 'From Deconvolution';
+
 switch method
-    case 'By Deconvolution'
-        hx = Deconvolve(fx);
+    case 'From Deconvolution'
+        hx = Deconvolve_Set(fx);
         
     
-        hx_new = Deconvolve_Batch_Constrained(fx,vMultiplicities);
+        %hx_new = Deconvolve_Batch_Constrained(fx,vMultiplicities);
         
-        arr_wx_new = Deconvolve(hx_new);
-        display(arr_wx_new)
+        %arr_wx_new = Deconvolve(hx_new);
+        %display(arr_wx_new)
         
         % set the w1{max} = h1{max}
-        arr_wx_new{length(arr_wx_new)+1} = hx{length(hx)};
+        %arr_wx_new{length(arr_wx_new)+1} = hx{length(hx)};
         
     case 'From ux'
         hx = ux;
@@ -133,11 +131,11 @@ switch method
 end
 
 % for each w_{i}
-for i = 1:1:length(arr_wx_new)
-    wx_new = arr_wx_new{i}
-    wx_new = wx_new./wx_new(2)
-
-end
+% for i = 1:1:length(arr_wx_new)
+%     wx_new = arr_wx_new{i}
+%     wx_new = wx_new./wx_new(2)
+% 
+% end
 
 
 % Get the number of polynomials in h_{x}
@@ -175,7 +173,7 @@ else
     % perform deconvolutions
     
     % Deconvolve the second set of polynomials
-    wx = Deconvolve(hx);
+    wx = Deconvolve_Set(hx);
     
     % w1 yields the simple, double, triple roots of input polynomial f.
     % w1{i} yields the roots of multiplicity i.
@@ -250,7 +248,7 @@ for i = 1:1:size(mat,1)
     end
 end
 
-%% Print the calculated roots and the corresponding multiplicities.
+% % Print the calculated roots and the corresponding multiplicities.
 PrintRoots(root_mult_array,'MY METHOD');
 
 end

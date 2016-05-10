@@ -19,7 +19,6 @@ string_fx = char(expand(sym_fx));
 string_gx = char(expand(sym_gx));
 
  
-tol = 1e-10;
 [u,v,w,res,cond] = PolynomialGCD(string_fx,string_gx);
 
 %[u2,v2,w2] = mvGCD(f_mat,g_mat)
