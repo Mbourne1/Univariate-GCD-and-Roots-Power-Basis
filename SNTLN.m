@@ -3,11 +3,9 @@ function [fx_new,gx_new,alpha_new,theta_new] = ...
 % Given two input polynomials and the degree of their GCD, Obtain the Low
 % Rank Approximation Sylvester Matrix
 
+% Globals
+global SETTINGS
 
-% Set global Variables
-global MAX_ERROR_SNTLN
-global MAX_ITE_SNTLN
-global PLOT_GRAPHS
 
 % Get degree of polynomial f(x)
 m = GetDegree(fx_n);
@@ -145,7 +143,7 @@ res_vec = (ct+ht) - (At*x_ls);
 condition = norm(res_vec) ./ norm(ct);
 
 
-while condition(ite) > MAX_ERROR_SNTLN && ite < MAX_ITE_SNTLN
+while condition(ite) > SETTINGS.MAX_ERROR_SNTLN && ite < SETTINGS.MAX_ITE_SNTLN
     
     % Perfome LSE Calculation min|Ey-f| subject to Cy=g
     y_lse = LSE(E,f,C,res_vec);
@@ -294,7 +292,7 @@ else
     alpha_new = alpha(1);
 end
 
-switch PLOT_GRAPHS
+switch SETTINGS.PLOT_GRAPHS
     case 'y'
         figure('name','SNTLN - Residuals')
         hold on
@@ -306,12 +304,14 @@ switch PLOT_GRAPHS
         plot(log10(theta))
         hold off
     case 'n'
+    otherwise
+        err('err');
 end
 
-if ite == MAX_ITE_SNTLN
+if ite == SETTINGS.MAX_ITE_SNTLN
     % revers
-    fx_new = fx;
-    gx_new = gx;
+    fx_new = fx_n;
+    gx_new = gx_n;
     theta_new = theta(1);
     alpha_new = alpha(1);
     

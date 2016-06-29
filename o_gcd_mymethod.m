@@ -20,7 +20,7 @@ global SETTINGS
 
 
 % Preprocess the polynomials f(x) and g(x)
-[lambda,mu,alpha,theta] = Preproccess(fx,gx);
+[lambda,mu,alpha,theta] = Preprocess(fx,gx);
 
 % Get f(x) normalised by mean
 fx_n = fx./lambda;
@@ -34,20 +34,15 @@ fw = GetWithThetas(fx_n,theta);
 % Get g(w)
 gw = GetWithThetas(gx_n,theta);
 
-% %
-% %
-% Get the degree t of the GCD of f(w) and g(w)
-%if (nDistinctRoots == 1)
-%    fprintf('Only one distinct root \n')
-%    fprintf('Degree of GCD is equal to g(x)')
-%end
 
 % %
 % %
 % Get the degree of the GCD
-LineBreakSmall();
-t_old = GetGCDDegree(fw,alpha.*gw,deg_limits);
-LineBreakSmall();
+% LineBreakSmall();
+% t_old = GetGCDDegree(fw,alpha.*gw);
+% LineBreakSmall();
+
+
 
 % Get the degree of the GCD with limits defined
 t_new = GetGCDDegree2(fw,alpha.*gw,deg_limits);
@@ -55,11 +50,14 @@ LineBreakSmall();
 
 
 t = t_new;
-%  if(t ~= t2)
-%      t
-%     t2
-%      error('err')
-%  end
+
+
+if (t == 0)
+    dx = 1;
+    ux = fx;
+    vx = gx;
+    return
+end
 
 % Print the degree of the GCD
 fprintf([mfilename ' : ' sprintf('Degree of GCD : % i \n',t)]);

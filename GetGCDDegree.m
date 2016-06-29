@@ -1,6 +1,6 @@
-function t = GetGCDDegree(fx,gx,deg_limits)
-%  GetGCDDegree(fx,gx)
-% 
+function t = GetGCDDegree(fx,gx)
+% GetGCDDegree(fx,gx)
+%
 % Get the degree of the GCD d(x) of f(x) and g(x), by Sylvester matrix method.
 %
 % Inputs.
@@ -22,29 +22,16 @@ m = GetDegree(fx);
 % Get degree of polynomial g(x)
 n = GetDegree(gx);
 
-% If the number of distinct roots in f(x) is one, then the degree of the
-% GCD of f(x) and f'(x) = m-1 = n.
-% Set the upper bound of the GCD
-lower_lim = deg_limits(1);
-upper_lim = deg_limits(2);
-if (upper_lim == lower_lim)
-    fprintf([mfilename ' : ' 'Only One Subresultant\n'])
-    t = upper_lim;
-    return;
-end
-
-
 % Initialise a vector to store the minimum singular values for each
 % S_{k}.
 vMinimumSingularValues = zeros(1,min(m,n));
 
 % Initialise a vector to store the minimum distnaces for each S_{k}.
 vMinimumResidual = zeros(1,min(m,n));
-vMaxDiagR1 = zeros(1,min(m,n));
-vMinDiagR1 = zeros(1,min(m,n));
-
-vMaxRowNormR1 = zeros(1,min(m,n));
-vMinRowNormR1 = zeros(1,min(m,n));
+vMaxDiagR1      = zeros(1,min(m,n));
+vMinDiagR1      = zeros(1,min(m,n));
+vMaxRowNormR1   = zeros(1,min(m,n));
+vMinRowNormR1   = zeros(1,min(m,n));
 
 matrix = [];
 
@@ -88,12 +75,12 @@ for k = 1:1:min(m,n)
     
     % Take absolute values of R_{k}
     abs_R = abs(R);
-
+    
     % Get number of rows in R1_{k}
     [nRowsR1,~] = size(diag(abs_R));
-
+    
     % Obtain R1 the top square of the |R| matrix.
-    R1 = abs_R(1:nRowsR1,1:nRowsR1);    
+    R1 = abs_R(1:nRowsR1,1:nRowsR1);
     
     % Get the diagonal values in the matrix R_{k} from the QR decomposition
     % of S_{k}
@@ -150,23 +137,27 @@ end
 [max_delta_min_residuals,indexMaxChange_Residuals] = Analysis(vMinimumResidual);
 
 
+
+
 % If only one subresultant exists, use an alternative method.
-if min(m,n) == 1 % If only one Subresultant Exists
-    fprintf([mfilename ' : ' 'Only One Subresultant'])
-    t = GetRankOneSubresultant(vRatio_MaxMin_Diagonals_R);
+if min(m,n) == 1 
+    
+    t = GetGCDDegree_OneSubresultant(vSingularValues);
     return;
+    
+else
+    % Get the type of problem.
+    % Problem Type.
+    % Singular      : All Subresultants S_{k} are Singular, and rank deficient
+    % NonSingular   : All Subresultants S_{k} are Non-Singular, and full rank
+    % Mixed         : Some Subresultants are Singular, others are Non-Singular.
+    % Plot data
+    
+    PlotGraphs()
+    [t] = GetGCDDegree_MultipleSubresultants(vMinimumSingularValues,[1,min(m,n)]);
 end
 
-% Get the type of problem.
-% Problem Type.
-% Singular      : All Subresultants S_{k} are Singular, and rank deficient
-% NonSingular   : All Subresultants S_{k} are Non-Singular, and full rank
-% Mixed         : Some Subresultants are Singular, others are Non-Singular.
-% Plot data
 
-PlotGraphs()
-
-[t] = GetProblemType(vMinimumResidual,deg_limits);
 
 
 end

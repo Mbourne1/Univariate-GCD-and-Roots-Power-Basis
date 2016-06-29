@@ -34,6 +34,8 @@ d(1) = GetDegree(fx);
 % zero. ie is not a constant, perform a gcd calculation on it and its
 % derivative.
 
+BOOL_LIMITS = 'y';
+
 while GetDegree(fx{ite}) > 0
 
     % if degree of f(ite_num) is greater than one
@@ -48,8 +50,14 @@ while GetDegree(fx{ite}) > 0
         % Get upper and lower bounds of the next GCD computation
         % M_{i+1} > M_{i} - d_{i-1}
         if ite > 1
-            lower_lim = max(M(ite)-d(ite-1),1);
-            upper_lim = M(ite)-1;
+            switch BOOL_LIMITS
+                case 'y'
+                    lower_lim = max(M(ite)-d(ite-1),1);
+                    upper_lim = M(ite)-1;
+                case 'n'
+                    lower_lim =1;
+                    upper_lim = M(ite)-1;
+            end
         else
             lower_lim = 1;
             upper_lim = M(ite)-1;
@@ -101,20 +109,22 @@ deg_struct_w = diff([deg_struct_h 0]);
 
 vMultiplicities = find(deg_struct_w~=0);
 
-
+% %
+% %
+% %
+% %
 % Deconvolve the first set of polynomials q_{i}(x), which are the outputs
 % of the series of GCD computations, to obtain the set of polynomaials h_{x}
 
 % We can either obtain h(x) from the series of deconvolutions on f(x){i} or
 % we can use the already calculated values ux{i}
 %method = 'By Deconvolution';
-method = 'From Deconvolution';
+global SETTINGS
 
-switch method
+switch SETTINGS.ROOTS_UX
     case 'From Deconvolution'
         hx = Deconvolve_Set(fx);
-        
-    
+
         %hx_new = Deconvolve_Batch_Constrained(fx,vMultiplicities);
         
         %arr_wx_new = Deconvolve(hx_new);

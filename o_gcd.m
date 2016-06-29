@@ -1,4 +1,4 @@
-function [] = o_gcd(ex_num,el,mean_method, bool_alpha_theta,low_rank_approx_method)
+function [] = o_gcd(ex_num,emin,emax,mean_method, bool_alpha_theta,low_rank_approx_method)
 % o_gcd(ex_num,el,mean_method, bool_alpha_theta,low_rank_approx_method)
 %
 % Given two polynomials f(x) and g(x) calculate the GCD d(x).
@@ -7,7 +7,9 @@ function [] = o_gcd(ex_num,el,mean_method, bool_alpha_theta,low_rank_approx_meth
 %
 % ex_num : (String) Example Number
 %
-% el : Noise lower threshold
+% el : Noise lower level
+%
+% em : Noise upper level
 %
 % mean_method :
 %       'None'
@@ -24,23 +26,21 @@ function [] = o_gcd(ex_num,el,mean_method, bool_alpha_theta,low_rank_approx_meth
 %
 % % Example
 %
-% >> o_gcd('1',1e-12,'Geometric Mean Matlab Method', 'y','Standard STLN')
-
+% >> o_gcd('1',1e-12,1e-10,'Geometric Mean Matlab Method', 'y','Standard STLN')
+% >> o_gcd(ex_num,1e-12,1e-10,'Geometric Mean Matlab Method', 'y','Standard STLN')
+% >> ex_num = 'Custom:m=10n=5t=2.low=-1high=2'
 global SETTINGS
 
-SETTINGS.NOISE = el;
-SETTINGS.EX_NUM= ex_num;
+problem_type = 'GCD';
+SETTINGS.NOISE_TYPE = 'Coefficients';
 
-SetGlobalVariables(mean_method,bool_alpha_theta,low_rank_approx_method)
+SetGlobalVariables(problem_type,ex_num,emin,emax,mean_method,bool_alpha_theta,low_rank_approx_method)
 
-% Get the example
-[fx_exact,gx_exact,dx_exact,ux_exact,vx_exact] = Examples_GCD(ex_num);
+% Get coefficients of f(x,y) g(x,y) from example file
+[fx_noisy, gx_noisy,fx_exact,gx_exact,dx_exact,ux_exact,vx_exact] = Examples_GCD(ex_num);
 
-
-% Add noise to the coefficients of polynomials f(x) and g(x) at a
-% predefined signal-to-noise ratio.
-[fx,~] = Noise(fx_exact,el);
-[gx,~] = Noise(gx_exact,el);
+fx = fx_noisy;
+gx = gx_noisy;
 
 % %
 % %
@@ -61,28 +61,21 @@ deg_limits = [lower_bound,upper_bound];
 % Compute degree of gcd by my method
 [~,~,dx_calc,ux_calc,vx_calc,~,~] = o_gcd_mymethod(fx,gx,deg_limits);
 
-% %
-% %
-% %
-% Print the coefficients of d(x), u(x) and v(x)
-PrintCoefficients(ux_exact,ux_calc,'u(x)')
-GetDistance(ux_exact,ux_calc,'u(x)');
-
-%
-PrintCoefficients(vx_exact,vx_calc,'v(x)')
-GetDistance(vx_exact,vx_calc,'v(x)');
-
-%
-PrintCoefficients(dx_exact,dx_calc,'d(x)')
-GetDistance(dx_exact,dx_calc,'d(x)');
-
-%
-%GetDistance(dx_exact,d_Zeng,'d(x)');
-
 % Get distance of the computed d(x) from the exact d(x)
-error_dx = GetDistance(dx_exact,dx_calc,'d(x)');
+try
+    error.MyMethod = GetDistance(dx_exact,dx_calc);
+catch err
+    error.MyMethod = 9999999;
+    fprintf([mfilename ' : ' err.message '\n'])
+end
 
-PrintToFile(GetDegree(fx),GetDegree(gx),GetDegree(dx_calc),error_dx)
+PrintToFile(GetDegree(fx),GetDegree(gx),GetDegree(dx_calc),error)
+
+% %
+% %
+% %
+% Get the GCD by an alternative method
+%[dx] = o_gcd_experiment_method(fx,gx)
 
 
 %% Plot the three curves f(x), g(x) and d(x)
@@ -121,7 +114,7 @@ function [] = PrintCoefficients(f_exact,f_computed,name)
 % f_computed : Coefficients of polynomial f(x) computed
 %
 % name :
-
+try
 fprintf('\nCoefficients of %s \n\n',name);
 fprintf('\t Exact \t \t \t \t\t \t \t   Computed \n')
 
@@ -132,9 +125,10 @@ mat = [real(f_exact(:,1))';  real(f_computed(:,1))' ];
 fprintf('%f \t \t \t \t %f   \t \t \n', mat);
 fprintf('\n');
 
-distance = GetDistance(f_exact,f_computed,name);
+distance = GetDistance(f_exact,f_computed);
 fprintf('Distance between %s exact and %s computed : %2.4e \n \n',name,name,distance)
-
+catch
+end
 
 end
 
@@ -157,27 +151,32 @@ f_computed = Normalise(f_computed);
 
 % Get distance
 dist = norm(f_exact - f_computed) ./ norm(f_exact);
-
-% Print
+display(dist)
 
 end
 
 
-function [] = PrintToFile(m,n,t,error_dx)
+function [] = PrintToFile(m,n,t,error)
 
 global SETTINGS
 
-fullFileName = 'o_gcd_results.txt';
+fullFileName = 'Results_o_gcd.txt';
 
 
-if exist('o_gcd_results.txt', 'file')
-    fileID = fopen('o_gcd_results.txt','a');
-    fprintf(fileID,'%s \t %5d \t %5d \t %5d \t %s \t %s \t %s \t %s \t %s \n',...
+if exist('Results_o_gcd.txt', 'file')
+    fileID = fopen('Results_o_gcd.txt','a');
+    fprintf(fileID,'%s, \t %s, \t %s, \t %s, \t %s, \t %5s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s \n',...
+        datetime('now'),...,...
+        SETTINGS.PROBLEM_TYPE,...
         SETTINGS.EX_NUM,...
-        m,n,t,error_dx,...
+        int2str(m),...
+        int2str(n),...
+        int2str(t),...
+        error.MyMethod,...
         SETTINGS.MEAN_METHOD,...
         SETTINGS.BOOL_ALPHA_THETA,...
-        SETTINGS.NOISE,...
+        SETTINGS.EMIN,...
+        SETTINGS.EMAX,...
         SETTINGS.LOW_RANK_APPROXIMATION_METHOD);
     fclose(fileID);
 

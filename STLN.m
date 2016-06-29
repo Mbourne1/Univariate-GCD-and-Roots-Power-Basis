@@ -1,4 +1,4 @@
-function [fx,gx] = STLN(fx,gx,t)
+function [fx_out,gx_out] = STLN(fx,gx,t)
 % Perform Structured Total Least Norm to obtain a low rank approximation 
 % of the t-th Sylvester matrix. Note this is a linear problem, any
 % alpha and theta values are already included in f(x) and g(x).
@@ -77,7 +77,7 @@ Yt = BuildYt(x,m,n,t);
 
 % Build the matrix C for LSE Problem
 H_z = Yt - Pt;
-H_x = At+Et;
+H_x = At + Et;
 
 C = [H_z H_x];
 
@@ -107,6 +107,7 @@ ite = 1;
 
 % Set the termination criterion
 condition(ite) = norm(g)./ norm(ct);
+
 global SETTINGS
 while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTLN
 
@@ -123,12 +124,11 @@ while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTL
     
     % obtain the small changes to z and x
     delta_zk        = y_lse(1:m+n+2,1);
-    delta_xk        = y_lse((m+n+3):(2*m+2*n-2*t+3),1);
+    %delta_xk        = y_lse((m+n+3):(2*m+2*n-2*t+3),1);
     
     % Update z and x
     z = z + delta_zk;
-    x_ls = x_ls + delta_xk;
-    
+ 
     % Split z into z_f and z_g
     zf = z(1:m+1); 
     zg = z(m+2:end);
@@ -143,6 +143,8 @@ while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTL
     % Get the column vector h_{t}, the optimal column removed from B_{t},
     % and equivalent to c_{t} removed from S_{t}
     ht = Bt(:,colIndex);
+    
+    x_ls = SolveAx_b(At+Et,ct+ht);
     
     % Get the updated vector x
     x = ...
@@ -172,7 +174,7 @@ while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTL
     
 end
 
-global SETTINGS
+
 switch SETTINGS.PLOT_GRAPHS
     case 'y'
         figure_name = sprintf('%s - Residuals',mfilename);
@@ -187,13 +189,20 @@ end
 % If the final condition is less than the original, output the new values,
 % otherwise output the old values for f(x) and g(x).
 if (condition(ite) < condition(1))
-    fx = fx + zf;
-    gx = gx + zg;
+    fx_out = fx + zf;
+    gx_out = gx + zg;
 else
   % Do nothing
+  fx_out = fx;
+  gx_out = gx;
 end
 
 fprintf([mfilename ' : ' sprintf('Required number of iterations : %i \n',ite)])
+
+format long
+display([fx zf fx_out])
+display([gx zg gx_out])
+
 
 end
 

@@ -7,7 +7,7 @@ function [h] = Deconvolve_Set(arr_fx)
 
 global SETTINGS
 
-switch SETTINGS.DECONVOLVE_METHOD
+switch SETTINGS.DECONVOLUTION_METHOD
     case 'Separate'
         for i = 1:1:nPolys-1
             h{i} = Deconvolve(arr_fx{i},arr_fx{i+1}) ;

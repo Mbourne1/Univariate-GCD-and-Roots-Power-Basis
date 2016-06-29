@@ -74,7 +74,6 @@ x = linprog(f,A,b);
 try
     theta = 10^x(3);
     alpha = 10^x(4);
-    %fprintf('Optimal theta 1 and theta 2 given by: \n  theta_{1}: %0.5e \n  theta_{2}: %0.5e',theta1,theta2)
 catch
     fprintf('Failed to optimize\n')
     theta = 1;
