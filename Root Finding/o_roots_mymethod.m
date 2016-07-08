@@ -122,21 +122,30 @@ vMultiplicities = find(deg_struct_w~=0);
 global SETTINGS
 
 switch SETTINGS.ROOTS_UX
-    case 'From Deconvolution'
-        hx = Deconvolve_Set(fx);
-
-        %hx_new = Deconvolve_Batch_Constrained(fx,vMultiplicities);
+    case 'From Deconvolutions'
         
-        %arr_wx_new = Deconvolve(hx_new);
-        %display(arr_wx_new)
+        %
+        % 'Deconvolve'
+        % 'Deconvolve Batch Constrained'
+        %
+        deconvolution = 'Deconvolve Batch Constrained';
+        deconvolution = 'Deconvolve';
         
-        % set the w1{max} = h1{max}
-        %arr_wx_new{length(arr_wx_new)+1} = hx{length(hx)};
-        
+        switch deconvolution
+            case 'Deconvolve'
+                hx = Deconvolve_Set(fx);
+                
+            case 'Deconvolve Batch Constrained'
+                hx = Deconvolve_Batch_Constrained(fx,vMultiplicities);
+        end
+               
     case 'From ux'
+        
         hx = ux;
+        
     otherwise
-        error('err')
+        str = sprintf([mfilename ' : ' sprintf('ROOTS_UX is either From Deconvolutions or From ux') '\n']); 
+        error(str)
         
 end
 

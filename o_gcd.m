@@ -29,15 +29,31 @@ function [] = o_gcd(ex_num,emin,emax,mean_method, bool_alpha_theta,low_rank_appr
 % >> o_gcd('1',1e-12,1e-10,'Geometric Mean Matlab Method', 'y','Standard STLN')
 % >> o_gcd(ex_num,1e-12,1e-10,'Geometric Mean Matlab Method', 'y','Standard STLN')
 % >> ex_num = 'Custom:m=10n=5t=2.low=-1high=2'
+
+% Initialise global variables
 global SETTINGS
 
+% Set Problem Type : Either 'GCD' or 'Roots'
 problem_type = 'GCD';
-SETTINGS.NOISE_TYPE = 'Coefficients';
 
+% Set global variables
 SetGlobalVariables(problem_type,ex_num,emin,emax,mean_method,bool_alpha_theta,low_rank_approx_method)
 
+% Add Relevant Paths
+addpath('Examples','Formatting','GetGCDDegree','GCD Finding')
+
 % Get coefficients of f(x,y) g(x,y) from example file
-[fx_noisy, gx_noisy,fx_exact,gx_exact,dx_exact,ux_exact,vx_exact] = Examples_GCD(ex_num);
+[fx_exact, gx_exact, dx_exact,ux_exact,vx_exact] = Examples_GCD(ex_num);
+
+
+ 
+emin = SETTINGS.EMIN;
+emax = SETTINGS.EMAX;
+
+% Add noise to the coefficients of polynomials f(x) and g(x) at a
+% predefined signal-to-noise ratio.
+[fx_noisy,~] = Noise(fx_exact,emin,emax);
+[gx_noisy,~] = Noise(gx_exact,emin,emax);
 
 fx = fx_noisy;
 gx = gx_noisy;

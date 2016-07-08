@@ -6,9 +6,6 @@ function [res,index] = GetMinDistance(Sk)
 %
 % Sk :
 
-
-
-
 % Get the number of columns in Sk
 [~,nColsSk] = size(Sk);
 

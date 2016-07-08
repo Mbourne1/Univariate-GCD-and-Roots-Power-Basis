@@ -1,42 +1,47 @@
-function arr_hw = Deconvolve_Batch(set_f)
+function arr_hx = Deconvolve_Batch(arr_fx)
 % Given the set of polynomials f_{0},...,f_{1}. compute the series of
 % deconvolutions h_{1} = f_{1}/f_{0} h_{2} = f_{2}/f_{1},...
 % Perform the deconvolutions by producing the structure
 % diag [ C(f_{1}) C(f_{2}) ... ] [h1 h2 ...]^{T} = [f_{0} f_{1} ...]
+%
+% % Inputs
+%
+% arr_fx : Array of polynomials f_{i}(x)
+%
+% % Outputs.
+%
+% arr_hx : Array of polynomials h_{i}(x)
 
-% Global Variables.
-global SETTINGS
 
-
-% Get the number of polynomials in the set set_f
-nPolys_f = length(set_f);
+% Get the number of polynomials in the set arr_fx
+nPolys_f = length(arr_fx);
 
 % let d be the number of deconvolutions = number of polys in set_f - 1;
 d = nPolys_f - 1;
 
 % Get the degree m_{i} of each of the polynomials f_{i} and store in a
 % vector.
-m = zeros(nPolys_f,1);
+vDeg_arr_fx = zeros(nPolys_f,1);
 for i = 1:1:nPolys_f
-    m(i) = GetDegree(set_f{i});
+    vDeg_arr_fx(i) = GetDegree(arr_fx{i});
 end
 
 % Get the degrees n{i} of polynomials h_{i} = f_{i}/f_{i+1}.
-n = zeros(1,nPolys_f-1);
+vDeg_arr_hx = zeros(1,nPolys_f-1);
 for i = 1:1:nPolys_f-1
-    n(i) = m(i)-m(i+1);
+    vDeg_arr_hx(i) = vDeg_arr_fx(i)-vDeg_arr_fx(i+1);
 end
 
 % Define M to be the total number of all coefficients of the first d polynomials
 % f_{0}...f_{d-1},
-M = sum(m+1) - (m(end)+1);
+M = sum(vDeg_arr_fx+1) - (vDeg_arr_fx(end)+1);
 
 % Define M1 to be the total number of all coefficients of polynomials
 % f_{0},...,f_{d}
-M1 = sum(m+1) ;
+M1 = sum(vDeg_arr_fx+1) ;
 
 % Define N to be the number of coefficients of all h_{i}
-N = sum(n+1);
+N = sum(vDeg_arr_hx+1);
 
 % Obtain theta such that the ratio of max element to min element is
 % minimised
@@ -44,11 +49,11 @@ N = sum(n+1);
 theta = 1;
 
 % Initialise a cell-array for f(w)
-fw = cell(1,length(set_f));
+fw = cell(1,length(arr_fx));
 
 % for each f_{i} get fw_{i}
-for i = 1:1:length(set_f)
-    fw{i} = GetWithThetas(set_f{i},theta);
+for i = 1:1:length(arr_fx)
+    fw{i} = GetWithThetas(arr_fx{i},theta);
 end
 
 RHS_vec = real(BuildRHSF(fw));
@@ -62,157 +67,15 @@ v_h = hw_vec;
 for i = 1:1:nPolys_f-1
     
     % Get degree of h{i}
-    deg_hw = n(i);
+    deg_hw = vDeg_arr_hx(i);
     
     % Get coefficients of h_{i} from the solution vector
-    arr_hw{i} = hw_vec(1:deg_hw+1);
+    arr_hx{i} = hw_vec(1:deg_hw+1);
     
     % Remove the coefficients from the solution vector
     hw_vec(1:deg_hw+1) = [];
 end
 
-hw_vec = v_h;
-
-% Let z be  vectors of perturbations to polynomials fi such that
-% z = [z{0} z{1} z{2} z{3} ... z{d}]
-arr_z = cell(1,length(m));
-for i =1:1:length(m)
-    arr_z{i} = zeros(1,m(i)+1);
-end
-
-% Build vector z, consisting of all vectors z_{i}
-z_o = [arr_z{1:length(arr_z)}];
-z_o = z_o';
-
-% Build the Matrix P
-P = [eye(M) zeros(M,M1-M)];
-
-% Build Matrix Y, where E(z)h = Y(h)z
-Y = BuildY(arr_hw,m);
-
-
-% Set the iteration counter.
-ite = 1;
-
-F = eye(N+M1);
-
-G = [DCQ (Y)-P];
-
-s = [hw_vec ; z_o];
-
-% Compute the first residual
-res_vec = (RHS_vec + (P*z_o) - (DCQ*v_h));
-
-zw_ite = z_o;
-
-% Renew Matrix Pz
-Pz = P*zw_ite;
-
-% Get the initial residual
-condition(ite) = norm(res_vec)./norm(RHS_vec+Pz);
-
-hw_ite = hw_vec;
-
-start_point = ...
-    [
-    hw_vec;
-    z_o;
-    ];
-
-yy = start_point;
-
-% Perform iteration to obtain perturbations
-
-while (condition(ite) > SETTINGS.MAX_ERROR_DECONVOLUTIONS)  && ...
-        (ite < SETTINGS.MAX_ITERATIONS_DECONVOLUTIONS)
-    
-    % Use the QR decomposition to solve the LSE problem and then
-    % update the solution.
-    % min |Fy-s| subject to Gy=t
-    y = LSE(F,s,G,res_vec);
-    
-    yy = yy + y;
-    
-    % Output y gives delta h and delta z
-    delta_h = y(1:N);
-    delta_z = y(N+1:end);
-    
-    % Add structured perturbations to vector h.
-    hw_ite = hw_ite + delta_h;
-    
-    
-    % Add structured perturbations to vector z.
-    zw_ite = zw_ite + delta_z;
-    
-    % Seperate delta_z into its component vectors delta_z0 delta_z1,...,
-    % delta_zd
-    zz = zw_ite;
-    
-    zi_ite = cell(1,length(n)+1);
-    for i = 1:1:length(n)+1
-        zi_ite{i} = zz(1:m(i)+1);
-        zz(1:m(i)+1) = [];
-    end
-    
-    % Renew Matrix Pz
-    Pz = P*zw_ite;
-    
-    %Increment s in LSE Problem
-    s = -(yy-start_point);
-    
-    % Copy vector h_ite
-    hh = hw_ite;
-    
-    % Move individual vectors hi into variable size array, emptying
-    % hh
-    for i = 1:1:length(n)
-        hh(1:n(i)+1);
-        arr_hw{i} = hh(1:n(i)+1);
-        hh(1:n(i)+1) = [];
-    end
-    
-    %Build iterative DYU
-    Y = BuildY(arr_hw,m);
-    
-    
-    % add the structured perturbations to improved fw array.
-    for i = 1:length(fw)
-        new_fw{i} = fw{i} + zi_ite{i};
-    end
-    
-    %Build the matrix CE = C + E
-    CE = BuildC(new_fw) ;
-    
-    % Build G
-    G = [CE (Y-P)];
-    
-    % Calculate residual and increment t in LSE Problem
-    res_vec = ((RHS_vec+Pz) - (CE*hw_ite));
-    
-    
-    % Increment iteration number
-    ite = ite + 1;
-    
-    condition(ite) = norm(res_vec)./norm(RHS_vec+Pz);
-    
-    
-end
-
-
-
-% Print outputs to command line
-fprintf([mfilename ' : ' 'Performed Deconvolutions\n'])
-fprintf([mfilename ' : ' sprintf('Iterations required for Batch Deconvolution %i\n', ite)])
-
-switch SETTINGS.PLOT_GRAPHS
-    case 'y'
-        figure_name = sprintf('%s : Condition',mfilename);
-        figure('name',figure_name)
-        hold on
-        plot(log10(condition),'-s')
-        hold off
-    case 'n'
-end
 
 end
 

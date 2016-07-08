@@ -1,45 +1,14 @@
-function [fx] = Examples_Roots(ex_num)
-
-
-EXAMPLE_TYPE = 'From Roots';
-
-switch EXAMPLE_TYPE
-    case 'From Roots'
-        
-        % Get a set of roots and multiplicities for f(x)
-        fx_root_mult_array = Examples_Roots_FromRoots(ex_num);
-        
-        % Get the coefficients of the polynomial f(x)
-        fx = GetCoefficients(fx_root_mult_array);
-        
-        % Print the roots and coefficients of f(x)
-        PrintFactorization(fx_root_mult_array,'f')
-        PrintCoefficientsBivariate(fx,'f')
-        
-    case 'From Coefficients'
-        
-        % Get the coefficients of polynomial f(x)
-        fx = Examples_Roots_FromCoefficients(ex_num);
-        PrintCoefficientsBivariate(fx,'f')
-        
-    otherwise
-        error('Example polynomial is either from roots or from coefficients')
-end
-
-end
-
-
 function root_mult_array_fx = Examples_Roots_FromRoots(ex_num)
 % Given an example number, return a polynomial in terms of its roots and
 % their corresponding multiplicities.
 %
 % Input
 %
-% Example Number
+% ex_num : Example Number
 %
 % Outputs.
 %
-% root_mult_arr : Array of roots and corresponding multiplicities in f(x)
+% root_mult_array_fx : Array of roots and corresponding multiplicities in f(x)
 
 
 
@@ -198,27 +167,3 @@ end
 
 end
 
-
-function fx_exact = Examples_Roots_FromCoefficients(ex_num)
-
-switch ex_num
-    case '1'
-        fx_exact = [1; 1; -2; -2; 1; 1];
-    case '2'
-        fx_exact = [-1; -1; 1; 1];
-    case '3'
-        fx_exact = [-5; 1; -5; 1];
-    case '4'
-        fx_exact = [48; -32; 0; 0; 1];
-    case '5' %2 - 2*x - 6*x^4 + 6*x^5 + 6*x^8 - 6*x^9 -2*x^12 + 2*x^13
-        fx_exact = [2; -2; 0; 0; -6; 6; 0; 0; 6; -6; 0; 0; -2; 2];
-    case '6'
-        % intersection of 
-        % x^2 + (y+5)^2 - 5^2
-        % 'x^2-y'
-        fx_exact = [0; 0; 11; 0; 1];
-    otherwise 
-        error('err')
-end
-
-end

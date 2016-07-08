@@ -1591,3 +1591,8 @@ rd STLN
 20-Jun-2016 17:50:28, 	 GCD, 	 1, 	 4, 	 3, 	     1, 	 1.093308e-13, 	 Geometric Mean Matlab Method, 	 y, 	 1.000000e-12, 	 1.000000e-10, 	 Standard STLN 
 20-Jun-2016 17:51:03, 	 GCD, 	 1, 	 4, 	 3, 	     1, 	 1.093308e-13, 	 Geometric Mean Matlab Method, 	 y, 	 1.000000e-12, 	 1.000000e-10, 	 Standard STLN 
 20-Jun-2016 17:51:18, 	 GCD, 	 0, 	 6, 	 6, 	     3, 	 2.438045e-10, 	 Geometric Mean Matlab Method, 	 y, 	 1.000000e-12, 	 1.000000e-10, 	 Standard STLN 
+05-Jul-2016 16:53:47, 	 GCD, 	 1, 	 4, 	 3, 	     1, 	 1.093308e-13, 	 Geometric Mean Matlab Method, 	 y, 	 1.000000e-12, 	 1.000000e-10, 	 Standard STLN 
+05-Jul-2016 16:56:52, 	 GCD, 	 1, 	 4, 	 3, 	     1, 	 1.093308e-13, 	 Geometric Mean Matlab Method, 	 y, 	 1.000000e-12, 	 1.000000e-10, 	 Standard STLN 
+05-Jul-2016 17:03:59, 	 GCD, 	 1, 	 4, 	 3, 	     1, 	 1.112175e-13, 	 Geometric Mean Matlab Method, 	 y, 	 1.000000e-12, 	 1.000000e-10, 	 None 
+08-Jul-2016 08:38:35, 	 GCD, 	 1, 	 4, 	 3, 	     1, 	 1.093308e-13, 	 Geometric Mean Matlab Method, 	 y, 	 1.000000e-12, 	 1.000000e-10, 	 Standard STLN 
+08-Jul-2016 08:38:52, 	 GCD, 	 1, 	 4, 	 3, 	     1, 	 1.112175e-13, 	 Geometric Mean Matlab Method, 	 y, 	 1.000000e-12, 	 1.000000e-10, 	 None 

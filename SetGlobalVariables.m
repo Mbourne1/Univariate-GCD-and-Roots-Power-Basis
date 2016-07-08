@@ -20,14 +20,17 @@ SETTINGS.MAX_ITE_SNTLN = 100;
 SETTINGS.MAX_ERROR_DECONVOLUTIONS = 1e-10;
 SETTINGS.MAX_ITERATIONS_DECONVOLUTIONS = 20;
 
+%
 % Separate
 % Batch
+%
 SETTINGS.DECONVOLUTION_METHOD = 'Separate';
 
-
+%
 % From ux
-% From deconvolutions
-SETTINGS.ROOTS_UX = 'From ux';
+% From Deconvolutions
+%
+SETTINGS.ROOTS_UX = 'From Deconvolutions';
 end
 
 

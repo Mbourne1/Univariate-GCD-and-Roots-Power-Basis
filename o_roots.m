@@ -34,11 +34,10 @@ function [] = o_roots(ex_num,emin,emax,mean_method,bool_alpha_theta,low_rank_app
 % >> o_roots('1', 1e-10, 1e-12, 'Geometric Mean Matlab Method', 'y', 'Standard STLN')
 % >> o_roots('Custom:m=5 low=-1 high=2', 1e-10, 1e-12, 'Geometric Mean Matlab Method', 'y', 'Standard STLN')
 
+% Add Subfolders
+addpath('Root Finding','Examples','Deconvolution');
 
-
-% %
-% % Setting global variables
-% %
+% Initialise global variables
 global SETTINGS
 
 if ~isempty(SETTINGS)
@@ -66,6 +65,7 @@ fx = Noise(fx,emin,emax);
 % % MY METHOD
 % %
 % %
+
 % try
     mymethod_tic = tic;
     % Get roots by my method and compare the computed f(x) with the exact f(x)
@@ -74,8 +74,8 @@ fx = Noise(fx,emin,emax);
     LineBreakLarge()
     time.MyMethod = toc(mymethod_tic);
 % catch err
-%     fprintf(err.message)
-%     fprintf('Error my method')
+%     fprintf([err.message '\n'])
+%     fprintf('Error my method \n')
 %     rel_err.MyMethod = 9999999;
 %     time.MyMethod = 9999999;
 % end
@@ -85,6 +85,7 @@ fx = Noise(fx,emin,emax);
 % % MUSSER METHOD
 % %
 % %
+
 try
     MusserMethod_tic = tic;
     [root_multiplicity_array_MusserMethod] = o_roots_Musser(fx);
@@ -104,6 +105,7 @@ end
 % % YUN METHOD
 % %
 % %
+
 % YunMethod_tic = tic;
 % [root_multiplicity_array_YunMethod] = o_roots_Yun(fx);
 % rel_err.YunMethod = GetRelativeError(root_multiplicity_array_YunMethod,fx_exact,'Musser Method');
