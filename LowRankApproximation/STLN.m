@@ -1,8 +1,8 @@
-function [fx_out,gx_out] = STLN(fx,gx,t)
-% Perform Structured Total Least Norm to obtain a low rank approximation 
+function [fx_lr,gx_lr] = STLN(fx,gx,t)
+% Perform Structured Total Least Norm to obtain a low rank approximation
 % of the t-th Sylvester matrix. Note this is a linear problem, any
 % alpha and theta values are already included in f(x) and g(x).
-% 
+%
 %
 % % Inputs.
 %
@@ -14,10 +14,11 @@ function [fx_out,gx_out] = STLN(fx,gx,t)
 %
 % % Outputs.
 %
-% fx : Coefficients of f(x) after refinement f(x) + \delta
+% fx_lr : Coefficients of f(x) after refinement f(x) + \delta
 %
-% gx : coefficients of g(x) after refinement g(x) + \delta
+% gx_lr : Coefficients of g(x) after refinement g(x) + \delta
 
+global SETTINGS
 
 % Get degree of polynomial f(x)
 m = GetDegree(fx);
@@ -54,11 +55,11 @@ At(:,colIndex) = [];
 % Get c_{t} the removed column of S_{t} to form A_{t}.
 ct = St(:,colIndex);
 
-% Get E_{t}, the matrix of strucured perturbations corresponding to A_{t}.
+% Get E_{t}, the matrix of structured perturbations corresponding to A_{t}.
 Et = Bt;
 Et(:,colIndex) = [];
 
-% Get h_{t}, the vector of strucutred perturbations corresponding to c_{t}
+% Get h_{t}, the vector of structured perturbations corresponding to c_{t}
 ht = Bt(:,colIndex);
 
 % Build Pt
@@ -84,6 +85,7 @@ C = [H_z H_x];
 % Build the matrix E for LSE Problem
 E = eye(2*m+2*n-2*t+3);
 %E = blkdiag(eye(m+n+2),zeros(m+n-2*t+1,m+n-2*t+1))
+
 % Build the matrix D which accounts for repetitions of z_{i} in B_{k}
 %E = blkdiag(eye(n-t+1),eye(m-t+1));
 
@@ -108,9 +110,10 @@ ite = 1;
 % Set the termination criterion
 condition(ite) = norm(g)./ norm(ct);
 
-global SETTINGS
-while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTLN
 
+
+while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTLN
+    
     % Increment interation counter
     ite = ite + 1;
     
@@ -124,19 +127,19 @@ while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTL
     
     % obtain the small changes to z and x
     delta_zk        = y_lse(1:m+n+2,1);
-    %delta_xk        = y_lse((m+n+3):(2*m+2*n-2*t+3),1);
+    
     
     % Update z and x
     z = z + delta_zk;
- 
+    
     % Split z into z_f and z_g
-    zf = z(1:m+1); 
+    zf = z(1:m+1);
     zg = z(m+2:end);
     
     % Build the matrix B_{t} = [E1(zf) E2(zg)]
     Bt = BuildT(zf,zg,t);
     
-    % Get the matrix E_{t} with optimal column removed 
+    % Get the matrix E_{t} with optimal column removed
     Et = Bt;
     Et(:,colIndex) = [];
     
@@ -144,15 +147,24 @@ while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTL
     % and equivalent to c_{t} removed from S_{t}
     ht = Bt(:,colIndex);
     
-    x_ls = SolveAx_b(At+Et,ct+ht);
+    opt = 1;
+    switch opt
+        case '1'
+            delta_xk        = y_lse((m+n+3):(2*m+2*n-2*t+3),1);
+            x = x + delta_xk;
+        case '2'
+            
+            x_ls = SolveAx_b(At+Et,ct+ht);
+            
+            % Get the updated vector x
+            x = ...
+                [
+                x_ls(1:colIndex-1);
+                0 ;
+                x_ls(colIndex:end);
+                ];
+    end
     
-    % Get the updated vector x
-    x = ...
-        [
-        x_ls(1:colIndex-1); 
-        0 ;
-        x_ls(colIndex:end);
-        ];
     
     % Build the matrix Y_{t} where Y_{t}(x)*z = E_{t}(z) * x
     Yt = BuildYt(x,m,n,t);
@@ -170,7 +182,7 @@ while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTL
     f = -(yy-start_point);
     
     % Update the termination criterion
-    condition(ite) = norm(g)./norm(ct+ht) ;
+    condition(ite) = norm(g)./norm(ct + ht) ;
     
 end
 
@@ -189,19 +201,19 @@ end
 % If the final condition is less than the original, output the new values,
 % otherwise output the old values for f(x) and g(x).
 if (condition(ite) < condition(1))
-    fx_out = fx + zf;
-    gx_out = gx + zg;
+    fx_lr = fx + zf;
+    gx_lr = gx + zg;
 else
-  % Do nothing
-  fx_out = fx;
-  gx_out = gx;
+    % Do nothing
+    fx_lr = fx;
+    gx_lr = gx;
 end
 
 fprintf([mfilename ' : ' sprintf('Required number of iterations : %i \n',ite)])
 
 format long
-display([fx zf fx_out])
-display([gx zg gx_out])
+display([fx zf fx_lr])
+display([gx zg gx_lr])
 
 
 end
@@ -215,18 +227,18 @@ if idx_Col <= n-t+1
     i = idx_Col;
     Pt = ...
         [
-            zeros(i-1,m+1)      zeros(i-1,n+1);
-            eye(m+1,m+1)        zeros(m+1,n+1);
-            zeros(n-t-i+1,m+1)  zeros(n-t-i+1,n+1);
+        zeros(i-1,m+1)      zeros(i-1,n+1);
+        eye(m+1,m+1)        zeros(m+1,n+1);
+        zeros(n-t-i+1,m+1)  zeros(n-t-i+1,n+1);
         ];
 else
     % Second Partition
     i = idx_Col - (n-t+1);
     Pt = ...
         [
-            zeros(i-1,m+1)      zeros(i-1,n+1);
-            zeros(n+1,m+1)      eye(n+1,n+1) 
-            zeros(m-t-i+1,m+1)  zeros(m-t-i+1,n+1);
+        zeros(i-1,m+1)      zeros(i-1,n+1);
+        zeros(n+1,m+1)      eye(n+1,n+1)
+        zeros(m-t-i+1,m+1)  zeros(m-t-i+1,n+1);
         ];
     
 end

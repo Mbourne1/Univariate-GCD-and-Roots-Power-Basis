@@ -27,6 +27,7 @@ function [] = o_gcd(ex_num,emin,emax,mean_method, bool_alpha_theta,low_rank_appr
 % % Example
 %
 % >> o_gcd('1',1e-12,1e-10,'Geometric Mean Matlab Method', 'y','Standard STLN')
+%
 % >> o_gcd(ex_num,1e-12,1e-10,'Geometric Mean Matlab Method', 'y','Standard STLN')
 % >> ex_num = 'Custom:m=10n=5t=2.low=-1high=2'
 
@@ -40,7 +41,11 @@ problem_type = 'GCD';
 SetGlobalVariables(problem_type,ex_num,emin,emax,mean_method,bool_alpha_theta,low_rank_approx_method)
 
 % Add Relevant Paths
-addpath('Examples','Formatting','GetGCDDegree','GCD Finding')
+addpath('Examples',...
+    'Formatting',...
+    'GetGCDDegree',...
+    'GCD Finding',...
+    'LowRankApproximation');
 
 % Get coefficients of f(x,y) g(x,y) from example file
 [fx_exact, gx_exact, dx_exact,ux_exact,vx_exact] = Examples_GCD(ex_num);

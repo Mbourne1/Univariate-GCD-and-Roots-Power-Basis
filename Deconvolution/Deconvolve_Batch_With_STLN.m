@@ -1,4 +1,4 @@
-function arr_hw = Deconvolve_Batch_With_STLN(set_f)
+function arr_hx = Deconvolve_Batch_With_STLN(set_f)
 % Given the set of polynomials f_{0},...,f_{1}. compute the series of
 % deconvolutions h_{1} = f_{1}/f_{0} h_{2} = f_{2}/f_{1},...
 % Perform the deconvolutions by producing the structure
@@ -9,21 +9,21 @@ global SETTINGS
 
 
 % Get the number of polynomials in the set set_f
-nPolys_f = length(set_f);
+nPolys_fx = length(set_f);
 
 % let d be the number of deconvolutions = number of polys in set_f - 1;
-d = nPolys_f - 1;
+d = nPolys_fx - 1;
 
 % Get the degree m_{i} of each of the polynomials f_{i} and store in a
 % vector.
-m = zeros(nPolys_f,1);
-for i = 1:1:nPolys_f
+m = zeros(nPolys_fx,1);
+for i = 1:1:nPolys_fx
     m(i) = GetDegree(set_f{i});
 end
 
 % Get the degrees n{i} of polynomials h_{i} = f_{i}/f_{i+1}.
-n = zeros(1,nPolys_f-1);
-for i = 1:1:nPolys_f-1
+n = zeros(1,nPolys_fx-1);
+for i = 1:1:nPolys_fx-1
     n(i) = m(i)-m(i+1);
 end
 
@@ -33,10 +33,10 @@ M = sum(m+1) - (m(end)+1);
 
 % Define M1 to be the total number of all coefficients of polynomials
 % f_{0},...,f_{d}
-M1 = sum(m+1);
+nCoefficients_fx = sum(m+1);
 
 % Define N to be the number of coefficients of all h_{i}
-N = sum(n+1);
+nCoefficients_hx = sum(n+1);
 
 % Obtain theta such that the ratio of max element to min element is
 % minimised
@@ -44,80 +44,78 @@ N = sum(n+1);
 theta = 1;
 
 % Initialise a cell-array for f(w)
-fw = cell(1,length(set_f));
+fw = cell(1,nPolys_fx);
 
 % for each f_{i} get fw_{i}
-for i = 1:1:length(set_f)
+for i = 1 : 1 : nPolys_fx 
     fw{i} = GetWithThetas(set_f{i},theta);
 end
 
 RHS_vec = real(BuildRHSF(fw));
-DCQ = BuildC(fw);
+
+Cf = BuildC(fw);
 
 % Solve h_{0} for initial values of h
-hw_vec = SolveAx_b(DCQ,RHS_vec);
-v_h = hw_vec;
+v_hx = SolveAx_b(Cf,RHS_vec);
 
 % Split vec h in to an array of polynomials.
-for i = 1:1:nPolys_f-1
+for i = 1:1:nPolys_fx-1
     
     % Get degree of h{i}
     deg_hw = n(i);
     
     % Get coefficients of h_{i} from the solution vector
-    arr_hw{i} = hw_vec(1:deg_hw+1);
+    arr_hx{i} = v_hx(1:deg_hw+1);
     
     % Remove the coefficients from the solution vector
-    hw_vec(1:deg_hw+1) = [];
+    v_hx(1:deg_hw+1) = [];
 end
-
-hw_vec = v_h;
 
 % Let z be  vectors of perturbations to polynomials fi such that
 % z = [z{0} z{1} z{2} z{3} ... z{d}]
-arr_z = cell(1,length(m));
-for i =1:1:length(m)
+arr_z = cell(1,nPolys_fx);
+
+for i = 1 : 1 : nPolys_fx
     arr_z{i} = zeros(1,m(i)+1);
 end
 
 % Build vector z, consisting of all vectors z_{i}
-z_o = [arr_z{1:length(arr_z)}];
-z_o = z_o';
+z_o = [arr_z{:}]';
 
 % Build the Matrix P
-P = [eye(M) zeros(M,M1-M)];
+P = [eye(M) zeros(M,nCoefficients_fx-M)];
 
 % Build Matrix Y, where E(z)h = Y(h)z
-Y = BuildY(arr_hw,m);
-
+Y = BuildY(arr_hx,m);
 
 % Set the iteration counter.
 ite = 1;
 
-F = eye(N+M1);
 
-G = [DCQ (Y)-P];
+F = eye(nCoefficients_hx + nCoefficients_fx);
 
-s = [hw_vec ; z_o];
+G = [Cf Y-P];
 
 % Compute the first residual
-res_vec = (RHS_vec + (P*z_o) - (DCQ*v_h));
+res_vec = (RHS_vec + (P*z_o) - (Cf*v_hx));
 
-zw_ite = z_o;
+zx_ite = z_o;
 
-% Renew Matrix Pz
-Pz = P*zw_ite;
+% Update Matrix Pz
+Pz = P*zx_ite;
 
 % Get the initial residual
-condition(ite) = norm(res_vec)./norm(RHS_vec+Pz);
+condition(ite) = norm(res_vec)./norm(RHS_vec + Pz);
 
-hw_ite = hw_vec;
+v_hx_ite = v_hx;
 
 start_point = ...
     [
-    hw_vec;
-    z_o;
+        v_hx;
+        z_o;
     ];
+
+s = yy - start_point;
 
 yy = start_point;
 
@@ -134,60 +132,63 @@ while (condition(ite) > SETTINGS.MAX_ERROR_DECONVOLUTIONS)  && ...
     yy = yy + y;
     
     % Output y gives delta h and delta z
-    delta_h = y(1:N);
-    delta_z = y(N+1:end);
+    delta_h = y(1:nCoefficients_hx);
+    delta_z = y(nCoefficients_hx+1:end);
     
-    % Add structured perturbations to vector h.
-    hw_ite = hw_ite + delta_h;
-    
+    % Add structured perturbations to vector hx.
+    v_hx_ite = v_hx_ite + delta_h;
     
     % Add structured perturbations to vector z.
-    zw_ite = zw_ite + delta_z;
+    zx_ite = zx_ite + delta_z;
     
     % Seperate delta_z into its component vectors delta_z0 delta_z1,...,
     % delta_zd
-    zz = zw_ite;
+    zz = zx_ite;
     
-    zi_ite = cell(1,length(n)+1);
-    for i = 1:1:length(n)+1
-        zi_ite{i} = zz(1:m(i)+1);
+    arr_zx_ite = cell(1,nPolys_fx);
+    for i = 1:1:nPolys_fx
+        arr_zx_ite{i} = zz(1:m(i)+1);
         zz(1:m(i)+1) = [];
     end
     
     % Renew Matrix Pz
-    Pz = P*zw_ite;
+    Pz = P*zx_ite;
     
-    %Increment s in LSE Problem
-    s = -(yy-start_point);
+    % Increment s in LSE Problem
+    s = -(yy - start_point);
     
-    % Copy vector h_ite
-    hh = hw_ite;
+    % Copy vector hx_ite 
+    hx_temp = v_hx_ite;
     
     % Move individual vectors hi into variable size array, emptying
     % hh
     for i = 1:1:length(n)
-        hh(1:n(i)+1);
-        arr_hw{i} = hh(1:n(i)+1);
-        hh(1:n(i)+1) = [];
+       
+        % Get set of coefficients of polynomial h_{i}(x)
+        arr_hx{i} = hx_temp(1:n(i)+1);
+        
+        % Remove coeffficients from hx_temp
+        hx_temp(1:n(i)+1) = [];
     end
     
-    %Build iterative DYU
-    Y = BuildY(arr_hw,m);
+    % Build iterative Y, where Y
+    Y = BuildY(arr_hx,m);
     
     
-    % add the structured perturbations to improved fw array.
+    % Add the structured perturbations to improved fx array.
+    arr_new_fx = cell(1,nPolys_fx);
     for i = 1:length(fw)
-        new_fw{i} = fw{i} + zi_ite{i};
+        arr_new_fx{i} = fw{i} + arr_zx_ite{i};
     end
     
-    %Build the matrix CE = C + E
-    CE = BuildC(new_fw) ;
+    % Build the matrix CE = C(f) + E(z)
+    CE = BuildC(arr_new_fx) ;
     
     % Build G
     G = [CE (Y-P)];
     
     % Calculate residual and increment t in LSE Problem
-    res_vec = ((RHS_vec+Pz) - (CE*hw_ite));
+    res_vec = ((RHS_vec+Pz) - (CE*v_hx_ite));
     
     
     % Increment iteration number
@@ -288,28 +289,30 @@ C = blkdiag(T{1:length(T)});
 
 end
 
-function Y = BuildY(set_hw,m)
-% Build the coefficient matrix DYU. This is the change of variable such
+function Y = BuildY(arr_hx,m)
+% Build the coefficient matrix Y. This is the change of variable such
 % that
-% D^{-1}*E(z)*Q * g = D^{-1}*Y(g)*U * z
+% E(z)*h = Y(h)*f
 
-for i = 1:1:length(set_hw)
+for i = 1:1:length(arr_hx)
     
     % Start with f1*h1
     % h_{1} is the first in the cell array h_{i}
     % f_{1} is the second in the cell array f_{i}
     % deg(f_{1}) = m(2)
     
-    % Get polynomial h(w)
-    hw = set_hw{i};
+    % Get polynomial h_{i}(x)
+    hx = arr_hx{i};
     
-    % Get degree of f_{i}
-    deg_fw = m(i+1);
+    % Get degree of f_{i}(x)
+    deg_fx = m(i+1);
     
-    y{i} = real(BuildY1(hw,deg_fw));
+    Ch{i} = (BuildY1(hx,deg_fx));
 end
 
-%Build the Coefficient Matrix C
+% Build the Coefficient Matrix C
+
+% Must include a diagonal section of zeros, since C*f =
 num_Rows = 0;
 for i = 1:length(m)-1
     num_Rows = num_Rows + 1 + (m(i));
@@ -317,7 +320,7 @@ end
 cols = (m(1)+1);
 
 xx = zeros(num_Rows,cols);
-Y = blkdiag( y{1:length(y)});
+Y = blkdiag( Ch{1:length(Ch)});
 Y = [xx Y];
 
 Y = Y;

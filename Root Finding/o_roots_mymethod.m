@@ -1,4 +1,4 @@
-function [root_mult_array] = o_roots_mymethod(f)
+function [root_mult_array] = o_roots_mymethod(fx)
 % Given the polynomial f(x) calculate its real roots by square free 
 % decomposition.
 % 
@@ -11,35 +11,35 @@ function [root_mult_array] = o_roots_mymethod(f)
 % root_mult_array : output two columns, the first containing the root, the
 %                   second its corresponding multiplicity.
 
+global SETTINGS
+
 
 % Initialise an iteration counter
 ite = 1;
 
 % Initialise an array 'q' which stores the gcd outputs from each gcd
 % calculation
-fx{1} = f;
+arr_fx{1} = fx;
 
 % let vGCD_Degree store the degrees corresponding to the array of
 % GCDs stored in q.
-M(1) = GetDegree(fx{1});
+vDegt_fx(1) = GetDegree(arr_fx{1});
 
 % Let theta_vec store all theta values used in each iteration.
 vTheta(1) = 1;
 
 % Get the number of distinct roots of f_{1}. Since this is unknown at this
 % time, set number of distinct roots to be m_{1} = deg(f_{1}).
-d(1) = GetDegree(fx);
+d(1) = GetDegree(arr_fx);
 
 % Whilst the most recently calculated GCD has a degree greater than
 % zero. ie is not a constant, perform a gcd calculation on it and its
 % derivative.
 
-BOOL_LIMITS = 'y';
-
-while GetDegree(fx{ite}) > 0
+while GetDegree(arr_fx{ite}) > 0
 
     % if degree of f(ite_num) is greater than one
-    if M(ite) > 1
+    if vDegt_fx(ite) > 1
         
         
         fprintf(['\n' mfilename ' : ' sprintf('Compute GCD of f_{%i} and derivative f_{%i}\n\n',ite,ite)]);
@@ -50,17 +50,17 @@ while GetDegree(fx{ite}) > 0
         % Get upper and lower bounds of the next GCD computation
         % M_{i+1} > M_{i} - d_{i-1}
         if ite > 1
-            switch BOOL_LIMITS
+            switch SETTINGS.BOOL_LIMITS
                 case 'y'
-                    lower_lim = max(M(ite)-d(ite-1),1);
-                    upper_lim = M(ite)-1;
+                    lower_lim = max(vDegt_fx(ite)-d(ite-1),1);
+                    upper_lim = vDegt_fx(ite)-1;
                 case 'n'
                     lower_lim =1;
-                    upper_lim = M(ite)-1;
+                    upper_lim = vDegt_fx(ite)-1;
             end
         else
             lower_lim = 1;
-            upper_lim = M(ite)-1;
+            upper_lim = vDegt_fx(ite)-1;
         end
         
         
@@ -69,11 +69,11 @@ while GetDegree(fx{ite}) > 0
         fprintf([ mfilename ' : ' sprintf('Maximum degree of f_{%i}: %i \n\n', ite+1, upper_lim)]);
             
         % (fx_n,gx_n,dx, ux, vx, alpha, theta, t , lambda,mu)
-        [fx{ite},~,fx{ite+1}, ux{ite} ,vx{ite},~,vTheta(ite+1),M(ite+1),~,~] ...
-            = o_gcd_mymethod( fx{ite} , Differentiate(fx{ite}) , [lower_lim,upper_lim]);
+        [arr_fx{ite},~,arr_fx{ite+1}, ux{ite} ,vx{ite},~,vTheta(ite+1),vDegt_fx(ite+1),~,~] ...
+            = o_gcd_mymethod( arr_fx{ite} , Differentiate(arr_fx{ite}) , [lower_lim,upper_lim]);
         
         % Get number of distinct roots of f(ite)
-        d(ite) = M(ite) - M(ite+1);
+        d(ite) = vDegt_fx(ite) - vDegt_fx(ite+1);
         
         
         fprintf([ mfilename ' : ' sprintf('Number of distinct roots in f_{%i} : %i \n',ite,d(ite))]);
@@ -83,15 +83,15 @@ while GetDegree(fx{ite}) > 0
         
         LineBreakMedium();
         
-    elseif M(ite) == 1
+    elseif vDegt_fx(ite) == 1
         % if m = 1, then n = 0, GCD has maximum degree 0.
         dx = 1;
         
         %theta_vec(ite_num+1) = 1;
-        M(ite+1) = 0;
+        vDegt_fx(ite+1) = 0;
         
-        fx{ite+1} = 1;
-        ux{ite} = fx{ite};
+        arr_fx{ite+1} = 1;
+        ux{ite} = arr_fx{ite};
         ite = ite+1;
         
         break;
@@ -102,12 +102,12 @@ end
 
 
 % Get the degree structure of the polynomials h_{i}
-deg_struct_h = diff(M);
+vDeg_hx = diff(vDegt_fx);
 
 % Get the degree structure of the polynomials w_{i}
-deg_struct_w = diff([deg_struct_h 0]);
+vDeg_wx = diff([vDeg_hx 0]);
 
-vMultiplicities = find(deg_struct_w~=0);
+vMultiplicities = find(vDeg_wx~=0);
 
 % %
 % %
@@ -119,26 +119,13 @@ vMultiplicities = find(deg_struct_w~=0);
 % We can either obtain h(x) from the series of deconvolutions on f(x){i} or
 % we can use the already calculated values ux{i}
 %method = 'By Deconvolution';
-global SETTINGS
 
 switch SETTINGS.ROOTS_UX
     case 'From Deconvolutions'
         
-        %
-        % 'Deconvolve'
-        % 'Deconvolve Batch Constrained'
-        %
-        deconvolution = 'Deconvolve Batch Constrained';
-        deconvolution = 'Deconvolve';
-        
-        switch deconvolution
-            case 'Deconvolve'
-                hx = Deconvolve_Set(fx);
+        hx = Deconvolve_Set(arr_fx,SETTINGS.DECONVOLUTION_METHOD_FX_HX);
                 
-            case 'Deconvolve Batch Constrained'
-                hx = Deconvolve_Batch_Constrained(fx,vMultiplicities);
-        end
-               
+            
     case 'From ux'
         
         hx = ux;
@@ -175,7 +162,6 @@ if nCols_hx == 1
 
     factor_x = hx{1};
     
-    
     % Normalise the polynomial coefficients by the leading coefficient x^m
     factor_x = factor_x./factor_x(end);
     
@@ -192,7 +178,7 @@ else
     % perform deconvolutions
     
     % Deconvolve the second set of polynomials
-    wx = Deconvolve_Set(hx);
+    wx = Deconvolve_Set(hx,SETTINGS.DECONVOLUTION_METHOD_HX_WX);
     
     % w1 yields the simple, double, triple roots of input polynomial f.
     % w1{i} yields the roots of multiplicity i.
@@ -213,8 +199,8 @@ else
         poly_wi = wx{i};
         
         % Get the degree of w_{i}
-        [nRows_wi,~] = size(wx{i});
-        deg_wi = nRows_wi -1;
+        deg_wi = GetDegree(wx{i});
+        
         
         % If w_{i} is of degree one, then is of the form (ax+b)
         % and has only one root. Add it to the list of roots.
@@ -253,8 +239,8 @@ end
 
 % create a matrix where the first column contains the multiplicities, and
 % the second column contains the number of roots of that multiplicity
-nPolys_wi = length(deg_struct_w);
-mat = [(1:1:nPolys_wi)' deg_struct_w'];
+nPolys_wi = length(vDeg_wx);
+mat = [(1:1:nPolys_wi)' vDeg_wx'];
 
 count = 1;
 root_mult_array = [];

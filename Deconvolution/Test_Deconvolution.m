@@ -7,36 +7,33 @@ function [] = Test_Deconvolution
 %
 %
 
+% Set settings pertaining to this test
+
+global SETTINGS
+SETTINGS.PLOT_GRAPHS = 'y';
+SETTINGS.MAX_ERROR_DECONVOLUTIONS = 1e-15;
+SETTINGS.MAX_ITERATIONS_DECONVOLUTIONS = 100;
+
 
 % Input f_{i} polynomials
 x = sym('x');
 
+% Set example number 
 ex_num = '2';
 
 switch ex_num
     case '1'
         
-        f{1} = (x-2)^7 * (x-3)^12;
-        f{2} = (x-2)^6 * (x-3)^11;
-        f{3} = (x-2)^5 * (x-3)^10;
-        f{4} = (x-2)^4 * (x-3)^9;
-        f{5} = (x-2)^3 * (x-3)^8;
-        f{6} = (x-2)^2 * (x-3)^7;
-        f{7} = (x-2)^1 * (x-3)^6;
-        f{8} = (x-3)^5;
-        f{9} = (x-3)^4;
-        f{10} = (x-3)^3;
-        f{11} = (x-3)^2;
-        f{12} = (x-3);
-        f{13} = 1;
+        % Create set of factors
+        factor(1) = (x-2);
+        factor(2) = (x-3);
         
+        % Set multiplicity of each factor
         vMult = [7 , 12];
         
     case '2'
-        
-        
-        vMult = [ 2 3 3 3 4 8 ];
-        
+                                
+        % Create Set of factors
         factor(1) = (x-2);
         factor(2) = (x-3.2789);
         factor(3) = (x-1.589);
@@ -44,46 +41,76 @@ switch ex_num
         factor(5) = (x-1.5432);
         factor(6) = (x+5.72);
         
-        highest_pwr = max(vMult);
-        
-        
-        for i = 0:1:highest_pwr
-            
-            mults = ((vMult - i) + abs(vMult-i)) ./2;  
-            
-            f{i+1} = prod(factor.^(mults));
-            M(i+1) = double(feval(symengine, 'degree', (f{i+1})));
-        end
-        
-        
+        % Set multiplicitiy of each factor
+        vMult = [ 1 3 4 4 5 12 ];
 end
+
+% Get highest power of any factor
+highest_pwr = max(vMult);
+
+% Generate polynomials f_{0}(x) ,..., f_{m}(x) = 1. Where each f_{i+1}(x) is
+% the f_{i+1} = GCD(f_{i},f'_{i}).
+for i = 0:1:highest_pwr
+    
+    % Get the multiplicities of the roots of f_{i+1}
+    mults = ((vMult - i) + abs(vMult-i)) ./2;
+    
+    % Get the symbolic polynomial f_{i+1}
+    arr_sym_f{i+1} = prod(factor.^(mults));
+    
+    % Get the degree of polynomial f_{i+1}(x)
+    vDeg_f(i+1) = double(feval(symengine, 'degree', (arr_sym_f{i+1})));
+end
+
 
 % Get the degree structure of the polynomials h_{i}
-deg_struct_h = diff(M);
+vDeg_arr_hx = diff(vDeg_f);
+
 % Get the degree structure of the polynomials w_{i}
-deg_struct_w = diff([deg_struct_h 0]);
+vDeg_arr_wx = diff([vDeg_arr_hx 0]);
+
 % Get the multiplicities of the roots.
-vMultiplicities = find(deg_struct_w~=0);
+vMultiplicities = find(vDeg_arr_wx~=0);
 
-
-for i = 1:1:length(f)-1
-    h{i} = f{i} / f{i+1};
+% Get the sequence of polynomials h_{i}(x) in symbolic form
+for i = 1:1:length(arr_sym_f)-1
+    sym_arr_h{i} = arr_sym_f{i} / arr_sym_f{i+1};
 end
 
 % %
 % %
-% Get coefficients vectors
-for i = 1:1:length(f)
-    try
-        arr_fx{i,1} = sym2poly(f{i})';
-        arr_hx{i,1} = sym2poly(h{i})';
-    catch
+% Get coefficients vectors of f_{i}(x) and h_{i}(x)
+nPolys_arr_fx = length(arr_sym_f);
+nPolys_arr_hx = length(arr_sym_f) - 1;
+
+arr_fx = cell(nPolys_arr_fx,1);
+arr_hx = cell(nPolys_arr_hx,1);
+
+for i = 1:1:nPolys_arr_fx
+    if i <= nPolys_arr_hx
+        arr_fx{i,1} = sym2poly(arr_sym_f{i})';
+        arr_hx{i,1} = sym2poly(sym_arr_h{i})';
+    else
         arr_fx{i,1} = 1;
     end
     
 end
 
+% %
+% %
+% %
+% Add noise to the coefficients of f_{i}(x)
+arr_fx_noisy = cell(nPolys_arr_fx,1);
+emin = 1e-12;
+emax = 1e-12;
+for i = 1:1:nPolys_arr_fx
+    arr_fx_noisy{i,1} = Noise(arr_fx{i},emin,emax);
+end
 
+
+
+
+% -------------------------------------------------------------------------
 % %
 % %
 % %
@@ -93,7 +120,7 @@ LineBreakLarge()
 fprintf('Deconvolve with the constraint that all h_{i} for i between m_{j} and m_{j+1} are equal \n')
 fprintf('Staggered Staircase Method \n\n')
 
-arr_hx_test_1 = Deconvolve_Batch_Constrained(arr_fx,vMultiplicities);
+arr_hx_test_1 = Deconvolve_Batch_Constrained(arr_fx_noisy,vMultiplicities);
 
 for i = 1:1:length(arr_hx_test_1)
     %display(arr_hx_test_1{i} );
@@ -109,24 +136,51 @@ for i = 1:1:length(arr_hx_test_1)
     fprintf([mfilename ': ' sprintf('%i : Error : %2.4e \n', i,err_measure)]);
 end
 
+% -------------------------------------------------------------------------
+% %
+% %
+% %
+% Testing deconvolution batch method with constraints and low rank approx
 
+LineBreakLarge()
+fprintf('Deconvolve with the constraint that all h_{i} for i between m_{j} and m_{j+1} are equal \n')
+fprintf('With STLN \n')
+fprintf('Staggered Staircase Method \n\n')
+
+arr_hx_test_3 = Deconvolve_Batch_Constrained_With_STLN(arr_fx_noisy,vMultiplicities);
+
+for i = 1:1:length(arr_hx_test_3)
+    %display(arr_hx_test_1{i} );
+end
+
+% Compare each computed h{i} with actual h_{i}
+for i = 1:1:length(arr_hx_test_3)
+    
+    exact = arr_hx{i};
+    comp = arr_hx_test_3{i};
+    
+    err_measure = norm(exact - comp) ./ norm(exact);
+    fprintf([mfilename ': ' sprintf('%i : Error : %2.4e \n', i,err_measure)]);
+end
+
+%--------------------------------------------------------------------------
 % %
 % %
 % %
 % Testing standard deconvolution batch method
 LineBreakLarge();
-fprintf('Deconvolve Staircase method \n')
-fprintf('Deconvolution Batch \n')
-arr_hx_test_2 = Deconvolve_Batch(arr_fx);
-for i = 1:1:length(arr_hx_test_2)
+fprintf('Deconvolution Batch (Staircase Method)\n')
+
+arr_hx_test_3 = Deconvolve_Batch(arr_fx_noisy);
+for i = 1:1:length(arr_hx_test_3)
     %display(arr_hx_test_2{i});
 end
 
 % Compare each computed h{i} with actual h_{i}
-for i = 1:1:length(arr_hx_test_2)
+for i = 1:1:length(arr_hx_test_3)
     
     exact = arr_hx{i};
-    comp = arr_hx_test_2{i};
+    comp = arr_hx_test_3{i};
     
     err_measure = norm(exact - comp) ./ norm(exact);
     fprintf([mfilename ': ' sprintf('%i : Error : %2.4e \n', i,err_measure)]);
@@ -134,23 +188,26 @@ end
 
 
 
-
+%--------------------------------------------------------------------------
 % %
 % %
 % %
 % Testing deconvolution
 LineBreakLarge();
 fprintf('Deconvolve - Each deconvolution is independent \n');
-fprintf('Deconvolution Batch Separate \n');
-arr_hx_test_3 = Deconvolve_Batch_Separate(arr_fx);
-for i = 1:1:length(arr_hx_test_3)
+fprintf('Deconvolution Separate \n');
+
+
+arr_hx_test_4 = Deconvolve_Separate(arr_fx_noisy);
+
+for i = 1:1:length(arr_hx_test_4)
     %display(arr_hx_test_3{i});
 end
 % Compare each computed h{i} with actual h_{i}
-for i = 1:1:length(arr_hx_test_3)
+for i = 1:1:length(arr_hx_test_4)
     
     exact = arr_hx{i};
-    comp = arr_hx_test_3{i};
+    comp = arr_hx_test_4{i};
     
     err_measure = norm(exact - comp) ./ norm(exact);
     fprintf([mfilename ': ' sprintf('%i : Error : %2.4e \n', i,err_measure)]);

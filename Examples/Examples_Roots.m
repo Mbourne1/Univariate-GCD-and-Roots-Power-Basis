@@ -16,6 +16,8 @@ switch EXAMPLE_TYPE
         PrintFactorization(fx_root_mult_array,'f')
         PrintCoefficientsBivariate(fx,'f')
         
+        
+        
     case 'From Coefficients'
         
         % Get the coefficients of polynomial f(x)
