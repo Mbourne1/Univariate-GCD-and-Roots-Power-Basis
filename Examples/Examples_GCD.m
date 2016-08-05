@@ -1,4 +1,4 @@
-function [fx, gx, dx, ux, vx] = Examples_GCD(ex_num)
+function [fx, gx, dx,ux,vx] = Examples_GCD(ex_num)
 % Get a set of polynomials f(x),g(x),d(x),u(x),v(x) given an example number
 %
 % Input :
@@ -24,8 +24,7 @@ function [fx, gx, dx, ux, vx] = Examples_GCD(ex_num)
 % vx : column vector of coefficients of polynomail v(x) where v(x) is given
 % by g(x) divided by d(x)
 
-EXAMPLE_TYPE = 'FromRoots';
-global SETTINGS
+EXAMPLE_TYPE = 'FromCoefficients';
 
 switch EXAMPLE_TYPE
     case 'FromRoots'
@@ -49,8 +48,13 @@ switch EXAMPLE_TYPE
         
     case 'FromCoefficients'
         
-        [fx,gx,~] = GCD_Examples_FromCoefficients(ex_num);
+        [fx,gx,dx] = Examples_GCD_FromCoefficients(ex_num);
+        ux = 1;
+        vx = 1;
         
+        
+    otherwise
+        error('err')
         
 end
 

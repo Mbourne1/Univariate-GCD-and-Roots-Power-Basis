@@ -24,7 +24,7 @@ ex_num = '2';
 switch ex_num
     case '1'
         
-        % Create set of factors
+        % Create set of factors whose multiplicities are defined in vMult
         factor(1) = (x-2);
         factor(2) = (x-3);
         
@@ -33,7 +33,7 @@ switch ex_num
         
     case '2'
                                 
-        % Create Set of factors
+        % Create set of factors whose multiplicities are defined in vMult
         factor(1) = (x-2);
         factor(2) = (x-3.2789);
         factor(3) = (x-1.589);
@@ -48,6 +48,8 @@ end
 % Get highest power of any factor
 highest_pwr = max(vMult);
 
+% %
+% %
 % Generate polynomials f_{0}(x) ,..., f_{m}(x) = 1. Where each f_{i+1}(x) is
 % the f_{i+1} = GCD(f_{i},f'_{i}).
 for i = 0:1:highest_pwr
@@ -63,16 +65,19 @@ for i = 0:1:highest_pwr
 end
 
 
-% Get the degree structure of the polynomials h_{i}
+% Get the degree structure of the polynomials h_{i} where h_{i} =
+% f_{i-1}(x)/f_{i}(x)
 vDeg_arr_hx = diff(vDeg_f);
 
-% Get the degree structure of the polynomials w_{i}
+% Get the degree structure of the polynomials w_{i} where w_{i} =
+% h_{i-1}/h_{i}
 vDeg_arr_wx = diff([vDeg_arr_hx 0]);
 
 % Get the multiplicities of the roots.
 vMultiplicities = find(vDeg_arr_wx~=0);
 
 % Get the sequence of polynomials h_{i}(x) in symbolic form
+sym_arr_h = cell(length(arr_sym_f)-1,1)
 for i = 1:1:length(arr_sym_f)-1
     sym_arr_h{i} = arr_sym_f{i} / arr_sym_f{i+1};
 end
