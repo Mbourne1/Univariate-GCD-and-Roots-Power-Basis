@@ -56,6 +56,11 @@ switch ex_num
         factor(2,1) = (x-3.2789);
         factor(3,1) = (x-1.589);
         vMult = [2; 4; 12 ];
+    case '4'
+        factor(1,1) = (x-0.56897);
+        factor(2,1) = (x+1.24672);
+        factor(3,1) = (x+0.56921);
+        vMult = [3; 6; 9];
 end
 
 % Get highest power of any factor

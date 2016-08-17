@@ -21,48 +21,48 @@ global SETTINGS
 
 % Get the number of polynomials in the set set_f
 nPolys_arr_fx = length(arr_fx);
-
+nPolys_arr_hx = nPolys_arr_fx - 1;
 % Get the degree m_{i} of each of the polynomials f_{i} and store in a
 % vector.
-vDeg_fx = zeros(nPolys_arr_fx,1);
+vDeg_arr_fx = zeros(nPolys_arr_fx,1);
 for i = 1:1:nPolys_arr_fx
-    vDeg_fx(i) = GetDegree(arr_fx{i});
+    vDeg_arr_fx(i) = GetDegree(arr_fx{i});
 end
 
 % Get the degrees n{i} of polynomials h_{i}(x) = f_{i}(x)/f_{i+1}(x).
-vDeg_hx = vDeg_fx(1:end-1) - vDeg_fx(2:end);
+vDeg_arr_hx = vDeg_arr_fx(1:end-1) - vDeg_arr_fx(2:end);
 
 % Define M to be the total number of all coefficients of the first d polynomials
 % f_{0}...f_{d-1},
-M = sum(vDeg_fx+1) - (vDeg_fx(end)+1);
+M = sum(vDeg_arr_fx+1) - (vDeg_arr_fx(end)+1);
 
 % Define M1 to be the total number of all coefficients of polynomials
 % f_{0},...,f_{d}
-nCoefficients_fx = sum(vDeg_fx+1);
+nCoefficients_fx = sum(vDeg_arr_fx+1);
 
 % Define N to be the number of coefficients of all h_{i}
-nCoefficients_hx = sum(vDeg_hx+1);
+nCoefficients_hx = sum(vDeg_arr_hx+1);
 
 
 
 % Obtain theta such that the ratio of max element to min element is
 % minimised
-%theta = getOptimalTheta(set_f,m);
+%theta = GetOptimalTheta(arr_fx,vDeg_arr_fx);
 theta = 1;
 
 % Initialise a cell-array for f(w)
-%arr_fw = cell(1,nPolys_arr_fx);
+arr_fw = cell(nPolys_arr_fx,1);
 
 % for each f_{i} get fw_{i}
-%for i = 1 : 1 : nPolys_fx
-%    arr_fw{i} = GetWithThetas(arr_fx{i},theta);
-%end
+for i = 1 : 1 : nPolys_arr_fx
+    arr_fw{i} = GetWithThetas(arr_fx{i},theta);
+end
 
 
 % %
 % %
 % Build LHS Matrix C(f1,...,fd)
-Cf = BuildC(arr_fx,vMult);
+Cf = BuildC(arr_fw,vMult);
 
 % %
 % %
@@ -70,12 +70,12 @@ Cf = BuildC(arr_fx,vMult);
 
 % RHS vector consists of f_{1},...,f_{m_{i}} where m_{i} is the highest
 % degree of any root of f_{0}(x).
-RHS_vec_f = BuildRHSF(arr_fx);
+RHS_vec_f = BuildRHSF(arr_fw);
 
 % Get vector of coefficients of h_{i}(x) for all i.
-v_px = SolveAx_b(Cf,RHS_vec_f);
+v_pw = SolveAx_b(Cf,RHS_vec_f);
 
-nCoefficients_px = length(v_px);
+nCoefficients_px = length(v_pw);
 
 % Get unique multiplities from the multiplicity vector
 unique_vMult = unique(vMult);
@@ -96,10 +96,10 @@ end
 % %
 % Get the polynomials p_{i}(x) repeated to give the set of polynomials
 % h_{i}(x).
-arr_px = GetArray(v_px,vDeg_px);
+arr_pw = GetArray(v_pw,vDeg_px);
 
 
-arr_hx = Get_hx(arr_px,unique_vMult);
+arr_hw = Get_hx(arr_pw,unique_vMult);
 
 
 
@@ -107,20 +107,20 @@ arr_hx = Get_hx(arr_px,unique_vMult);
 % perturbations of the array of polynomials f(x).
 
 nPolys_arr_fx = size(arr_fx,1);
-arr_zx = cell(1,nPolys_arr_fx);
+arr_zw = cell(1,nPolys_arr_fx);
 
 for i = 1 : 1 : nPolys_arr_fx
-    arr_zx{i} = zeros(1,vDeg_fx(i) +1);
+    arr_zw{i} = zeros(1,vDeg_arr_fx(i) +1);
 end
 
 % Build the vector zx consisting of all vectors in arr_zx
-z_o = [arr_zx{:}]';
+z_o = [arr_zw{:}]';
 
 % Build the matrix P
 P = [eye(M) zeros(M,nCoefficients_fx-M)];
 
 % Build Matrix Y, where E(z)h = Y(h)z
-Y_h = BuildY(arr_hx,vDeg_fx);
+Y_h = BuildY(arr_hw,vDeg_arr_fx);
 
 % Set the iteration number
 ite = 1;
@@ -144,7 +144,7 @@ G = [H_h H_z];
 % %
 % %
 % Compute the first residual
-res_vec = RHS_vec_f + (P*z_o) - (Cf * v_px);
+res_vec = RHS_vec_f + (P*z_o) - (Cf * v_pw);
 
 % Update Matrix P*z
 v_zx = z_o;
@@ -156,7 +156,7 @@ for i = 1 : 1 : nPolys_arr_fx
     vec_fx = [RHS_vec_f; arr_fx{i}];
 end
 test1 = Y_h*vec_fx;
-test2 = Cf*v_px;
+test2 = Cf*v_pw;
 test1./test2;
 %--------------
 
@@ -167,7 +167,7 @@ condition(ite) = norm(res_vec)./norm(RHS_vec_f + Pz);
 % Get the start point aka : y^(0)
 start_point = ...
     [
-    v_px;
+    v_pw;
     z_o;
     ];
 
@@ -188,35 +188,35 @@ while (condition(ite) > SETTINGS.MAX_ERROR_DECONVOLUTIONS) && ...
     
     yy = yy + y;
     
-    delta_px = y(1:nCoefficients_px);
-    delta_zx = y(nCoefficients_px+1:end);
+    delta_pw = y(1:nCoefficients_px);
+    delta_zw = y(nCoefficients_px+1:end);
     
     % Add structured perturbations to vector hx.
-    v_px = v_px + delta_px;
+    v_pw = v_pw + delta_pw;
     
     % Add structured perturbations to vector z.
-    v_zx = v_zx + delta_zx;
+    v_zx = v_zx + delta_zw;
     
     % Get the updatated array of polynomials p_{i}(x)
-    arr_px = GetArray(v_px,vDeg_px);
+    arr_pw = GetArray(v_pw,vDeg_px);
     
     % Get the updated array of polynomials of z_{i}(x)
-    arr_zx = GetArray(v_zx,vDeg_fx);
+    arr_zw = GetArray(v_zx,vDeg_arr_fx);
     
     % Get the updated array of polynomials h_{i}(x)
-    arr_hx = Get_hx(arr_px,unique_vMult);
+    arr_hw = Get_hx(arr_pw,unique_vMult);
     
     % Increment s in LSE Problem
     s = -(yy - start_point);
     
     % Build the matrix Y(h_{i})
-    Y_h = BuildY(arr_hx,vDeg_fx);
+    Y_h = BuildY(arr_hw,vDeg_arr_fx);
     
     % Build the matrix C(f)
     Cf = BuildC(arr_fx,vMult);
     
     % Build the matrix C(z)
-    Cz = BuildC(arr_zx,vMult);
+    Cz = BuildC(arr_zw,vMult);
     
     % Build G
     H_z = Y_h - P;
@@ -226,11 +226,11 @@ while (condition(ite) > SETTINGS.MAX_ERROR_DECONVOLUTIONS) && ...
     
     % Update the RHS vector
     RHS_vec_f = BuildRHSF(arr_fx);
-    RHS_vec_Pz = BuildRHSF(arr_zx);
+    RHS_vec_Pz = BuildRHSF(arr_zw);
     
     
     % Calculate residual and increment t in LSE Problem
-    res_vec = ((RHS_vec_f+RHS_vec_Pz) - ((Cf+Cz)*v_px));
+    res_vec = ((RHS_vec_f+RHS_vec_Pz) - ((Cf+Cz)*v_pw));
     
     % Increment iteration number
     ite = ite + 1;
@@ -240,6 +240,17 @@ while (condition(ite) > SETTINGS.MAX_ERROR_DECONVOLUTIONS) && ...
     
     
 end
+
+
+
+
+% Remove thetas from h_{i}(w) to get h_{i}(x)
+arr_hx = cell(nPolys_arr_hx,1);
+for i = 1:1:nPolys_arr_hx
+   arr_hx{i} = GetWithoutThetas(arr_hw{i}, theta); 
+end
+
+
 
 % Print outputs to command line
 fprintf([mfilename ' : ' 'Performed Deconvolutions\n'])
@@ -254,6 +265,9 @@ switch SETTINGS.PLOT_GRAPHS
         hold off
     case 'n'
 end
+
+
+
 
 end
 

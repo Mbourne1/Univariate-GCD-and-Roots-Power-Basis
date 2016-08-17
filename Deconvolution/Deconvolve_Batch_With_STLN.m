@@ -1,4 +1,4 @@
-function arr_hx = Deconvolve_Batch_With_STLN(arr_fx)
+function arr_hw = Deconvolve_Batch_With_STLN(arr_fx)
 % Given the set of polynomials f_{0},...,f_{1}. compute the series of
 % deconvolutions h_{1} = f_{1}/f_{0} h_{2} = f_{2}/f_{1},...
 % Perform the deconvolutions by producing the structure
@@ -11,45 +11,49 @@ global SETTINGS
 % Get the number of polynomials in the set set_f
 nPolys_fx = size(arr_fx,1);
 
+% Get the number of polynomials in the array of h_{i}(x)
+nPolys_hx = nPolys_fx - 1;
+
 % Get the degree m_{i} of each of the polynomials f_{i} and store in a
 % vector.
-vDeg_fx = zeros(nPolys_fx,1);
+
+vDeg_arr_fx = zeros(nPolys_fx,1);
 for i = 1:1:nPolys_fx
-    vDeg_fx(i) = GetDegree(arr_fx{i});
+    vDeg_arr_fx(i) = GetDegree(arr_fx{i});
 end
 
 % Get the degrees n{i} of polynomials h_{i} = f_{i}/f_{i+1}.
-vDeg_hx = (vDeg_fx(1:end-1) - vDeg_fx(1+1:end))';
+vDeg_arr_hx = (vDeg_arr_fx(1:end-1) - vDeg_arr_fx(1+1:end))';
 
 
 % Define M to be the total number of all coefficients of the first d polynomials
 % f_{0}...f_{d-1},
-M = sum(vDeg_fx+1) - (vDeg_fx(end)+1);
+M = sum(vDeg_arr_fx+1) - (vDeg_arr_fx(end)+1);
 
 % Define M1 to be the total number of all coefficients of polynomials
 % f_{0},...,f_{d}
-nCoefficients_fx = sum(vDeg_fx+1);
+nCoefficients_fx = sum(vDeg_arr_fx+1);
 
 % Define N to be the number of coefficients of all h_{i}
-nCoefficients_hx = sum(vDeg_hx+1);
+nCoefficients_hx = sum(vDeg_arr_hx+1);
 
 % Obtain theta such that the ratio of max element to min element is
 % minimised
-%theta = getOptimalTheta(set_f,m);
+%theta = GetOptimalTheta(arr_fx,vDeg_arr_fx);
 theta = 1;
 
 % Initialise a cell-array for f(w)
-%arr_fw = cell(1,nPolys_fx);
+arr_fw = cell(1,nPolys_fx);
 
 % for each f_{i} get fw_{i}
-%for i = 1 : 1 : nPolys_fx
-%    arr_fw{i} = GetWithThetas(arr_fx{i},theta);
-%end
+for i = 1 : 1 : nPolys_fx
+    arr_fw{i} = GetWithThetas(arr_fx{i},theta);
+end
 
 % %
 % %
 % Build the LHS Matrix C(f1,...fd)
-Cf = BuildC(arr_fx);
+Cf = BuildC(arr_fw);
 
 % %
 % %
@@ -57,32 +61,32 @@ Cf = BuildC(arr_fx);
 
 % RHS vector consists of f_{1},...,f_{m_{i}} where m_{i} is the highest
 % degree of any root of f_{0}(x).
-RHS_vec_f = BuildRHSF(arr_fx);
+RHS_vec_f = BuildRHSF(arr_fw);
 
 
 
 % Solve h_{0} for initial values of h
-v_hx = SolveAx_b(Cf,RHS_vec_f);
+v_hw = SolveAx_b(Cf,RHS_vec_f);
 
-arr_hx = GetArray(v_hx,vDeg_hx);
+arr_hw = GetArray(v_hw,vDeg_arr_hx);
 
 
 % Let z be  vectors of perturbations to polynomials fi such that
 % z = [z{0} z{1} z{2} z{3} ... z{d}]
-arr_zx = cell(1,nPolys_fx);
+arr_zw = cell(1,nPolys_fx);
 
 for i = 1 : 1 : nPolys_fx
-    arr_zx{i} = zeros(1,vDeg_fx(i)+1);
+    arr_zw{i} = zeros(1,vDeg_arr_fx(i)+1);
 end
 
 % Build vector z, consisting of all vectors z_{i}
-z_o = [arr_zx{:}]';
+z_o = [arr_zw{:}]';
 
 % Build the Matrix P
-P = [eye(M) zeros(M,nCoefficients_fx-M)];
+P = [eye(M) zeros(M,nCoefficients_fx - M)];
 
 % Build Matrix Y, where E(z)h = Y(h)z
-Y_h = BuildY(arr_hx,vDeg_fx);
+Y_h = BuildY(arr_hw,vDeg_arr_fx);
 
 % Set the iteration counter.
 ite = 1;
@@ -102,12 +106,12 @@ G = [H_h H_z];
 % %
 % %
 % Compute the first residual
-res_vec = (RHS_vec_f + (P*z_o) - (Cf*v_hx));
+res_vec = (RHS_vec_f + (P*z_o) - (Cf*v_hw));
 
 % Update Matrix Pz
-v_zx = z_o;
+v_zw = z_o;
 
-Pz = P*v_zx;
+Pz = P*v_zw;
 
 % Get the initial residual
 condition(ite) = norm(res_vec)./norm(RHS_vec_f + Pz);
@@ -115,7 +119,7 @@ condition(ite) = norm(res_vec)./norm(RHS_vec_f + Pz);
 % Get the start point aka : y^(0)
 start_point = ...
     [
-    v_hx;
+    v_hw;
     z_o;
     ];
 
@@ -145,30 +149,30 @@ while (condition(ite) > SETTINGS.MAX_ERROR_DECONVOLUTIONS)  && ...
     delta_z = y(nCoefficients_hx+1:end);
     
     % Add structured perturbations to vector hx.
-    v_hx = v_hx + delta_h;
+    v_hw = v_hw + delta_h;
     
     % Add structured perturbations to vector z.
-    v_zx = v_zx + delta_z;
+    v_zw = v_zw + delta_z;
     
     % Get the updated array of polynomials h_{i}(x)
-    arr_hx = GetArray(v_hx,vDeg_hx);
+    arr_hw = GetArray(v_hw,vDeg_arr_hx);
     
     % Separate zx into an array   
-    arr_zx = GetArray(v_zx,vDeg_fx);
+    arr_zw = GetArray(v_zw,vDeg_arr_fx);
 
     % Increment s in LSE Problem
     s = -(yy - start_point);
     
     
     % Build iterative Y, where Y
-    Y_h = BuildY(arr_hx,vDeg_fx);
+    Y_h = BuildY(arr_hw,vDeg_arr_fx);
     
     
     % Build the matrix C(f,...,f)
     Cf = BuildC(arr_fx);
     
     % Build the matrix C(z,...,z)
-    Cz = BuildC(arr_zx);
+    Cz = BuildC(arr_zw);
     
     % Build G
     H_z = Y_h - P;
@@ -178,11 +182,11 @@ while (condition(ite) > SETTINGS.MAX_ERROR_DECONVOLUTIONS)  && ...
      
     % Update the RHS Vector
     RHS_vec_f = BuildRHSF(arr_fx);
-    RHS_vec_Pz = BuildRHSF(arr_zx);
+    RHS_vec_Pz = BuildRHSF(arr_zw);
 
     
     % Calculate residual and increment t in LSE Problem
-    res_vec = (RHS_vec_f + RHS_vec_Pz) - ((Cf+Cz)*v_hx);
+    res_vec = (RHS_vec_f + RHS_vec_Pz) - ((Cf+Cz)*v_hw);
     
     
     % Increment iteration number
@@ -208,6 +212,15 @@ switch SETTINGS.PLOT_GRAPHS
         plot(log10(condition),'-s')
         hold off
     case 'n'
+end
+
+
+% Get without thetas
+arr_hx = cell(nPolys_hx,1);
+for i = 1:1:nPolys_hx
+    
+    arr_hx{i} = GetWithoutThetas(arr_hw{i},theta);
+    
 end
 
 end
