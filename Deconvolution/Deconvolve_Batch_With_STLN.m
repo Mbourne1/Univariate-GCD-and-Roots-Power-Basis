@@ -1,4 +1,4 @@
-function arr_hx = Deconvolve_Batch_With_STLN(set_f)
+function arr_hx = Deconvolve_Batch_With_STLN(arr_fx)
 % Given the set of polynomials f_{0},...,f_{1}. compute the series of
 % deconvolutions h_{1} = f_{1}/f_{0} h_{2} = f_{2}/f_{1},...
 % Perform the deconvolutions by producing the structure
@@ -9,34 +9,29 @@ global SETTINGS
 
 
 % Get the number of polynomials in the set set_f
-nPolys_fx = length(set_f);
-
-% let d be the number of deconvolutions = number of polys in set_f - 1;
-d = nPolys_fx - 1;
+nPolys_fx = size(arr_fx,1);
 
 % Get the degree m_{i} of each of the polynomials f_{i} and store in a
 % vector.
-m = zeros(nPolys_fx,1);
+vDeg_fx = zeros(nPolys_fx,1);
 for i = 1:1:nPolys_fx
-    m(i) = GetDegree(set_f{i});
+    vDeg_fx(i) = GetDegree(arr_fx{i});
 end
 
 % Get the degrees n{i} of polynomials h_{i} = f_{i}/f_{i+1}.
-n = zeros(1,nPolys_fx-1);
-for i = 1:1:nPolys_fx-1
-    n(i) = m(i)-m(i+1);
-end
+vDeg_hx = (vDeg_fx(1:end-1) - vDeg_fx(1+1:end))';
+
 
 % Define M to be the total number of all coefficients of the first d polynomials
 % f_{0}...f_{d-1},
-M = sum(m+1) - (m(end)+1);
+M = sum(vDeg_fx+1) - (vDeg_fx(end)+1);
 
 % Define M1 to be the total number of all coefficients of polynomials
 % f_{0},...,f_{d}
-nCoefficients_fx = sum(m+1);
+nCoefficients_fx = sum(vDeg_fx+1);
 
 % Define N to be the number of coefficients of all h_{i}
-nCoefficients_hx = sum(n+1);
+nCoefficients_hx = sum(vDeg_hx+1);
 
 % Obtain theta such that the ratio of max element to min element is
 % minimised
@@ -44,81 +39,94 @@ nCoefficients_hx = sum(n+1);
 theta = 1;
 
 % Initialise a cell-array for f(w)
-fw = cell(1,nPolys_fx);
+%arr_fw = cell(1,nPolys_fx);
 
 % for each f_{i} get fw_{i}
-for i = 1 : 1 : nPolys_fx 
-    fw{i} = GetWithThetas(set_f{i},theta);
-end
+%for i = 1 : 1 : nPolys_fx
+%    arr_fw{i} = GetWithThetas(arr_fx{i},theta);
+%end
 
-RHS_vec = real(BuildRHSF(fw));
+% %
+% %
+% Build the LHS Matrix C(f1,...fd)
+Cf = BuildC(arr_fx);
 
-Cf = BuildC(fw);
+% %
+% %
+% Build the RHS vector
+
+% RHS vector consists of f_{1},...,f_{m_{i}} where m_{i} is the highest
+% degree of any root of f_{0}(x).
+RHS_vec_f = BuildRHSF(arr_fx);
+
+
 
 % Solve h_{0} for initial values of h
-v_hx = SolveAx_b(Cf,RHS_vec);
+v_hx = SolveAx_b(Cf,RHS_vec_f);
 
-% Split vec h in to an array of polynomials.
-for i = 1:1:nPolys_fx-1
-    
-    % Get degree of h{i}
-    deg_hw = n(i);
-    
-    % Get coefficients of h_{i} from the solution vector
-    arr_hx{i} = v_hx(1:deg_hw+1);
-    
-    % Remove the coefficients from the solution vector
-    v_hx(1:deg_hw+1) = [];
-end
+arr_hx = GetArray(v_hx,vDeg_hx);
+
 
 % Let z be  vectors of perturbations to polynomials fi such that
 % z = [z{0} z{1} z{2} z{3} ... z{d}]
-arr_z = cell(1,nPolys_fx);
+arr_zx = cell(1,nPolys_fx);
 
 for i = 1 : 1 : nPolys_fx
-    arr_z{i} = zeros(1,m(i)+1);
+    arr_zx{i} = zeros(1,vDeg_fx(i)+1);
 end
 
 % Build vector z, consisting of all vectors z_{i}
-z_o = [arr_z{:}]';
+z_o = [arr_zx{:}]';
 
 % Build the Matrix P
 P = [eye(M) zeros(M,nCoefficients_fx-M)];
 
 % Build Matrix Y, where E(z)h = Y(h)z
-Y = BuildY(arr_hx,m);
+Y_h = BuildY(arr_hx,vDeg_fx);
 
 % Set the iteration counter.
 ite = 1;
 
-
+% Build the identity matrix F.
 F = eye(nCoefficients_hx + nCoefficients_fx);
 
-G = [Cf Y-P];
+% %
+% %
+% Build the matrix G
 
+H_h = Cf;
+H_z = Y_h - P;
+
+G = [H_h H_z];
+
+% %
+% %
 % Compute the first residual
-res_vec = (RHS_vec + (P*z_o) - (Cf*v_hx));
-
-zx_ite = z_o;
+res_vec = (RHS_vec_f + (P*z_o) - (Cf*v_hx));
 
 % Update Matrix Pz
-Pz = P*zx_ite;
+v_zx = z_o;
+
+Pz = P*v_zx;
 
 % Get the initial residual
-condition(ite) = norm(res_vec)./norm(RHS_vec + Pz);
+condition(ite) = norm(res_vec)./norm(RHS_vec_f + Pz);
 
-v_hx_ite = v_hx;
-
+% Get the start point aka : y^(0)
 start_point = ...
     [
-        v_hx;
-        z_o;
+    v_hx;
+    z_o;
     ];
 
-s = yy - start_point;
-
+% Get the iterated value = y^(j)
 yy = start_point;
 
+% Get -y^(j)-y^(0)
+s = -(yy - start_point);
+
+% %
+% %
 % Perform iteration to obtain perturbations
 
 while (condition(ite) > SETTINGS.MAX_ERROR_DECONVOLUTIONS)  && ...
@@ -129,6 +137,7 @@ while (condition(ite) > SETTINGS.MAX_ERROR_DECONVOLUTIONS)  && ...
     % min |Fy-s| subject to Gy=t
     y = LSE(F,s,G,res_vec);
     
+    % Let yy be the vector of latest version of (h+\delta h), (z + \delta z)
     yy = yy + y;
     
     % Output y gives delta h and delta z
@@ -136,65 +145,51 @@ while (condition(ite) > SETTINGS.MAX_ERROR_DECONVOLUTIONS)  && ...
     delta_z = y(nCoefficients_hx+1:end);
     
     % Add structured perturbations to vector hx.
-    v_hx_ite = v_hx_ite + delta_h;
+    v_hx = v_hx + delta_h;
     
     % Add structured perturbations to vector z.
-    zx_ite = zx_ite + delta_z;
+    v_zx = v_zx + delta_z;
     
-    % Seperate delta_z into its component vectors delta_z0 delta_z1,...,
-    % delta_zd
-    zz = zx_ite;
+    % Get the updated array of polynomials h_{i}(x)
+    arr_hx = GetArray(v_hx,vDeg_hx);
     
-    arr_zx_ite = cell(1,nPolys_fx);
-    for i = 1:1:nPolys_fx
-        arr_zx_ite{i} = zz(1:m(i)+1);
-        zz(1:m(i)+1) = [];
-    end
-    
-    % Renew Matrix Pz
-    Pz = P*zx_ite;
-    
+    % Separate zx into an array   
+    arr_zx = GetArray(v_zx,vDeg_fx);
+
     % Increment s in LSE Problem
     s = -(yy - start_point);
     
-    % Copy vector hx_ite 
-    hx_temp = v_hx_ite;
-    
-    % Move individual vectors hi into variable size array, emptying
-    % hh
-    for i = 1:1:length(n)
-       
-        % Get set of coefficients of polynomial h_{i}(x)
-        arr_hx{i} = hx_temp(1:n(i)+1);
-        
-        % Remove coeffficients from hx_temp
-        hx_temp(1:n(i)+1) = [];
-    end
     
     % Build iterative Y, where Y
-    Y = BuildY(arr_hx,m);
+    Y_h = BuildY(arr_hx,vDeg_fx);
     
     
-    % Add the structured perturbations to improved fx array.
-    arr_new_fx = cell(1,nPolys_fx);
-    for i = 1:length(fw)
-        arr_new_fx{i} = fw{i} + arr_zx_ite{i};
-    end
+    % Build the matrix C(f,...,f)
+    Cf = BuildC(arr_fx);
     
-    % Build the matrix CE = C(f) + E(z)
-    CE = BuildC(arr_new_fx) ;
+    % Build the matrix C(z,...,z)
+    Cz = BuildC(arr_zx);
     
     % Build G
-    G = [CE (Y-P)];
+    H_z = Y_h - P;
+    H_h = Cf + Cz;
+    
+    G = [H_h H_z];
+     
+    % Update the RHS Vector
+    RHS_vec_f = BuildRHSF(arr_fx);
+    RHS_vec_Pz = BuildRHSF(arr_zx);
+
     
     % Calculate residual and increment t in LSE Problem
-    res_vec = ((RHS_vec+Pz) - (CE*v_hx_ite));
+    res_vec = (RHS_vec_f + RHS_vec_Pz) - ((Cf+Cz)*v_hx);
     
     
     % Increment iteration number
     ite = ite + 1;
     
-    condition(ite) = norm(res_vec)./norm(RHS_vec+Pz);
+    % Get condition number
+    condition(ite) = norm(res_vec)./norm(RHS_vec_f + RHS_vec_Pz);
     
     
 end
@@ -294,7 +289,13 @@ function Y = BuildY(arr_hx,m)
 % that
 % E(z)*h = Y(h)*f
 
-for i = 1:1:length(arr_hx)
+% Get number of polynomials in array of h_{i}(x)
+nPolys_hx = size(arr_hx,1);
+
+% Initialise cell array
+C_h = cell(nPolys_hx,1);
+
+for i = 1:1:nPolys_hx
     
     % Start with f1*h1
     % h_{1} is the first in the cell array h_{i}
@@ -307,7 +308,8 @@ for i = 1:1:length(arr_hx)
     % Get degree of f_{i}(x)
     deg_fx = m(i+1);
     
-    Ch{i} = (BuildY1(hx,deg_fx));
+    % build the matrix C_{m_{i}}(h_{i}(x))
+    C_h{i} = (BuildY1(hx,deg_fx));
 end
 
 % Build the Coefficient Matrix C
@@ -320,10 +322,9 @@ end
 cols = (m(1)+1);
 
 xx = zeros(num_Rows,cols);
-Y = blkdiag( Ch{1:length(Ch)});
+Y = blkdiag( C_h{1:length(C_h)});
 Y = [xx Y];
 
-Y = Y;
 
 
 end
@@ -332,4 +333,26 @@ end
 function Y1 = BuildY1(hx,m1)
 % Construct a partition Y1 of the matrix Y.
 Y1 = BuildT1(hx,m1);
+end
+
+
+function arr_zx = GetArray(v_zx,v_degree_f)
+% Given the vector of perturbations of f(x) given by v_zx
+
+% Get number of polynomials in arr_fx
+nPolys_fx = length(v_degree_f);
+
+% Initialise an array
+arr_zx = cell(nPolys_fx,1);
+
+for i = 1:1:nPolys_fx
+    
+    % Get the m+1 coefficients from the vector
+    arr_zx{i} = v_zx(1:v_degree_f(i)+1);
+    % Remove the m+1 coefficients
+    v_zx(1:v_degree_f(i)+1) = [];
+    
+end
+
+
 end

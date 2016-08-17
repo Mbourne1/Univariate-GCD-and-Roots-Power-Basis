@@ -1,5 +1,9 @@
 function [hx] = Deconvolve_STLN(f,g)
+% DECONVOLVE_STLN : Perform deconvolution 
 % Get the polynomial h = f/g
+
+
+error([mfilename ' : ' 'File not complete']);
 
 % Get degree of polynomial f(x).
 m = GetDegree(f);
@@ -7,7 +11,7 @@ m = GetDegree(f);
 % Get degree of polynomial g(x).
 n = GetDegree(g);
 
-% Build the matrix C(g
+% Build the matrix C(g)
 C_g = BuildT1(g,m-n);
 
 % Solve C(g)*h = f
@@ -24,9 +28,9 @@ C_z = BuildT1(z,m-n);
 Y = BuildT1(hx,n);
 
 % Build the matrix H = [Y (C+E) -I]
-[ Y (C_g + C_z) -eye(m+1)]
+H = [ Y (C_g + C_z) -eye(m+1)];
 
 % condition
-condition(ite) = norm(res_vec) ./ norm(f + s 
+condition(ite) = norm(res_vec) ./ norm(f + s)
 
 end

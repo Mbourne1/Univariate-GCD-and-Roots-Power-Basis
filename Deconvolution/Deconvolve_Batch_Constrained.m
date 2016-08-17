@@ -37,6 +37,7 @@ x_temp = x;
 %for i = 1:1:length(vMult)
 unique_vMult = unique(vMult);
 
+arr_px = cell(length(unique_vMult),1);
 for i = 1:1:length(unique_vMult)
     mult = unique_vMult(i);
     deg = GetDegree(arr_fx{mult}) - GetDegree(arr_fx{mult+1});
@@ -51,9 +52,10 @@ end
 % Get the polynomials p_{i}(x) repeated to give the set of polynomials
 % h_{i}(x).
 
-nEntries_px = length(arr_px);
+nEntries_px = size(arr_px,1);
 
 count = 1;
+
 for i = 1:1:nEntries_px
         
     if i == 1
@@ -63,7 +65,7 @@ for i = 1:1:nEntries_px
     end
         
     for j = 1:1:nReps
-        arr_hx{count} = arr_px{i};
+        arr_hx{count,1} = arr_px{i,1};
         count = count + 1; 
     end
     

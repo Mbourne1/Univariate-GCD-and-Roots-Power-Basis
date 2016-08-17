@@ -21,7 +21,7 @@ function [] = Test_Deconvolution(ex_num,emin,emax)
 % Set settings pertaining to this test
 global SETTINGS
 SETTINGS.PLOT_GRAPHS = 'y';
-SETTINGS.MAX_ERROR_DECONVOLUTIONS = 1e-13;
+SETTINGS.MAX_ERROR_DECONVOLUTIONS = 1e-15;
 SETTINGS.MAX_ITERATIONS_DECONVOLUTIONS = 100;
 SETTINGS.SEED = 1024;
 
@@ -51,11 +51,7 @@ switch ex_num
         
         % Set multiplicitiy of each factor
         vMult = [ 1; 3; 4; 4; 5; 12 ];
-    case '3'
-        factor(1,1) = (x-2);
-        factor(2,1) = (x-3.2789);
-        factor(3,1) = (x-1.589);
-        vMult = [2; 4; 12 ];
+    case 
 end
 
 % Get highest power of any factor
@@ -187,12 +183,12 @@ err_batchConstrained = GetErrors(arr_hx_batchConstrained,arr_hx);
 % %
 % Testing deconvolution batch method with constraints and low rank approx
 
-LineBreakLarge()
-fprintf([mfilename ' : ' 'Deconvolve Batch Constrained With STLN'])
+%LineBreakLarge()
+%fprintf([mfilename ' : ' 'Deconvolve Batch Constrained With STLN'])
 
-arr_hx_batchConstrainedWithSTLN = Deconvolve_Batch_Constrained_With_STLN(arr_fx_noisy,vMultiplicities);
+%arr_hx_batchConstrainedWithSTLN = Deconvolve_Batch_Constrained_With_STLN(arr_fx_noisy,vMultiplicities);
 
-err_batchConstrainedWithSTLN = GetErrors(arr_hx_batchConstrainedWithSTLN,arr_hx);
+%err_batchConstrainedWithSTLN = GetErrors(arr_hx_batchConstrainedWithSTLN,arr_hx);
 
 
 
@@ -209,8 +205,8 @@ plot(log10(err_deconvolveSeparate),'-.','DisplayName','Separate')
 plot(log10(err_deconvolveBatch),'-*','DisplayName','Batch')
 plot(log10(err_deconvolveBatchWithSTLN),'-s','DisplayName','Batch with STLN')
 plot(log10(err_batchConstrained),'-s','DisplayName','Batch Constrained')
-plot(log10(err_batchConstrainedWithSTLN),'-s','DisplayName','Batch Constrained with STLN')
-
+%plot(log10(err_batchConstrainedWithSTLN),'-s','DisplayName','Batch Constrained with STLN')
+%%plot(log10(err_test2),'-o','DisplayName','Errors 2')
 
 
 xlabel('k');

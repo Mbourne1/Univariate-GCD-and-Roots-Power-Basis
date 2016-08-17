@@ -1,4 +1,4 @@
-function [ux,vx] = GetQuotients(fx_n,gx_n,t,alpha,theta,opt_col)
+function [ux,vx] = GetCofactorsCoefficients(fx_n,gx_n,t,alpha,theta,opt_col)
 % Get Quotient polynomials u(x) and v(x) such that
 % f(x)/u(x) = g(x)/v(x) = d(x)
 %

@@ -1,4 +1,4 @@
-function [dx] = GetGCD(ux,vx,fx,gx,t,alpha,theta)
+function [dx] = GetGCDCoefficients(ux,vx,fx,gx,t,alpha,theta)
 % Get the coefficients of the GCD d(x), of f(x) and g(x), given u(x) and v(x).
 % This function has two branches. d(x) can be computed either by utilising
 % [u(x), v(x),f(x) and g(x)], or just [u(x) and f(x)]
@@ -21,7 +21,7 @@ function [dx] = GetGCD(ux,vx,fx,gx,t,alpha,theta)
 %             and g(x) -> g(\theta,\omega)
 
 
-GCD_METHOD = 'ux';
+GCD_METHOD = 'ux and vx';
 
 switch GCD_METHOD
     case 'ux'

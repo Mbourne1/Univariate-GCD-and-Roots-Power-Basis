@@ -84,10 +84,6 @@ C = [H_z H_x];
 
 % Build the matrix E for LSE Problem
 E = eye(2*m+2*n-2*t+3);
-%E = blkdiag(eye(m+n+2),zeros(m+n-2*t+1,m+n-2*t+1))
-
-% Build the matrix D which accounts for repetitions of z_{i} in B_{k}
-%E = blkdiag(eye(n-t+1),eye(m-t+1));
 
 
 % Define the starting vector for the iterations for the LSE problem.
@@ -119,15 +115,12 @@ while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTL
     
     % Get small petrubations by LSE
     y_lse = LSE(E,f,C,g);
-    
-    %y_lse = lsqlin(E,f,C,g);
-    
+        
     % Increment cummulative peturbations
     yy = yy + y_lse;
     
     % obtain the small changes to z and x
     delta_zk        = y_lse(1:m+n+2,1);
-    
     
     % Update z and x
     z = z + delta_zk;

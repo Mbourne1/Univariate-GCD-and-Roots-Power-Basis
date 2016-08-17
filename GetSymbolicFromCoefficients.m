@@ -24,7 +24,9 @@ m = GetDegree(fx);
 sym_vector = diag(x.^(0:1:m)) * fx;
 
 % Get the symbolic expression
-fx_sym = sum(sym_vector)
+fx_sym = sum(sym_vector);
+
+end
 
 
 

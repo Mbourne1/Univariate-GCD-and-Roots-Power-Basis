@@ -1,8 +1,8 @@
 function arr_hx = Deconvolve_Batch(arr_fx)
-% Given the set of polynomials f_{0},...,f_{1}. compute the series of
-% deconvolutions h_{1} = f_{1}/f_{0} h_{2} = f_{2}/f_{1},...
-% Perform the deconvolutions by producing the structure
-% diag [ C(f_{1}) C(f_{2}) ... ] [h1 h2 ...]^{T} = [f_{0} f_{1} ...]
+% DECONVOLVE_BATCH Given the set of polynomials f_{0},...,f_{1}. compute 
+% the series of deconvolutions h_{1} = f_{1}/f_{0} h_{2} = f_{2}/f_{1},...
+% Perform the deconvolutions by using the structure
+% diag [ C(f_{1}) C(f_{2}) ... ] [h1 h2 ...]^{T} = [f_{0} f_{1} ...]^{T}
 %
 % % Inputs
 %
@@ -14,10 +14,7 @@ function arr_hx = Deconvolve_Batch(arr_fx)
 
 
 % Get the number of polynomials in the set arr_fx
-nPolys_f = length(arr_fx);
-
-% let d be the number of deconvolutions = number of polys in set_f - 1;
-d = nPolys_f - 1;
+nPolys_f = size(arr_fx,1);
 
 % Get the degree m_{i} of each of the polynomials f_{i} and store in a
 % vector.
@@ -27,21 +24,10 @@ for i = 1:1:nPolys_f
 end
 
 % Get the degrees n{i} of polynomials h_{i} = f_{i}/f_{i+1}.
-vDeg_arr_hx = zeros(1,nPolys_f-1);
+vDeg_arr_hx = zeros(nPolys_f-1,1);
 for i = 1:1:nPolys_f-1
     vDeg_arr_hx(i) = vDeg_arr_fx(i)-vDeg_arr_fx(i+1);
 end
-
-% Define M to be the total number of all coefficients of the first d polynomials
-% f_{0}...f_{d-1},
-M = sum(vDeg_arr_fx+1) - (vDeg_arr_fx(end)+1);
-
-% Define M1 to be the total number of all coefficients of polynomials
-% f_{0},...,f_{d}
-M1 = sum(vDeg_arr_fx+1) ;
-
-% Define N to be the number of coefficients of all h_{i}
-N = sum(vDeg_arr_hx+1);
 
 % Obtain theta such that the ratio of max element to min element is
 % minimised
@@ -49,21 +35,23 @@ N = sum(vDeg_arr_hx+1);
 theta = 1;
 
 % Initialise a cell-array for f(w)
-fw = cell(1,length(arr_fx));
+arr_fw = cell(size(arr_fx,1),1);
 
 % for each f_{i} get fw_{i}
-for i = 1:1:length(arr_fx)
-    fw{i} = GetWithThetas(arr_fx{i},theta);
+for i = 1:1:size(arr_fx,1)
+    arr_fw{i} = GetWithThetas(arr_fx{i},theta);
 end
 
-RHS_vec = real(BuildRHSF(fw));
-DCQ = BuildC(fw);
+RHS_vec = real(BuildRHSF(arr_fw));
+DCQ = BuildC(arr_fw);
 
 % Solve h_{0} for initial values of h
 hw_vec = SolveAx_b(DCQ,RHS_vec);
 v_h = hw_vec;
 
 % Split vec h in to an array of polynomials.
+arr_hx = cell(nPolys_f-1,1);
+
 for i = 1:1:nPolys_f-1
     
     % Get degree of h{i}
@@ -93,6 +81,7 @@ f = [];
 
 % for each vector f f_{0},...,f_{n-1} in fw_array, add to right hand
 % side vector
+
 for i=1:1:length(fw_array)-1
     f = [f;fw_array{i}];
 end
