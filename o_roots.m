@@ -64,7 +64,7 @@ SetGlobalVariables(problem_type,ex_num,emin,emax,mean_method,bool_alpha_theta,lo
 fx = Examples_Roots(ex_num);
 
 % Add Noise to f(x)
-fx = Noise(fx,emin,emax);
+fx = Noise(fx,emin);
 
 % %
 % % MY METHOD

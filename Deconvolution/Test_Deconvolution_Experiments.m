@@ -1,6 +1,6 @@
 function [] = Test_Deconvolution_Experiments
 
-arr_ex_num = {'1','2','3','4'};
+arr_ex_num = {'1','2','3','4','5','6'};
 arr_noise = {1e-8,1e-10,1e-12};
 arr_bool_preproc = {'y','n'};
 

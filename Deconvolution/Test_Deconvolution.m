@@ -64,6 +64,38 @@ switch ex_num
         factor(2,1) = (x+1.24672);
         factor(3,1) = (x+0.56921);
         vMult = [3; 6; 9];
+        case '5'
+        
+        % Create set of factors whose multiplicities are defined in vMult
+        factor(1) = (x - 0.246512);
+        factor(2) = (x - 1.214654);
+        factor(3) = (x + 0.567890);
+        factor(4) = (x + 0.214654);
+        % Set multiplicity of each factor
+        vMult = [2, 5 , 7 , 12];
+        
+    case '5'
+        
+        % Create set of factors whose multiplicities are defined in vMult
+        factor(1) = (x - 0.246512);
+        factor(2) = (x - 1.214654);
+        factor(3) = (x + 0.567890);
+        factor(4) = (x + 0.214654);
+        % Set multiplicity of each factor
+        vMult = [2, 5 , 7 , 12];
+        
+    case '6'
+                                
+        % Create set of factors whose multiplicities are defined in vMult
+        factor(1) = (x-2);
+        factor(2) = (x-3.2789);
+        factor(3) = (x-1.589);
+        factor(4) = (x-0.7213);
+        factor(5) = (x-1.5432);
+        factor(6) = (x+5.72);
+        
+        % Set multiplicitiy of each factor
+        vMult = [ 1 3 4 4 5 12 ];
       
 end
 
@@ -246,7 +278,7 @@ A = ...
     ];
 
 fileID = fopen('Deconvolution/Test_Deconvolution.txt','a');
-fprintf(fileID,'%s %s %6.2e %6.2e %6.2e %6.2e %6.2e %6.2e  \n',ex_num,bool_preproc,emin,A);
+fprintf(fileID,'%s %s %6.2e %6.2e %6.2e %6.2e %6.2e %6.2e\n',ex_num,bool_preproc,emin,A);
 fclose(fileID);
 
 end

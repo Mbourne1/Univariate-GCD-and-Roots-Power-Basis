@@ -35,8 +35,8 @@ switch DECONVOLUTION_METHOD
         
     case 'Batch With STLN'
         
-        error([mfilename ' : Not yet completed Batch with STLN'])
-        arr_hx = Deconvolve_Batch(arr_fx);
+     
+        arr_hx = Deconvolve_Batch_With_STLN(arr_fx);
         
     case 'Batch Constrained'
         
@@ -60,7 +60,7 @@ switch DECONVOLUTION_METHOD
     case 'Batch Constrained With STLN'
         
         
-        error([mfilename ' : ' 'Not Yet completed Batch Constrained with STLN']);
+        
         
         % Get the degree of polynomials f_{i}(x)
         vDegt_fx = zeros(nPolys_fx,1);
@@ -77,10 +77,16 @@ switch DECONVOLUTION_METHOD
         
         vMult = find(vDeg_wx~=0);
         
-        arr_hx = Deconvolve_Batch_Constrained(arr_fx,vMult);
+        arr_hx = Deconvolve_Batch_Constrained_With_STLN(arr_fx,vMult);
         
     otherwise
-        error('SETTINGS.DECONVOLVE_METHOD is either Separate or Batch')
+        error([...
+            'SETTINGS.DECONVOLVE_METHOD'...
+            ' *Separate'...
+            ' *Batch'...
+            ' *Batch STLN'...
+            ' *Batch Constrained'...
+            ' *Batch Constrained STLN']);
 end
 end
 

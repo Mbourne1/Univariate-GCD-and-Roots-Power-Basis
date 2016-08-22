@@ -34,7 +34,7 @@ SETTINGS.THRESHOLD = 0.5;
 SETTINGS.THRESHOLD_RANK = 1e-5;
 
 % Include/Exclude plotting of graphs
-SETTINGS.PLOT_GRAPHS = 'y';
+SETTINGS.PLOT_GRAPHS = 'n';
 
 % Settings for SNTLN/STLN
 SETTINGS.MAX_ERROR_SNTLN = 1e-15;
@@ -47,7 +47,7 @@ SETTINGS.MAX_ITERATIONS_DECONVOLUTIONS = 20;
 % (Roots Only)
 % Make use of precalculated limits on the upper and lower bounds of the
 % degree t of the GCD(f,f').
-SETTINGS.BOOL_LIMITS = 'y';
+SETTINGS.BOOL_LIMITS = 'n';
 
 %-------------------------------------------------------------------------
 %

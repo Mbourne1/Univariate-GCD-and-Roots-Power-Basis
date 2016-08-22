@@ -45,7 +45,7 @@ gw = GetWithThetas(gx_n,theta);
 
 
 % Get the degree of the GCD with limits defined
-t_new = GetGCDDegree2(fw,alpha.*gw,deg_limits);
+t_new = GetGCDDegree(fw,alpha.*gw,deg_limits);
 LineBreakSmall();
 
 
@@ -92,11 +92,11 @@ S1_Unproc = BuildT(fx,gx,1);
 
 % %
 % Get the quotient polynomials u(x) and v(x)
-[ux,vx] = GetQuotients(fx_n,gx_n,t,alpha,theta,opt_col);
+[ux,vx] = GetCofactorsCoefficients(fx_n,gx_n,t,alpha,theta,opt_col);
 
 % %
 % Get the GCD d(x)
-dx = GetGCD(ux,vx,fx_n,gx_n,t,alpha,theta);
+dx = GetGCDCoefficients(ux,vx,fx_n,gx_n,t,alpha,theta);
 
 % %
 % %

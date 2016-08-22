@@ -55,7 +55,7 @@ while GetDegree(arr_fx{ite}) > 0
                     lower_lim = max(vDegt_fx(ite)-d(ite-1),1);
                     upper_lim = vDegt_fx(ite)-1;
                 case 'n'
-                    lower_lim =1;
+                    lower_lim = 1;
                     upper_lim = vDegt_fx(ite)-1;
             end
         else
