@@ -1,4 +1,4 @@
-function arr_hw = Deconvolve_Batch_With_STLN(arr_fx)
+function arr_hx = Deconvolve_Batch_With_STLN(arr_fx)
 % Given the set of polynomials f_{0},...,f_{1}. compute the series of
 % deconvolutions h_{1} = f_{1}/f_{0} h_{2} = f_{2}/f_{1},...
 % Perform the deconvolutions by producing the structure
@@ -37,10 +37,17 @@ nCoefficients_fx = sum(vDeg_arr_fx+1);
 % Define N to be the number of coefficients of all h_{i}
 nCoefficients_hx = sum(vDeg_arr_hx+1);
 
-% Obtain theta such that the ratio of max element to min element is
-% minimised
-%theta = GetOptimalTheta(arr_fx,vDeg_arr_fx);
-theta = 1;
+% 
+% y - Preprocess
+% n - Dont preprocess 
+SETTINGS.PREPROC_DECONVOLUTIONS;
+
+switch SETTINGS.PREPROC_DECONVOLUTIONS
+    case 'y'
+        theta = GetOptimalTheta(arr_fx,vDeg_arr_fx);
+    case 'n'
+        theta = 1;
+end
 
 % Initialise a cell-array for f(w)
 arr_fw = cell(1,nPolys_fx);
@@ -64,12 +71,11 @@ Cf = BuildC(arr_fw);
 RHS_vec_f = BuildRHSF(arr_fw);
 
 
-
 % Solve h_{0} for initial values of h
 v_hw = SolveAx_b(Cf,RHS_vec_f);
 
+% Build the array of polynomials h_{i}(x)
 arr_hw = GetArray(v_hw,vDeg_arr_hx);
-
 
 % Let z be  vectors of perturbations to polynomials fi such that
 % z = [z{0} z{1} z{2} z{3} ... z{d}]
@@ -163,13 +169,11 @@ while (condition(ite) > SETTINGS.MAX_ERROR_DECONVOLUTIONS)  && ...
     % Increment s in LSE Problem
     s = -(yy - start_point);
     
-    
     % Build iterative Y, where Y
     Y_h = BuildY(arr_hw,vDeg_arr_fx);
     
-    
     % Build the matrix C(f,...,f)
-    Cf = BuildC(arr_fx);
+    Cf = BuildC(arr_fw);
     
     % Build the matrix C(z,...,z)
     Cz = BuildC(arr_zw);
@@ -181,13 +185,11 @@ while (condition(ite) > SETTINGS.MAX_ERROR_DECONVOLUTIONS)  && ...
     G = [H_h H_z];
      
     % Update the RHS Vector
-    RHS_vec_f = BuildRHSF(arr_fx);
-    RHS_vec_Pz = BuildRHSF(arr_zw);
+    RHS_vec_f   = BuildRHSF(arr_fw);
+    RHS_vec_Pz  = BuildRHSF(arr_zw);
 
-    
     % Calculate residual and increment t in LSE Problem
     res_vec = (RHS_vec_f + RHS_vec_Pz) - ((Cf+Cz)*v_hw);
-    
     
     % Increment iteration number
     ite = ite + 1;
@@ -215,12 +217,10 @@ switch SETTINGS.PLOT_GRAPHS
 end
 
 
-% Get without thetas
+% Get h_{i}(x) from f_{i}(\omega) by removing thetas
 arr_hx = cell(nPolys_hx,1);
 for i = 1:1:nPolys_hx
-    
     arr_hx{i} = GetWithoutThetas(arr_hw{i},theta);
-    
 end
 
 end

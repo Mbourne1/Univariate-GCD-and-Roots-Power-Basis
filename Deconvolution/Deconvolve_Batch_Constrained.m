@@ -15,10 +15,50 @@ function [arr_hx] = Deconvolve_Batch_Constrained(arr_fx,vMult)
 % arr_hx : Array of polynomials h(x) where h_{i}(x) = f_{i-1}(x) / f_{i}(x) 
 
 
+% Get the number of polynomials in the set arr_fx
+nPolys_arr_fx = size(arr_fx,1);
+nPolys_arr_hx = size(arr_fx,1) - 1;
+
+% Get the degree m_{i} of each of the polynomials f_{i} and store in a
+% vector.
+vDeg_arr_fx = zeros(nPolys_arr_fx,1);
+for i = 1:1:nPolys_arr_fx
+    vDeg_arr_fx(i) = GetDegree(arr_fx{i});
+end
+
+% Get the degrees n{i} of polynomials h_{i} = f_{i}/f_{i+1}.
+vDeg_arr_hx = zeros(nPolys_arr_fx-1,1);
+for i = 1:1:nPolys_arr_hx
+    vDeg_arr_hx(i) = vDeg_arr_fx(i)-vDeg_arr_fx(i+1);
+end
+
+% 
+% y - Preprocess
+% n - Dont preprocess 
+global SETTINGS
+SETTINGS.PREPROC_DECONVOLUTIONS;
+
+switch SETTINGS.PREPROC_DECONVOLUTIONS
+    case 'y'
+        theta = GetOptimalTheta(arr_fx,vDeg_arr_fx);
+    case 'n'
+        theta = 1;
+end
+
+
+% Initialise a cell-array for f(w)
+arr_fw = cell(nPolys_arr_fx,1);
+
+% for each f_{i} get fw_{i}
+for i = 1:1:nPolys_arr_fx
+    arr_fw{i,1} = GetWithThetas(arr_fx{i,1},theta);
+end
+
+
 % %
 % %
 % Build LHS Matrix
-LHS_Matrix = BuildC(arr_fx,vMult);
+C_fw = BuildC(arr_fw,vMult);
 
 % %
 % %
@@ -27,22 +67,22 @@ LHS_Matrix = BuildC(arr_fx,vMult);
 % RHS vector consists of f_{1},...,f_{m_{i}} where m_{i} is the highest
 % degree of any root of f_{0}(x).
 RHS_vec = [];
-for i = 1:1:length(arr_fx)-1
-    RHS_vec = [RHS_vec ; arr_fx{i}];
+for i = 1:1:length(arr_fw)-1
+    RHS_vec = [RHS_vec ; arr_fw{i}];
 end
 
-x = SolveAx_b(LHS_Matrix,RHS_vec);
+x = SolveAx_b(C_fw,RHS_vec);
 
 x_temp = x;
 %for i = 1:1:length(vMult)
 unique_vMult = unique(vMult);
 
-arr_px = cell(length(unique_vMult),1);
+arr_pw = cell(length(unique_vMult),1);
 for i = 1:1:length(unique_vMult)
     mult = unique_vMult(i);
     deg = GetDegree(arr_fx{mult}) - GetDegree(arr_fx{mult+1});
        
-    arr_px{i} = x_temp(1:deg+1);
+    arr_pw{i} = x_temp(1:deg+1);
     x_temp(1:deg+1) = [];
 end
 
@@ -52,10 +92,15 @@ end
 % Get the polynomials p_{i}(x) repeated to give the set of polynomials
 % h_{i}(x).
 
-nEntries_px = size(arr_px,1);
+nEntries_px = size(arr_pw,1);
 
+% Initialise a counter
 count = 1;
 
+% Initialise an array to store polynomials h_{i}(\omega)
+arr_hw = cell(nPolys_arr_hx,1);
+
+% Get the set of polynomials h_{i}(\omega)
 for i = 1:1:nEntries_px
         
     if i == 1
@@ -65,17 +110,16 @@ for i = 1:1:nEntries_px
     end
         
     for j = 1:1:nReps
-        arr_hx{count,1} = arr_px{i,1};
+        arr_hw{count,1} = arr_pw{i,1};
         count = count + 1; 
     end
     
 end
 
-% %
-% %
-% Get Residual
-residual = RHS_vec - (LHS_Matrix*x);
-display(norm(residual));
+% Get the set of polynomials h_{i}(x) 
+for i = 1:1:nPolys_arr_hx
+    arr_hx{i,1} = GetWithoutThetas(arr_hw{i,1},theta);
+end
 
 
 end

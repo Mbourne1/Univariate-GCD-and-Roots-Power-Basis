@@ -19,12 +19,18 @@ function [arr_hx] = Deconvolve_Batch_Constrained_With_STLN(arr_fx,vMult)
 global SETTINGS
 
 
-% Get the number of polynomials in the set set_f
+% Get the number of polynomials in the array of f_{i}(x)
 nPolys_arr_fx = length(arr_fx);
+
+% Get the number of polynomials in the array of h_{i}(x)
 nPolys_arr_hx = nPolys_arr_fx - 1;
-% Get the degree m_{i} of each of the polynomials f_{i} and store in a
-% vector.
+
+% % Get the degree m_{i} of each of the polynomials f_{i} 
+
+% Initialise vector
 vDeg_arr_fx = zeros(nPolys_arr_fx,1);
+
+% For each polynomial f_{i} get the degree
 for i = 1:1:nPolys_arr_fx
     vDeg_arr_fx(i) = GetDegree(arr_fx{i});
 end
@@ -47,8 +53,18 @@ nCoefficients_hx = sum(vDeg_arr_hx+1);
 
 % Obtain theta such that the ratio of max element to min element is
 % minimised
-%theta = GetOptimalTheta(arr_fx,vDeg_arr_fx);
-theta = 1;
+
+% 
+% y - Preprocess
+% n - Dont preprocess 
+SETTINGS.PREPROC_DECONVOLUTIONS;
+
+switch SETTINGS.PREPROC_DECONVOLUTIONS
+    case 'y'
+        theta = GetOptimalTheta(arr_fx,vDeg_arr_fx);
+    case 'n'
+        theta = 1;
+end
 
 % Initialise a cell-array for f(w)
 arr_fw = cell(nPolys_arr_fx,1);
@@ -62,7 +78,7 @@ end
 % %
 % %
 % Build LHS Matrix C(f1,...,fd)
-Cf = BuildC(arr_fw,vMult);
+C_fw = BuildC(arr_fw,vMult);
 
 % %
 % %
@@ -70,35 +86,37 @@ Cf = BuildC(arr_fw,vMult);
 
 % RHS vector consists of f_{1},...,f_{m_{i}} where m_{i} is the highest
 % degree of any root of f_{0}(x).
-RHS_vec_f = BuildRHSF(arr_fw);
+RHS_vec_fw = BuildRHSF(arr_fw);
 
 % Get vector of coefficients of h_{i}(x) for all i.
-v_pw = SolveAx_b(Cf,RHS_vec_f);
+v_pw = SolveAx_b(C_fw,RHS_vec_fw);
 
 nCoefficients_px = length(v_pw);
 
 % Get unique multiplities from the multiplicity vector
 unique_vMult = unique(vMult);
 
-nEntries_arr_px = length(unique_vMult);
+nPolys_arr_px = length(unique_vMult);
 
 
-vDeg_px = zeros(nEntries_arr_px , 1);
+vDeg_arr_px = zeros(nPolys_arr_px , 1);
 
-for i = 1:1: nEntries_arr_px
+for i = 1:1: nPolys_arr_px
     mult = unique_vMult(i);
     deg = GetDegree(arr_fx{mult}) - GetDegree(arr_fx{mult+1});
-    vDeg_px(i) = deg;
-  
+    vDeg_arr_px(i) = deg;
 end
+
+% % 
+% %
+% Get the polynomials p_{i}(x) repeated to give the set of polynomials
+% h_{i}(x).
+arr_pw = GetArray(v_pw,vDeg_arr_px);
 
 % %
 % %
 % Get the polynomials p_{i}(x) repeated to give the set of polynomials
 % h_{i}(x).
-arr_pw = GetArray(v_pw,vDeg_px);
-
-
 arr_hw = Get_hx(arr_pw,unique_vMult);
 
 
@@ -106,15 +124,14 @@ arr_hw = Get_hx(arr_pw,unique_vMult);
 % Build the array of polynomials z(x) which are the structured
 % perturbations of the array of polynomials f(x).
 
-nPolys_arr_fx = size(arr_fx,1);
-arr_zw = cell(1,nPolys_arr_fx);
 
+arr_zw = cell(nPolys_arr_fx,1);
 for i = 1 : 1 : nPolys_arr_fx
-    arr_zw{i} = zeros(1,vDeg_arr_fx(i) +1);
+    arr_zw{i} = zeros(vDeg_arr_fx(i) +1,1);
 end
 
 % Build the vector zx consisting of all vectors in arr_zx
-z_o = [arr_zw{:}]';
+v_zw = cell2mat(arr_zw);
 
 % Build the matrix P
 P = [eye(M) zeros(M,nCoefficients_fx-M)];
@@ -132,9 +149,8 @@ F = eye(nCoefficients_px + nCoefficients_fx);
 % %
 % Build the matrix G
 
-
 % Build component H_h of G
-H_h = Cf;
+H_h = C_fw;
 
 % Build component H_z of G
 H_z = Y_h - P;
@@ -144,31 +160,32 @@ G = [H_h H_z];
 % %
 % %
 % Compute the first residual
-res_vec = RHS_vec_f + (P*z_o) - (Cf * v_pw);
+res_vec = RHS_vec_fw + (P*v_zw) - (C_fw * v_pw);
 
 % Update Matrix P*z
-v_zx = z_o;
-Pz = P*v_zx;
+Pz = P*v_zw;
+
+
 
 % Perform test
 %--------------
 for i = 1 : 1 : nPolys_arr_fx
-    vec_fx = [RHS_vec_f; arr_fx{i}];
+    vec_fw = [RHS_vec_fw; arr_fx{i}];
 end
-test1 = Y_h*vec_fx;
-test2 = Cf*v_pw;
-test1./test2;
+%test1 = Y_h*vec_fw;
+%test2 = C_fw*v_pw;
+%test1./test2
 %--------------
 
 
 % Get the intial residual
-condition(ite) = norm(res_vec)./norm(RHS_vec_f + Pz);
+condition(ite) = norm(res_vec)./norm(RHS_vec_fw + Pz);
 
 % Get the start point aka : y^(0)
 start_point = ...
     [
     v_pw;
-    z_o;
+    v_zw;
     ];
 
 % Get the iterated value = y^(j)
@@ -184,24 +201,28 @@ s = -(yy - start_point);
 while (condition(ite) > SETTINGS.MAX_ERROR_DECONVOLUTIONS) && ...
         (ite < SETTINGS.MAX_ITERATIONS_DECONVOLUTIONS)
     
+    % Use the QR decomposition to solve the LSE problem and then
+    % update the solution.
+    % min |Fy-s| subject to Gy=t
     y = LSE(F,s,G,res_vec);
     
     yy = yy + y;
     
+    % output y gives delta p and delta z
     delta_pw = y(1:nCoefficients_px);
     delta_zw = y(nCoefficients_px+1:end);
     
     % Add structured perturbations to vector hx.
     v_pw = v_pw + delta_pw;
     
-    % Add structured perturbations to vector z.
-    v_zx = v_zx + delta_zw;
+    % Add structured perturbations to vector z(\omega).
+    v_zw = v_zw + delta_zw;
     
     % Get the updatated array of polynomials p_{i}(x)
-    arr_pw = GetArray(v_pw,vDeg_px);
+    arr_pw = GetArray(v_pw,vDeg_arr_px);
     
     % Get the updated array of polynomials of z_{i}(x)
-    arr_zw = GetArray(v_zx,vDeg_arr_fx);
+    arr_zw = GetArray(v_zw,vDeg_arr_fx);
     
     % Get the updated array of polynomials h_{i}(x)
     arr_hw = Get_hx(arr_pw,unique_vMult);
@@ -213,30 +234,30 @@ while (condition(ite) > SETTINGS.MAX_ERROR_DECONVOLUTIONS) && ...
     Y_h = BuildY(arr_hw,vDeg_arr_fx);
     
     % Build the matrix C(f)
-    Cf = BuildC(arr_fx,vMult);
+    C_fw = BuildC(arr_fw,vMult);
     
     % Build the matrix C(z)
     Cz = BuildC(arr_zw,vMult);
     
     % Build G
     H_z = Y_h - P;
-    H_h = Cf + Cz;
+    H_h = C_fw + Cz;
     
     G = [H_h H_z];
     
     % Update the RHS vector
-    RHS_vec_f = BuildRHSF(arr_fx);
+    RHS_vec_fw = BuildRHSF(arr_fw);
     RHS_vec_Pz = BuildRHSF(arr_zw);
     
     
     % Calculate residual and increment t in LSE Problem
-    res_vec = ((RHS_vec_f+RHS_vec_Pz) - ((Cf+Cz)*v_pw));
+    res_vec = ((RHS_vec_fw+RHS_vec_Pz) - ((C_fw+Cz)*v_pw));
     
     % Increment iteration number
     ite = ite + 1;
     
     % Get condition number
-    condition(ite) = norm(res_vec)./norm(RHS_vec_f + RHS_vec_Pz);
+    condition(ite) = norm(res_vec)./norm(RHS_vec_fw + RHS_vec_Pz);
     
     
 end

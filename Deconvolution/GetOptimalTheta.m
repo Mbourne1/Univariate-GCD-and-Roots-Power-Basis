@@ -7,6 +7,8 @@ nPolys_arr_fx = size(arr_fx,1);
 mat_Ai = cell(nPolys_arr_fx,1);
 mat_Bi = cell(nPolys_arr_fx,1);
 
+vLambda = cell(nPolys_arr_fx,1);
+
 for i = 0:1:nPolys_arr_fx-1
 
     % Get degree of the ith polynomial f_{i}(x)

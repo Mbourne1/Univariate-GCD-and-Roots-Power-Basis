@@ -1,4 +1,4 @@
-function [] = Test_Deconvolution(ex_num,emin,emax)
+function [] = Test_Deconvolution(ex_num,emin,bool_preproc)
 % TEST_DECONVOLUTION Test the different methods of deconvolving the set of
 % polynomials f_{i}(x), to form the set of polynomials h_{i} 
 % where h_{i} = f{i}/f_{i+1}
@@ -20,10 +20,11 @@ function [] = Test_Deconvolution(ex_num,emin,emax)
 
 % Set settings pertaining to this test
 global SETTINGS
-SETTINGS.PLOT_GRAPHS = 'y';
+SETTINGS.PLOT_GRAPHS = 'n';
 SETTINGS.MAX_ERROR_DECONVOLUTIONS = 1e-13;
 SETTINGS.MAX_ITERATIONS_DECONVOLUTIONS = 100;
 SETTINGS.SEED = 1024;
+SETTINGS.PREPROC_DECONVOLUTIONS = bool_preproc;
 
 
 % Input f_{i} polynomials
@@ -33,11 +34,11 @@ switch ex_num
     case '1'
         
         % Create set of factors whose multiplicities are defined in vMult
-        factor(1,1) = (x-2);
-        factor(2,1) = (x-3);
+        factor(1,1) = (x+1.0177);
+        factor(2,1) = (x-0.5296);
         
         % Set multiplicity of each factor
-        vMult = [7 ; 12];
+        vMult = [9 ; 14];
         
     case '2'
                                 
@@ -51,16 +52,19 @@ switch ex_num
         
         % Set multiplicitiy of each factor
         vMult = [ 1; 3; 4; 4; 5; 12 ];
+        
     case '3'
         factor(1,1) = (x-2);
         factor(2,1) = (x-3.2789);
         factor(3,1) = (x-1.589);
         vMult = [2; 4; 12 ];
+        
     case '4'
         factor(1,1) = (x-0.56897);
         factor(2,1) = (x+1.24672);
         factor(3,1) = (x+0.56921);
         vMult = [3; 6; 9];
+      
 end
 
 % Get highest power of any factor
@@ -131,7 +135,7 @@ end
 arr_fx_noisy = cell(nPolys_arr_fx,1);
 
 for i = 1:1:nPolys_arr_fx
-    arr_fx_noisy{i,1} = Noise(arr_fx{i},emin,emax);
+    arr_fx_noisy{i,1} = Noise(arr_fx{i},emin);
 end
 
 
@@ -141,7 +145,6 @@ end
 % %
 % Testing deconvolution separate
 LineBreakLarge();
-
 fprintf([mfilename 'Deconvolution Separate'  '\n']);
 
 arr_hx_test_4 = Deconvolve_Separate(arr_fx_noisy);
@@ -156,7 +159,6 @@ LineBreakLarge();
 fprintf([mfilename ' : ' 'Deconvolve Batch' '\n']);
 
 arr_hx_deconvolveBatch = Deconvolve_Batch(arr_fx_noisy);
-
 err_deconvolveBatch = GetErrors(arr_hx_deconvolveBatch,arr_hx);
 
 %--------------------------------------------------------------------------
@@ -168,7 +170,6 @@ LineBreakLarge();
 fprintf([mfilename ' : ' 'Deconvolve batch with STLN' '\n'])
 
 arr_hx_deconvolveBatchWithSTLN = Deconvolve_Batch_With_STLN(arr_fx_noisy);
-
 err_deconvolveBatchWithSTLN = GetErrors(arr_hx_deconvolveBatchWithSTLN,arr_hx);
 
 
@@ -182,7 +183,6 @@ LineBreakLarge()
 fprintf([mfilename ' : ' 'Deconvolvve Batch Constrained' '\n'])
 
 arr_hx_batchConstrained = Deconvolve_Batch_Constrained(arr_fx_noisy,vMultiplicities);
-
 err_batchConstrained = GetErrors(arr_hx_batchConstrained,arr_hx);
 
 
@@ -196,7 +196,6 @@ LineBreakLarge()
 fprintf([mfilename ' : ' 'Deconvolve Batch Constrained With STLN'])
 
 arr_hx_batchConstrainedWithSTLN = Deconvolve_Batch_Constrained_With_STLN(arr_fx_noisy,vMultiplicities);
-
 err_batchConstrainedWithSTLN = GetErrors(arr_hx_batchConstrainedWithSTLN,arr_hx);
 
 
@@ -215,18 +214,50 @@ plot(log10(err_deconvolveBatch),'-*','DisplayName','Batch')
 plot(log10(err_deconvolveBatchWithSTLN),'-s','DisplayName','Batch with STLN')
 plot(log10(err_batchConstrained),'-s','DisplayName','Batch Constrained')
 plot(log10(err_batchConstrainedWithSTLN),'-s','DisplayName','Batch Constrained with STLN')
-
-
-
 xlabel('k');
-ylabel('log_10 error h_{i}(x)');
+ylabel('log_{10} error h_{i}(x)');
 xlim([ 1 nPolys_arr_hx])
 legend(gca,'show');
 hold off
 
+% ------------------------------------------------------------------------
+
+Disp_error(err_deconvolveSeparate,'Separate');
+Disp_error(err_deconvolveBatch,'Batch');
+Disp_error(err_deconvolveBatchWithSTLN, 'Batch STLN');
+Disp_error(err_batchConstrained, 'Batch Constrained');
+Disp_error(err_batchConstrainedWithSTLN, 'Batch Constrained STLN');
+
+
+
+
+% %
+% %
+% %
+% Print to file
+
+A = ...
+    [
+    norm(err_deconvolveSeparate),...
+    norm(err_deconvolveBatch),...
+    norm(err_deconvolveBatchWithSTLN),...
+    norm(err_batchConstrained),...
+    norm(err_batchConstrainedWithSTLN)
+    ];
+
+fileID = fopen('Deconvolution/Test_Deconvolution.txt','a');
+fprintf(fileID,'%s %s %6.2e %6.2e %6.2e %6.2e %6.2e %6.2e  \n',ex_num,bool_preproc,emin,A);
+fclose(fileID);
 
 end
 
+function Disp_error(v_err,name)
+
+err = norm(v_err);
+
+fprintf([sprintf('Error in %s method : %e',name,err) '\n']);
+
+end
 
 function [vErrors] =  GetErrors(arr_hx_comp , arr_hx_exact)
 % GETERRORS Get the distance between each h
@@ -244,7 +275,4 @@ for i = 1:1:size(arr_hx_comp,1)
     
     
 end
-
-display(vErrors)
-
 end

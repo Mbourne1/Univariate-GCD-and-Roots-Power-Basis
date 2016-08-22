@@ -49,6 +49,13 @@ SETTINGS.MAX_ITERATIONS_DECONVOLUTIONS = 20;
 % degree t of the GCD(f,f').
 SETTINGS.BOOL_LIMITS = 'y';
 
+%-------------------------------------------------------------------------
+%
+% 
+%               DECONVOLUTION SETTINGS
+%
+%-------------------------------------------------------------------------
+
 % Deconvolution Method
 % Method for performing deconvolutions.
 %
@@ -58,9 +65,16 @@ SETTINGS.BOOL_LIMITS = 'y';
 % Batch Constrained
 % Batch Constrained With STLN
 %
+
+% Set deconvolution method for computing set of polynomials h_{i}(x) from
+% the set of polynomials f_{i}(x)
 SETTINGS.DECONVOLUTION_METHOD_FX_HX = 'Separate';
 
+% Set the deconvolution method for computing the set of polynomials
+% w_{i}(x) from the set of polynomials h_{i}(x)
 SETTINGS.DECONVOLUTION_METHOD_HX_WX = 'Separate';
+
+SETTINGS.PREPROC_DECONVOLUTION = 'y';
 
 %
 % From ux

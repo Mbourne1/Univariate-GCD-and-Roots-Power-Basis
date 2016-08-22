@@ -14,27 +14,38 @@ function arr_hx = Deconvolve_Batch(arr_fx)
 
 
 % Get the number of polynomials in the set arr_fx
-nPolys_f = size(arr_fx,1);
-nPolys_h = size(arr_fx,1) - 1;
+nPolys_arr_fx = size(arr_fx,1);
+nPolys_arr_hx = size(arr_fx,1) - 1;
 
 % Get the degree m_{i} of each of the polynomials f_{i} and store in a
 % vector.
-vDeg_arr_fx = zeros(nPolys_f,1);
-for i = 1:1:nPolys_f
+vDeg_arr_fx = zeros(nPolys_arr_fx,1);
+for i = 1:1:nPolys_arr_fx
     vDeg_arr_fx(i) = GetDegree(arr_fx{i});
 end
 
 % Get the degrees n{i} of polynomials h_{i} = f_{i}/f_{i+1}.
-vDeg_arr_hx = zeros(nPolys_f-1,1);
-for i = 1:1:nPolys_h
+vDeg_arr_hx = zeros(nPolys_arr_fx-1,1);
+for i = 1:1:nPolys_arr_hx
     vDeg_arr_hx(i) = vDeg_arr_fx(i)-vDeg_arr_fx(i+1);
 end
 
 % Obtain theta such that the ratio of max element to min element is
 % minimised
-theta = GetOptimalTheta(arr_fx,vDeg_arr_fx);
 
-theta = 1;
+% 
+% y - Preprocess
+% n - Dont preprocess 
+global SETTINGS
+SETTINGS.PREPROC_DECONVOLUTIONS;
+
+switch SETTINGS.PREPROC_DECONVOLUTIONS
+    case 'y'
+        theta = GetOptimalTheta(arr_fx,vDeg_arr_fx);
+    case 'n'
+        theta = 1;
+end
+
 
 % Initialise a cell-array for f(w)
 arr_fw = cell(size(arr_fx,1),1);
@@ -52,9 +63,9 @@ hw_vec = SolveAx_b(DCQ,RHS_vec);
 v_h = hw_vec;
 
 % Split vec h in to an array of polynomials.
-arr_hw = cell(nPolys_h,1);
+arr_hw = cell(nPolys_arr_hx,1);
 
-for i = 1:1:nPolys_h
+for i = 1:1:nPolys_arr_hx
     
     % Get degree of h{i}
     deg_hw = vDeg_arr_hx(i);
@@ -67,8 +78,8 @@ for i = 1:1:nPolys_h
 end
 
 % Remove thetas
-arr_hx = cell(nPolys_h,1);
-for i = 1:1: nPolys_f-1;
+arr_hx = cell(nPolys_arr_hx,1);
+for i = 1:1: nPolys_arr_fx-1;
     arr_hx{i} = GetWithoutThetas(arr_hw{i},theta);
 end
 
