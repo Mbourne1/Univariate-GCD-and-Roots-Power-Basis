@@ -9,7 +9,9 @@ function t = GetGCDDegree(fx,gx,degree_limits)
 %
 % gw : Coefficietns of polynomial g(w)
 %
-% nDistinctRoots : Number of distinct roots in previous computation.
+% degree_limits : 
+%
+% bool_PossCoprime : 
 %
 % Outputs.
 %
@@ -24,11 +26,18 @@ n = GetDegree(gx);
 
 % If the number of distinct roots in f(x) is one, then the degree of the
 % GCD of f(x) and f'(x) = m-1 = n.
+
+% set upper and lower bound of subresultants to be computed
+lower_lim_comp = 1;
+upper_lim_comp = min(m,n);
+
+degree_limits_comp = [lower_lim_comp upper_lim_comp];
+
 lower_lim = degree_limits(1);
 upper_lim = degree_limits(2);
 
 % Get the number of subresultants which must be constructed.
-nSubresultants = upper_lim - lower_lim +1 ;
+nSubresultants = upper_lim_comp - lower_lim_comp +1 ;
 
 % Initialise a vector to store the minimum singular values for each
 % S_{k}.
@@ -46,7 +55,7 @@ matrix = [];
 
 % Set the initial value of k to be the lower limit of the possible degree
 % of the GCD.
-k = lower_lim;
+k = lower_lim_comp;
 
 % Build the Sylvester Matrix
 C_f = BuildT1(fx,n-k);
@@ -57,9 +66,9 @@ Sk = [C_f C_g];
 [Q,R] = qr(Sk);
 
 % For each possible value of k, k = 0,...,min(m,n)
-for k = lower_lim:1:upper_lim
+for k = lower_lim_comp:1:upper_lim_comp
     
-    i = k - lower_lim + 1;
+    i = k - lower_lim_comp + 1;
     
     % If not the first subresultant, build by removing rows and columns.
     if i > 1
@@ -125,18 +134,34 @@ for k = lower_lim:1:upper_lim
     
 end
 
-% Determine whether the two polynomials can be corpime from the lower
-% bound.
-if lower_lim == 1 
-    can_be_coprime = true;
-else
-    can_be_coprime = false;
-end
 
-% If only one subresultant exists, use an alternative method.
-if (upper_lim == lower_lim ) % If only one Subresultant Exists
+% max/min diags R1
+% min singular values
+% min residual
+% max/min row R1
+
+METRIC = 'minimum_singular_values';
+switch METRIC
     
-    if (can_be_coprime)
+    case 'minimum_singular_values'
+        metric = vMinimumSingularValues;
+        
+    case 'minimum_residuals'
+        metric = vMinimumResidual;
+        
+    case 'max_min_diag_ratio'
+        metric = vMaxDiagR1./vMinDiagR1;
+        
+    case 'max_min_row_ratio'
+        metric = vMaxRowNormR1./vMinRowNormR1;
+        
+    otherwise
+        error('err');
+end
+% If only one subresultant exists, use an alternative method.
+if (upper_lim_comp == lower_lim_comp ) % If only one Subresultant Exists
+    
+    if (lower_lim_comp == 1)
         % Use the singular values from the only subresultant S_{1} to determine
         % if S_{1} is full rank or rank deficient.
         
@@ -144,7 +169,7 @@ if (upper_lim == lower_lim ) % If only one Subresultant Exists
     else
         % Since can not be corpime, and only one subresultant exists
        
-        t = lower_lim;
+        t = lower_lim_comp;
         fprintf([mfilename ' : ' sprintf('One subresultant : t = %i \n',t)]);
     end
     
@@ -155,7 +180,7 @@ else
     % NonSingular   : All Subresultants S_{k} are Non-Singular, and full rank
     % Mixed         : Some Subresultants are Singular, others are Non-Singular.
     PlotGraphs()
-    [t] = GetGCDDegree_MultipleSubresultants(vMaxDiagR1./vMinDiagR1,degree_limits);
+    [t] = GetGCDDegree_MultipleSubresultants(metric,degree_limits,degree_limits_comp);
     
 end
 

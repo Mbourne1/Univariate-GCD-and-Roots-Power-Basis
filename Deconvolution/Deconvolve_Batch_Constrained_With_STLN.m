@@ -237,11 +237,11 @@ while (condition(ite) > SETTINGS.MAX_ERROR_DECONVOLUTIONS) && ...
     C_fw = BuildC(arr_fw,vMult);
     
     % Build the matrix C(z)
-    Cz = BuildC(arr_zw,vMult);
+    C_zw = BuildC(arr_zw,vMult);
     
     % Build G
     H_z = Y_h - P;
-    H_h = C_fw + Cz;
+    H_h = C_fw + C_zw;
     
     G = [H_h H_z];
     
@@ -251,7 +251,7 @@ while (condition(ite) > SETTINGS.MAX_ERROR_DECONVOLUTIONS) && ...
     
     
     % Calculate residual and increment t in LSE Problem
-    res_vec = ((RHS_vec_fw+RHS_vec_Pz) - ((C_fw+Cz)*v_pw));
+    res_vec = ((RHS_vec_fw + RHS_vec_Pz) - ((C_fw + C_zw)*v_pw));
     
     % Increment iteration number
     ite = ite + 1;

@@ -1,7 +1,7 @@
 function [fx] = Examples_Roots(ex_num)
 
 
-EXAMPLE_TYPE = 'From Roots';
+EXAMPLE_TYPE = 'From Coefficients';
 
 switch EXAMPLE_TYPE
     case 'From Roots'

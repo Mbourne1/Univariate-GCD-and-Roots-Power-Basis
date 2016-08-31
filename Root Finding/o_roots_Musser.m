@@ -38,6 +38,7 @@ lower_lim = 1;
 upper_lim = min(m,n);
 deg_limits = [lower_lim, upper_lim];
 
+
 % Perform GCD computation.
 [fx_n,gx_n,dx, ux_o, vx_o, alpha, theta, t , lambda,mu] ...
     = o_gcd_mymethod(f{1},gx{ite},deg_limits);
@@ -66,6 +67,7 @@ while (GetDegree(h{ite}) > 0 )
         ux{ite} = g{ite};
     else
         
+          
           [fx_n,gx_n,h{ite+1}, ux{ite}, vx{ite}, ~, ~, ~ , ~,~] ...
               = o_gcd_mymethod(g{ite},h{ite},deg_limits);
         

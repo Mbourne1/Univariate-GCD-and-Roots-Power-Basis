@@ -23,13 +23,18 @@ switch DECONVOLUTION_METHOD
     
     case 'Separate'
         
-        arr_hx = cell(1,nPolys_fx-1);
+        arr_hx = cell(nPolys_fx-1,1);
         
         for i = 1:1:nPolys_fx-1
             arr_hx{i} = Deconvolve(arr_fx{i},arr_fx{i+1}) ;
         end
         
     case 'Batch'
+        
+        % Normalise all entries
+        for i = 1:1:nPolys_fx
+            arr_fx{i} = arr_fx{i}./arr_fx{i}(1,1);
+        end
         
         arr_hx = Deconvolve_Batch(arr_fx);
         
@@ -39,6 +44,12 @@ switch DECONVOLUTION_METHOD
         arr_hx = Deconvolve_Batch_With_STLN(arr_fx);
         
     case 'Batch Constrained'
+        
+        % Normalise all entries
+        for i = 1:1:nPolys_fx
+            arr_fx{i} = arr_fx{i}./arr_fx{i}(1,1);
+        end
+        
         
         % Get the degree of polynomials f_{i}(x)
         vDegt_fx = zeros(nPolys_fx,1);
@@ -59,8 +70,10 @@ switch DECONVOLUTION_METHOD
         
     case 'Batch Constrained With STLN'
         
-        
-        
+        % Normalise all entries
+        for i = 1:1:nPolys_fx
+            arr_fx{i} = arr_fx{i}./arr_fx{i}(1,1);
+        end
         
         % Get the degree of polynomials f_{i}(x)
         vDegt_fx = zeros(nPolys_fx,1);
@@ -84,9 +97,9 @@ switch DECONVOLUTION_METHOD
             'SETTINGS.DECONVOLVE_METHOD'...
             ' *Separate'...
             ' *Batch'...
-            ' *Batch STLN'...
+            ' *Batch With STLN'...
             ' *Batch Constrained'...
-            ' *Batch Constrained STLN']);
+            ' *Batch Constrained With STLN']);
 end
 end
 

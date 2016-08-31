@@ -82,11 +82,11 @@ function [] = PrintToFile(F_max,F_min,G_max,G_min,m,n,alpha,theta)
 
 global SETTINGS
 
-fullFileName = 'Results_Preprocessing.txt';
+fullFileName = 'Preprocessing/Results_Preprocessing.txt';
 
 
-if exist('Results_Preprocessing.txt', 'file')
-    fileID = fopen('Results_Preprocessing.txt','a');
+if exist(fullFileName, 'file')
+    fileID = fopen(fullFileName,'a');
     fprintf(fileID,'%s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s \n',...
         datetime('now'),...
         SETTINGS.PROBLEM_TYPE,...

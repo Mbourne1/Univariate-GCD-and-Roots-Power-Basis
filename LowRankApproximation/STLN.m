@@ -204,9 +204,6 @@ end
 
 fprintf([mfilename ' : ' sprintf('Required number of iterations : %i \n',ite)])
 
-format long
-display([fx zf fx_lr])
-display([gx zg gx_lr])
 
 
 end

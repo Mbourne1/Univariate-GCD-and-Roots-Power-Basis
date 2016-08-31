@@ -1,6 +1,6 @@
 function [] = Test_Deconvolution(ex_num,emin,bool_preproc)
 % TEST_DECONVOLUTION Test the different methods of deconvolving the set of
-% polynomials f_{i}(x), to form the set of polynomials h_{i} 
+% polynomials f_{i}(x), to form the set of polynomials h_{i}
 % where h_{i} = f{i}/f_{i+1}
 %
 % % Inputs
@@ -20,9 +20,9 @@ function [] = Test_Deconvolution(ex_num,emin,bool_preproc)
 
 % Set settings pertaining to this test
 global SETTINGS
-SETTINGS.PLOT_GRAPHS = 'n';
-SETTINGS.MAX_ERROR_DECONVOLUTIONS = 1e-13;
-SETTINGS.MAX_ITERATIONS_DECONVOLUTIONS = 100;
+SETTINGS.PLOT_GRAPHS = 'y';
+SETTINGS.MAX_ERROR_DECONVOLUTIONS = 1e-20;
+SETTINGS.MAX_ITERATIONS_DECONVOLUTIONS = 20;
 SETTINGS.SEED = 1024;
 SETTINGS.PREPROC_DECONVOLUTIONS = bool_preproc;
 
@@ -34,14 +34,14 @@ switch ex_num
     case '1'
         
         % Create set of factors whose multiplicities are defined in vMult
-        factor(1,1) = (x+1.0177);
-        factor(2,1) = (x-0.5296);
+        factor(1,1) = (x+1.017746571505);
+        factor(2,1) = (x-0.529678501354);
         
         % Set multiplicity of each factor
-        vMult = [9 ; 14];
+        vMult = [20 ; 40];
         
     case '2'
-                                
+        
         % Create set of factors whose multiplicities are defined in vMult
         factor(1,1) = (x-2);
         factor(2,1) = (x-3.2789);
@@ -64,16 +64,6 @@ switch ex_num
         factor(2,1) = (x+1.24672);
         factor(3,1) = (x+0.56921);
         vMult = [3; 6; 9];
-        case '5'
-        
-        % Create set of factors whose multiplicities are defined in vMult
-        factor(1) = (x - 0.246512);
-        factor(2) = (x - 1.214654);
-        factor(3) = (x + 0.567890);
-        factor(4) = (x + 0.214654);
-        % Set multiplicity of each factor
-        vMult = [2, 5 , 7 , 12];
-        
     case '5'
         
         % Create set of factors whose multiplicities are defined in vMult
@@ -85,7 +75,17 @@ switch ex_num
         vMult = [2, 5 , 7 , 12];
         
     case '6'
-                                
+        
+        % Create set of factors whose multiplicities are defined in vMult
+        factor(1) = (x - 0.246512);
+        factor(2) = (x - 1.214654);
+        factor(3) = (x + 0.567890);
+        factor(4) = (x + 0.214654);
+        % Set multiplicity of each factor
+        vMult = [2, 5 , 7 , 12];
+        
+    case '7'
+        
         % Create set of factors whose multiplicities are defined in vMult
         factor(1) = (x-2);
         factor(2) = (x-3.2789);
@@ -96,7 +96,7 @@ switch ex_num
         
         % Set multiplicitiy of each factor
         vMult = [ 1 3 4 4 5 12 ];
-      
+        
 end
 
 % Get highest power of any factor
@@ -121,7 +121,7 @@ for i = 0:1:highest_pwr
     vDeg_fx(i+1) = double(feval(symengine, 'degree', (arr_sym_f{i+1})));
 end
 
-% Display Polynomial f(x) in symbolic form 
+% Display Polynomial f(x) in symbolic form
 display(arr_sym_f{1})
 
 % Get the degree structure of the polynomials h_{i} where h_{i} =
@@ -237,21 +237,25 @@ err_batchConstrainedWithSTLN = GetErrors(arr_hx_batchConstrainedWithSTLN,arr_hx)
 
 % %
 % Plot Errors
-
-figure_name = sprintf([mfilename ' : ' 'Plotting errors of h(x)']);
-figure('name',figure_name)
-hold on
-plot(log10(err_deconvolveSeparate),'-.','DisplayName','Separate')
-plot(log10(err_deconvolveBatch),'-*','DisplayName','Batch')
-plot(log10(err_deconvolveBatchWithSTLN),'-s','DisplayName','Batch with STLN')
-plot(log10(err_batchConstrained),'-s','DisplayName','Batch Constrained')
-plot(log10(err_batchConstrainedWithSTLN),'-s','DisplayName','Batch Constrained with STLN')
-xlabel('k');
-ylabel('log_{10} error h_{i}(x)');
-xlim([ 1 nPolys_arr_hx])
-legend(gca,'show');
-hold off
-
+switch SETTINGS.PLOT_GRAPHS
+    case 'y'
+        figure_name = sprintf([mfilename ' : ' 'Plotting errors of h(x)']);
+        figure('name',figure_name)
+        hold on
+        plot(log10(err_deconvolveSeparate),'-.','DisplayName','Separate')
+        plot(log10(err_deconvolveBatch),'-*','DisplayName','Batch')
+        plot(log10(err_deconvolveBatchWithSTLN),'-s','DisplayName','Batch with STLN')
+        plot(log10(err_batchConstrained),'-s','DisplayName','Batch Constrained')
+        plot(log10(err_batchConstrainedWithSTLN),'-s','DisplayName','Batch Constrained with STLN')
+        xlabel('k');
+        ylabel('log_{10} error h_{i}(x)');
+        xlim([ 1 nPolys_arr_hx])
+        legend(gca,'show');
+        hold off
+    case 'n'
+    otherwise
+        error('err');
+end
 % ------------------------------------------------------------------------
 
 Disp_error(err_deconvolveSeparate,'Separate');

@@ -181,11 +181,11 @@ function [] = PrintToFile(m,n,t,error)
 
 global SETTINGS
 
-fullFileName = 'Results_o_gcd.txt';
+fullFileName = 'Results/Results_o_gcd.txt';
 
 
-if exist('Results_o_gcd.txt', 'file')
-    fileID = fopen('Results_o_gcd.txt','a');
+if exist(fullFileName, 'file')
+    fileID = fopen(fullFileName,'a');
     fprintf(fileID,'%s, \t %s, \t %s, \t %s, \t %s, \t %5s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s \n',...
         datetime('now'),...,...
         SETTINGS.PROBLEM_TYPE,...

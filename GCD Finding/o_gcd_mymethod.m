@@ -13,6 +13,13 @@ function [fx_n,gx_n,dx, ux, vx, alpha, theta, t , lambda,mu] =...
 % deg_limits : Specifiy upper and lower bound of the degree of the GCD
 % d(x), typically set when o_gcd_mymethod() is called from a root solving
 % problem, where deg_limits have been predetermined.
+%
+% % Outputs
+% 
+% fx_n :
+%
+% gx_n :
+%
 
 
 % Global variables
@@ -81,22 +88,27 @@ S1_preproc = BuildT(fw,alpha.*gw,1);
 % theta.
 
 [fx_n,gx_n,alpha,theta] = LowRankApprox(fx_n,gx_n,alpha,theta,t);
-fw_new = GetWithThetas(fx_n,theta);
-gw_new = GetWithThetas(gx_n,theta);
+fw = GetWithThetas(fx_n,theta);
+gw = GetWithThetas(gx_n,theta);
 
 % Build the Sylvester matrix which is the low rank approximation
-S1_LowRankApprox = BuildT(fw_new,alpha.*gw_new,1);
+S1_LowRankApprox = BuildT(fw,alpha.*gw,1);
 
 % Build the Sylvester matrix of the unprocessed input polynomials.
 S1_Unproc = BuildT(fx,gx,1);
 
 % %
 % Get the quotient polynomials u(x) and v(x)
-[ux,vx] = GetCofactorsCoefficients(fx_n,gx_n,t,alpha,theta,opt_col);
+[uw,vw] = GetCofactorsCoefficients(fw,alpha.*gw,t,opt_col);
 
 % %
 % Get the GCD d(x)
-dx = GetGCDCoefficients(ux,vx,fx_n,gx_n,t,alpha,theta);
+dw = GetGCDCoefficients(uw,vw,fw,alpha.*gw,t);
+
+
+dx = GetWithoutThetas(dw,theta);
+ux = GetWithoutThetas(uw,theta);
+vx = GetWithoutThetas(vw,theta);
 
 % %
 % %
@@ -126,6 +138,7 @@ switch SETTINGS.PLOT_GRAPHS
         plot(log10(vSingularValues_unproc),'-s','DisplayName','Unprocessed')
         plot(log10(vSingularValues_preproc),'-o','DisplayName','Preprocessed')
         plot(log10(vSingularValues_lowRank),'-*','DisplayName','Low Rank Approx')
+        xlim([1 length(vSingularValues_unproc)]);
         legend(gca,'show');
         hold off
     case 'n'

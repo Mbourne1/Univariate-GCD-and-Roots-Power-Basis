@@ -1,5 +1,5 @@
 function [] = o_roots(ex_num,emin,emax,mean_method,bool_alpha_theta,low_rank_approx_method)
-% o_roots(ex_num,el,mean_method,bool_alpha_theta,low_rank_approx_method)
+% O_ROOTS(ex_num,el,mean_method,bool_alpha_theta,low_rank_approx_method)
 %
 %
 % Calculate the roots of a polynomial f(x) by a series of methods.
@@ -31,8 +31,8 @@ function [] = o_roots(ex_num,emin,emax,mean_method,bool_alpha_theta,low_rank_app
 %
 %
 % % Example
-% >> o_roots('1', 1e-10, 1e-12, 'Geometric Mean Matlab Method', 'y', 'Standard STLN')
-% >> o_roots('Custom:m=5 low=-1 high=2', 1e-10, 1e-12, 'Geometric Mean Matlab Method', 'y', 'Standard STLN')
+% >> O_ROOTS('1', 1e-10, 1e-12, 'Geometric Mean Matlab Method', 'y', 'Standard STLN')
+% >> O_ROOTS('Custom:m=5 low=-1 high=2', 1e-10, 1e-12, 'Geometric Mean Matlab Method', 'y', 'Standard STLN')
 
 % Add Subfolders
 addpath('Root Finding',...
@@ -40,7 +40,10 @@ addpath('Root Finding',...
     'Examples',...
     'Formatting',...
     'GCD Finding',...
-    'LowRankApproximation');
+    'GetGCDDegree',...
+    'LowRankApproximation',...
+    'Plotting',...
+    'Preprocessing');
 
 % Initialise global variables
 global SETTINGS
@@ -98,9 +101,9 @@ try
     LineBreakLarge()
     time.MusserMethod = toc(MusserMethod_tic);
 catch err
-    
+   
     fprintf([mfilename ' : ' sprintf('Error in Musser Method \n')])
-    fprintf(err.message);
+    fprintf([err.message '\n']);
     rel_err.MusserMethod = 999999;
     time.MusserMethod = 999999;
     
@@ -120,7 +123,7 @@ end
 
 LineBreakLarge();
 fprintf('Duration - My Method : %2.4f\n', time.MyMethod);
-fprintf('Duration - Musser Method : %2.4f\n', time.MusserMethod);
+%fprintf('Duration - Musser Method : %2.4f\n', time.MusserMethod);
 LineBreakLarge();
 
 
@@ -141,6 +144,33 @@ LineBreakLarge()
 
 
 PrintToFile(rel_err,time)
+
+%
+% Plot the graph real (x) imaginary (y) components of the nondistinct roots
+% obtained by the root calculating methods.
+switch SETTINGS.PLOT_GRAPHS
+    case 'y'
+        figure_name = sprintf('%s : Plot Calculated Roots',mfilename);
+        figure('name',figure_name)
+        hold on;
+        scatter( real(root_multiplicity_array_mymethod(:,1)), imag(root_multiplicity_array_mymethod(:,1)),'yellow','*','DisplayName','My Method');
+        scatter( real(root_mult_array_MatlabMethod(:,1)), imag(root_mult_array_MatlabMethod(:,1)),'red','DisplayName','Matlab Roots');
+        scatter( real(computed_root_mult_array_multroot(:,1)), imag(computed_root_mult_array_multroot(:,1)),'green','s','filled','DisplayName','MultRoots');
+        
+       
+        xlabel('Real');
+        ylabel('Imaginary');
+        legend(gca,'show')
+        ylim()
+        str = sprintf('Plot of Calculated Roots of Polynomial f(y). \n componentwise noise = %g',emin);
+        title(str);
+        hold off
+    case 'n'
+        % Dont plot graph
+    otherwise
+        error('error: plot_graphs is either y or n')
+end
+
 
 end
 
@@ -173,12 +203,12 @@ function [] = PrintToFile(rel_err,time)
 
 global SETTINGS
 
-fullFileName = 'Results_o_roots.txt';
+fullFileName = 'Results/Results_o_roots.txt';
 
 
-if exist('Results_o_roots.txt', 'file')
+if exist(fullFilename, 'file')
     
-    fileID = fopen('Results_o_roots.txt','a');
+    fileID = fopen(fullFilename,'a');
     
     format_str = ...
         '%s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s \n';
@@ -195,10 +225,10 @@ if exist('Results_o_roots.txt', 'file')
         SETTINGS.EMIN,...
         SETTINGS.EMAX,...
         SETTINGS.LOW_RANK_APPROXIMATION_METHOD,...
-        SETTINGS.DECONVOLUTION_METHOD,...
+        SETTINGS.DECONVOLUTION_METHOD_FX_HX,...
         time.MyMethod,...
         time.MusserMethod,...
-        SETTINGS.ROOTS_UX...
+        SETTINGS.ROOTS_HX...
         );
     fclose(fileID);
     

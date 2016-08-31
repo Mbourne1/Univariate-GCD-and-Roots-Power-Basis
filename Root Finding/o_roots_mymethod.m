@@ -19,30 +19,30 @@ ite = 1;
 
 % Initialise an array 'q' which stores the gcd outputs from each gcd
 % calculation
-arr_fx{1} = fx;
+arr_fx{1,1} = fx;
 
 % let vGCD_Degree store the degrees corresponding to the array of
 % GCDs stored in q.
-vDegt_fx(1) = GetDegree(arr_fx{1});
+vDegt_fx(1,1) = GetDegree(arr_fx{1});
 
 % Let theta_vec store all theta values used in each iteration.
-vTheta(1) = 1;
+vTheta(1,1) = 1;
 
 % Get the number of distinct roots of f_{1}. Since this is unknown at this
 % time, set number of distinct roots to be m_{1} = deg(f_{1}).
-d(1) = GetDegree(arr_fx);
+vNum_distinct_roots_fx(1,1) = GetDegree(arr_fx);
 
 % Whilst the most recently calculated GCD has a degree greater than
 % zero. ie is not a constant, perform a gcd calculation on it and its
 % derivative.
 
-while GetDegree(arr_fx{ite}) > 0
+while GetDegree(arr_fx{ite,1}) > 0
 
-    % if degree of f(ite_num) is greater than one
-    if vDegt_fx(ite) > 1
+    % If degree of f(ite_num) is greater than one
+    if vDegt_fx(ite,1) > 1
         
         
-        fprintf(['\n' mfilename ' : ' sprintf('Compute GCD of f_{%i} and derivative f_{%i}\n\n',ite,ite)]);
+        fprintf(['\n' mfilename ' : ' sprintf('Compute GCD of f_{%i} and derivative f_{%i}\n\n',ite-1,ite-1)]);
         
         
         % Perform GCD computation
@@ -52,31 +52,42 @@ while GetDegree(arr_fx{ite}) > 0
         if ite > 1
             switch SETTINGS.BOOL_LIMITS
                 case 'y'
-                    lower_lim = max(vDegt_fx(ite)-d(ite-1),1);
+                    lower_lim = vDegt_fx(ite) - vNum_distinct_roots_fx(ite-1);
                     upper_lim = vDegt_fx(ite)-1;
                 case 'n'
                     lower_lim = 1;
                     upper_lim = vDegt_fx(ite)-1;
             end
+            
+            
+
+            
         else
             lower_lim = 1;
             upper_lim = vDegt_fx(ite)-1;
+           
         end
         
         
         
-        fprintf([ mfilename ' : ' sprintf('Minimum degree of f_{%i}: %i \n', ite+1, lower_lim)]);
-        fprintf([ mfilename ' : ' sprintf('Maximum degree of f_{%i}: %i \n\n', ite+1, upper_lim)]);
+        fprintf([ mfilename ' : ' sprintf('Minimum degree of f_{%i}: %i \n', ite, lower_lim)]);
+        fprintf([ mfilename ' : ' sprintf('Maximum degree of f_{%i}: %i \n\n', ite, upper_lim)]);
             
+        
+        
+        
         % (fx_n,gx_n,dx, ux, vx, alpha, theta, t , lambda,mu)
-        [arr_fx{ite},~,arr_fx{ite+1}, ux{ite} ,vx{ite},~,vTheta(ite+1),vDegt_fx(ite+1),~,~] ...
-            = o_gcd_mymethod( arr_fx{ite} , Differentiate(arr_fx{ite}) , [lower_lim,upper_lim]);
-        
-        % Get number of distinct roots of f(ite)
-        d(ite) = vDegt_fx(ite) - vDegt_fx(ite+1);
+        [arr_fx{ite,1},~,arr_fx{ite+1,1}, arr_ux{ite,1} ,arr_vx{ite,1},~,vTheta(ite+1,1),vDegt_fx(ite+1,1),~,~] ...
+            = o_gcd_mymethod( arr_fx{ite,1} , Differentiate(arr_fx{ite,1}) , [lower_lim,upper_lim]);
         
         
-        fprintf([ mfilename ' : ' sprintf('Number of distinct roots in f_{%i} : %i \n',ite,d(ite))]);
+        fprintf([ mfilename ' : ' sprintf('Computed degree of f_{%i}: %i \n', ite, vDegt_fx(ite+1) )]);
+        
+        % Get number of distinct roots of f(ite), given by
+        vNum_distinct_roots_fx(ite,1) = vDegt_fx(ite,1) - vDegt_fx(ite+1,1);
+        
+        
+        fprintf([ mfilename ' : ' sprintf('Number of distinct roots in f_{%i} : %i \n',ite,vNum_distinct_roots_fx(ite))]);
 
         % increment iteration number.
         ite = ite+1;
@@ -90,8 +101,8 @@ while GetDegree(arr_fx{ite}) > 0
         %theta_vec(ite_num+1) = 1;
         vDegt_fx(ite+1) = 0;
         
-        arr_fx{ite+1} = 1;
-        ux{ite} = arr_fx{ite};
+        arr_fx{ite+1,1} = 1;
+        arr_ux{ite,1} = arr_fx{ite};
         ite = ite+1;
         
         break;
@@ -102,12 +113,12 @@ end
 
 
 % Get the degree structure of the polynomials h_{i}
-vDeg_hx = diff(vDegt_fx);
+vDeg_arr_hx = diff(vDegt_fx);
 
 % Get the degree structure of the polynomials w_{i}
-vDeg_wx = diff([vDeg_hx 0]);
+vDeg_arr_wx = diff([vDeg_arr_hx; 0]);
 
-vMultiplicities = find(vDeg_wx~=0);
+vMultiplicities = find(vDeg_arr_wx~=0);
 
 % %
 % %
@@ -120,15 +131,16 @@ vMultiplicities = find(vDeg_wx~=0);
 % we can use the already calculated values ux{i}
 %method = 'By Deconvolution';
 
-switch SETTINGS.ROOTS_UX
+switch SETTINGS.ROOTS_HX
     case 'From Deconvolutions'
         
-        hx = Deconvolve_Set(arr_fx,SETTINGS.DECONVOLUTION_METHOD_FX_HX);
+        fprintf([mfilename ' : ' sprintf('Deconvolution Method : %s',SETTINGS.DECONVOLUTION_METHOD_FX_HX)]);
+        arr_hx = Deconvolve_Set(arr_fx,SETTINGS.DECONVOLUTION_METHOD_FX_HX);
                 
             
     case 'From ux'
-        
-        hx = ux;
+        fprintf([mfilename ' : ' sprintf('Deconvolution Method : %s',SETTINGS.ROOTS_HX)]);
+        arr_hx = arr_ux;
         
     otherwise
         str = sprintf([mfilename ' : ' sprintf('ROOTS_UX is either From Deconvolutions or From ux') '\n']); 
@@ -145,14 +157,14 @@ end
 
 
 % Get the number of polynomials in h_{x}
-[~,nCols_hx] = size(hx);
+[nPolys_arr_hx] = size(arr_hx,1);
 
-roots_wrt_x = [];
+
 
 
 % If only one entry in h_{x}
 % If only one entry in h_{x}
-if nCols_hx == 1
+if nPolys_arr_hx == 1
     
     
     % if number of cols in h1 is only 1, then do not perform second
@@ -160,7 +172,7 @@ if nCols_hx == 1
     % Note - this is a rare exception.
     vRoots = [];
 
-    factor_x = hx{1};
+    factor_x = arr_hx{1};
     
     % Normalise the polynomial coefficients by the leading coefficient x^m
     factor_x = factor_x./factor_x(end);
@@ -170,41 +182,41 @@ if nCols_hx == 1
     
     % get the roots with respect to y, and their multiplicities all set
     % to one.
-    roots_wrt_x = [rt];
+    arr_wx = rt;
         
     % add the roots to the array of roots
-    vRoots = [vRoots ; roots_wrt_x];
+    vRoots = [vRoots ; arr_wx];
 else
     % perform deconvolutions
     
     % Deconvolve the second set of polynomials
-    wx = Deconvolve_Set(hx,SETTINGS.DECONVOLUTION_METHOD_HX_WX);
+    arr_wx = Deconvolve_Set(arr_hx, SETTINGS.DECONVOLUTION_METHOD_HX_WX);
     
     % w1 yields the simple, double, triple roots of input polynomial f.
     % w1{i} yields the roots of multiplicity i.
     
     % set the w1{max} = h1{max}
-    wx{ite-1} = hx{ite-1};
+    arr_wx{ite-1,1} = arr_hx{ite-1};
     
     % get number of entries in w1
-    [~,ncols_wx] = size(wx);
+    [nPolys_arr_wx] = size(arr_wx,1);
     
     % initialise an empty set
     vRoots = [];
     
     % for each multiplicity in w1.
-    for i = 1:1:ncols_wx
+    for i = 1:1:nPolys_arr_wx
         
         % Get the polynomial w_{i}
-        poly_wi = wx{i};
+        poly_wi = arr_wx{i};
         
         % Get the degree of w_{i}
-        deg_wi = GetDegree(wx{i});
+        vDeg_arr_wx(i,1) = GetDegree(arr_wx{i});
         
         
         % If w_{i} is of degree one, then is of the form (ax+b)
         % and has only one root. Add it to the list of roots.
-        if deg_wi == 1;
+        if vDeg_arr_wx(i,1) == 1;
                         
                  
             % Normalise the coefficients of w_{i} by dividing by the
@@ -218,16 +230,16 @@ else
             % Add the root to the [root, mult] matrix
             vRoots = [vRoots ; rt];
             
-        elseif (deg_wi > 1)
+        elseif (vDeg_arr_wx > 1)
             % The given multiplicity contains more than one root, such that
             % number of coefficients in greater than 2, use MATLAB roots
             % function to find roots.
                   
             % Get the roots in terms of w_{i} using Matlab Roots function.
-            roots_wrt_x = roots(flipud(poly_wi));    
+            rts = roots(flipud(poly_wi));    
             
             % Add the computed roots to the array of roots.
-            vRoots = [vRoots ; roots_wrt_x];
+            vRoots = [vRoots ; rts];
         end
     end
 end
@@ -239,8 +251,8 @@ end
 
 % create a matrix where the first column contains the multiplicities, and
 % the second column contains the number of roots of that multiplicity
-nPolys_wi = length(vDeg_wx);
-mat = [(1:1:nPolys_wi)' vDeg_wx'];
+nPolys_wi = size(vDeg_arr_wx,1);
+mat = [(1:1:nPolys_wi)' vDeg_arr_wx];
 
 count = 1;
 root_mult_array = [];

@@ -1,6 +1,14 @@
-function [t] = GetGCDDegree_MultipleSubresultants(vMinimumSingularValues,degree_limits)
+function [t] = GetGCDDegree_MultipleSubresultants(vMinimumSingularValues,degree_limits,degree_limits_comp)
 % Get the problem type, dependent on the vector of singular values from the
 % series s_{k}
+%
+% % Inputs
+%
+% vMinimumSingularValues
+%
+% degree_limits
+%
+% bool_PossCoprime 
 %
 % Get the type of problem.
 % Problem Type.
@@ -13,8 +21,8 @@ function [t] = GetGCDDegree_MultipleSubresultants(vMinimumSingularValues,degree_
 calling_function = St(2).name;
 
 % Set upper and lower limits of the degree of the GCD.
-lower_lim = degree_limits(1);
-upper_lim = degree_limits(2);
+lower_lim_comp = degree_limits_comp(1);
+upper_lim_comp = degree_limits_comp(2);
 
 
 
@@ -28,14 +36,18 @@ MessageToConsole( sprintf('Largest Change in Singular Values : %4.5e' ,abs(maxCh
 MessageToConsole( sprintf('Threshold : %4.5e', SETTINGS.THRESHOLD));
 
 
-
+if (abs(maxChangeSingularValues) < SETTINGS.THRESHOLD)
+    bool_significant_change = false;
+else
+    bool_significant_change = true;
+end
 
 
 % if the largest of the changes is below a threshold, then the largest
 % change is not significant, and cannot determine the degree of the GCD. so
 % all subresultants are either singular or nonsingular. The GCD is either 0
 % or k where k is the upper limit.
-if  abs(maxChangeSingularValues) < SETTINGS.THRESHOLD
+if  (bool_significant_change == false)
     
 
     % % Rank Deficient = Singular = GCD = maximum
@@ -43,21 +55,21 @@ if  abs(maxChangeSingularValues) < SETTINGS.THRESHOLD
     % maxChange is insignificant
     % Get the average minimum singular value
     avgMinSingularValue = log10(mean(vMinimumSingularValues));
-    
+    MessageToConsole( sprintf('Threshold to dermine rank : %e \n', SETTINGS.THRESHOLD_RANK));
     MessageToConsole( sprintf('Average of Singular values: %2.4f \n',avgMinSingularValue) );
     
-    
+  
     
     if  avgMinSingularValue < SETTINGS.THRESHOLD_RANK 
         % If all singular values are close to zero, then the Sylvester matrices
         % are all rank deficient, and are all singular
         % gcd is min(m,n)
-        t = upper_lim;
+        t = upper_lim_comp;
         fprintf([mfilename ' : ' calling_function ' : ' sprintf('All Rank Deficient \n')]);
         fprintf([mfilename ' : ' calling_function ' : ' sprintf('t = %i \n',t)]);
     
-    elseif lower_lim > 1
-            t = lower_lim;
+    elseif lower_lim_comp > 1
+            t = lower_lim_comp;
             fprintf([mfilename ' : ' calling_function ' : ' sprintf('t = %i \n',t)]);
         
     else
@@ -67,7 +79,7 @@ if  abs(maxChangeSingularValues) < SETTINGS.THRESHOLD
         
     end
 else
-    t = lower_lim + indexMaxChange - 1;
+    t = lower_lim_comp + indexMaxChange - 1;
     % maxChange is signifcant
     fprintf([mfilename ' : ' calling_function ' : ' 'min < Deg(GCD) < max \n'])
     fprintf([mfilename ' : ' calling_function ' : ' sprintf('t = %i \n',t)])
