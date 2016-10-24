@@ -24,10 +24,10 @@ function [fx, gx, dx,ux,vx] = Examples_GCD(ex_num)
 % vx : column vector of coefficients of polynomail v(x) where v(x) is given
 % by g(x) divided by d(x)
 
-EXAMPLE_TYPE = 'FromCoefficients';
+EXAMPLE_TYPE = 'From Coefficients';
 
 switch EXAMPLE_TYPE
-    case 'FromRoots'
+    case 'From Roots'
         % Get inputs f and g and
         [...
             root_mult_array_fx,...
@@ -38,15 +38,15 @@ switch EXAMPLE_TYPE
         
                
         % Given the roots and multiplicities of f(x), get the coefficients
-        fx = GetCoefficients(root_mult_array_fx);
-        gx = GetCoefficients(root_mult_array_gx);
-        dx = GetCoefficients(root_mult_array_dx);
-        ux = GetCoefficients(root_mult_array_ux);
-        vx = GetCoefficients(root_mult_array_vx);
+        fx = GetCoefficientsFromRoots(root_mult_array_fx);
+        gx = GetCoefficientsFromRoots(root_mult_array_gx);
+        dx = GetCoefficientsFromRoots(root_mult_array_dx);
+        ux = GetCoefficientsFromRoots(root_mult_array_ux);
+        vx = GetCoefficientsFromRoots(root_mult_array_vx);
 
         
         
-    case 'FromCoefficients'
+    case 'From Coefficients'
         
         [fx,gx,dx] = Examples_GCD_FromCoefficients(ex_num);
         ux = 1;
@@ -61,27 +61,4 @@ end
 end
 
 
-function root_mult_array_fx_noisy = AddNoiseToRoots(root_mult_array_fx, noise)
-% Given a set of roots and their corresponding multiplicities. Add noise to
-% the roots
-
-roots = root_mult_array_fx(:,1);
-mults = root_mult_array_fx(:,2);
-
-nRoots = size(roots,1);
-
-% Generate a vector of random numbers between 1 and -1
-a = -1;
-b = 1;
-
-rand_vec = (b-a).*rand(nRoots,1) + a;
-
-noise_vec = (roots .* (rand_vec * noise));
-
-noisy_roots = roots + noise_vec;
-
-root_mult_array_fx_noisy = [noisy_roots mults];
-
-
-end
 

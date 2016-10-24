@@ -1,4 +1,4 @@
-function [fx] = GetCoefficients(root_mutl_arr_f)
+function [fx] = GetCoefficientsFromRoots(root_mutl_arr_f)
 % Given the roots and multiplicities of a polynomial f(x), calculate the
 % coefficients
 %

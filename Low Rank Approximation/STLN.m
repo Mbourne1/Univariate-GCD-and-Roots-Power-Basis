@@ -35,14 +35,14 @@ zg = zeros(n+1,1);
 z = [zf ; zg];
 
 % Build the t'th subresultant
-C1 = BuildT1(fx,n-t);
-C2 = BuildT1(gx,m-t);
-St = [C1 C2];
+T1_fx = BuildT1(fx,n-t);
+T1_gx = BuildT1(gx,m-t);
+St = [T1_fx T1_gx];
 
 % Build the matrix E_{t}(z)
-B1 = BuildT1(zf,n-t);
-B2 = BuildT1(zg,m-t);
-Bt = [B1 B2];
+B1_zf = BuildT1(zf,n-t);
+B2_zg = BuildT1(zg,m-t);
+Bt = [B1_zf B2_zg];
 
 % Get the index of the optimal colummn for removal
 [~,colIndex] = GetMinDistance(St);
@@ -69,7 +69,7 @@ Pt = BuildPt(colIndex,m,n,t);
 x_ls = SolveAx_b(At,ct);
 
 % Get initial residual (A_{t}+E_{t})x = (c_{t} + h_{t})
-g = (ct + ht) - At*x_ls;
+res_vec = (ct + ht) - At*x_ls;
 
 % Build the matrix Y_{t}
 x = [x_ls(1:colIndex-1) ; 0 ; x_ls(colIndex:end)];
@@ -98,13 +98,13 @@ yy = start_point;
 
 % Set the initial value of vector p to be zero
 f = -(yy-start_point);
-%f = start_point
+
 
 % Initialise the iteration counter
 ite = 1;
 
 % Set the termination criterion
-condition(ite) = norm(g)./ norm(ct);
+condition(ite) = norm(res_vec)./ norm(ct);
 
 
 
@@ -114,7 +114,7 @@ while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTL
     ite = ite + 1;
     
     % Get small petrubations by LSE
-    y_lse = LSE(E,f,C,g);
+    y_lse = LSE(E,f,C,res_vec);
         
     % Increment cummulative peturbations
     yy = yy + y_lse;
@@ -140,30 +140,18 @@ while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTL
     % and equivalent to c_{t} removed from S_{t}
     ht = Bt(:,colIndex);
     
-    opt = 1;
-    switch opt
-        case '1'
-            delta_xk        = y_lse((m+n+3):(2*m+2*n-2*t+3),1);
-            x = x + delta_xk;
-        case '2'
-            
-            x_ls = SolveAx_b(At+Et,ct+ht);
-            
-            % Get the updated vector x
-            x = ...
-                [
-                x_ls(1:colIndex-1);
-                0 ;
-                x_ls(colIndex:end);
-                ];
-    end
-    
+   
+    delta_xk        = y_lse((m+n+3):(2*m+2*n-2*t+3),1);
+    x_ls = x_ls + delta_xk;
+    x = [x_ls(1:colIndex-1) ; 0 ; x_ls(colIndex:end)];
+
+
     
     % Build the matrix Y_{t} where Y_{t}(x)*z = E_{t}(z) * x
     Yt = BuildYt(x,m,n,t);
     
     % Get the residual vector
-    g = (ct+ht) - ((At+Et)*x_ls);
+    res_vec = (ct+ht) - ((At+Et)*x_ls);
     
     % Update the matrix C
     H_z = Yt - Pt;
@@ -175,7 +163,7 @@ while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTL
     f = -(yy-start_point);
     
     % Update the termination criterion
-    condition(ite) = norm(g)./norm(ct + ht) ;
+    condition(ite) = norm(res_vec)./norm(ct + ht) ;
     
 end
 
@@ -238,11 +226,11 @@ end
 function Yt = BuildYt(x,m,n,t)
 % Build the matrix Y_{t}, where Y_{t}z = E_{t}x
 
-xa = x(1:n-t+1);
-xb = x(n-t+2:end);
+x1 = x(1:n-t+1);
+x2 = x(n-t+2:end);
 
-Y1 = BuildT1(xa,m);
-Y2 = BuildT1(xb,n);
+Y1 = BuildT1(x1,m);
+Y2 = BuildT1(x2,n);
 
 Yt = [Y1 Y2];
 

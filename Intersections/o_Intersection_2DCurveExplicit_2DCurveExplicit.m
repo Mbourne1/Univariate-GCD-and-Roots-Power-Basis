@@ -45,8 +45,8 @@ switch EXAMPLE_TYPE
         PrintFactorization(gx_root_mult_arr,'g')
                
         % Get the coefficients of the polynomails f(x) and g(x)
-        fx = GetCoefficients(fx_root_mult_arr);
-        gx = GetCoefficients(gx_root_mult_arr);
+        fx = GetCoefficientsFromRoots(fx_root_mult_arr);
+        gx = GetCoefficientsFromRoots(gx_root_mult_arr);
         
         % Print the coefficients of f(x) and g(x)             
         PrintCoefficientsBivariate(fx,'f');

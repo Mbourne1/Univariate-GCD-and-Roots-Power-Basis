@@ -1,30 +1,14 @@
 
-function fx_exact = Examples_Roots_FromCoefficients(ex_num)
+function fx = Examples_Roots_FromCoefficients(ex_num)
 
-x = sym('x');
+addpath('../Examples');
 
-switch ex_num
-    
-    case '1'
-        
-        f = (x - 0.5)^4 * (x + 0.75)^7;
-    
-    case '2'
-        
-        f = (x - 1.5)^4 * (x + 0.75)^7 * (x - 10.1)^3;
-        
-    case '3'
-        
-        f = (x - 1.5)^4 * (x + 0.75)^7 * (x - 10.1)^3 * (x-0.17523547)^5;
-        
-    otherwise 
-        error('err')
-end
+% Get the symbolic factors of f(x) and corresponding multiplicities
+f_root_sym_mult_array = Univariate_Roots_Examples(ex_num);
 
-display(f);
+% Get the coefficients of f(x) as a vector.
+fx = GetCoefficientsFromSymbolicRoots(f_root_sym_mult_array);
 
-m = double(feval(symengine, 'degree', f));
-
-fx_exact = flipud(double(coeffs(f,x,'All'))');
 
 end
+

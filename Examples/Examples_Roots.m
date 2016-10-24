@@ -10,11 +10,12 @@ switch EXAMPLE_TYPE
         fx_root_mult_array = Examples_Roots_FromRoots(ex_num);
         
         % Get the coefficients of the polynomial f(x)
-        fx = GetCoefficients(fx_root_mult_array);
+        fx = GetCoefficientsFromRoots(fx_root_mult_array);
         
         % Print the roots and coefficients of f(x)
-        PrintFactorization(fx_root_mult_array,'f')
-        PrintCoefficientsBivariate(fx,'f')
+        PrintFactorization(fx_root_mult_array,'f');
+        
+        PrintCoefficientsBivariate(fx,'f');
         
         
         

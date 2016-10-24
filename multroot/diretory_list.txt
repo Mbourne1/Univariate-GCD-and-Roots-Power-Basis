@@ -1,8 +1,0 @@
-
-Directories:
-
-documet: the two papers related to the package
-
-MultRoot: the root-finding package
-
-TestSuit: the test suit of polynomials

@@ -22898,3 +22898,47 @@ e+00, 	 7.200000e+00
 30-Aug-2016 16:37:46, 	 GCD, 	 1, 	 19, 	 18, 	 Geometric Mean Matlab Method, 	 3.837334e+05, 	 -3.835796e+05, 	 1.807906e+05, 	 -2.007979e+05, 	 y, 	 1.320286e+00, 	 2.583720e+00 
 30-Aug-2016 16:38:35, 	 GCD, 	 1, 	 19, 	 18, 	 Geometric Mean Matlab Method, 	 4.111676e+02, 	 -3.744242e+02, 	 2.780597e+02, 	 -3.038536e+02, 	 y, 	 1, 	 1 
 30-Aug-2016 16:38:35, 	 GCD, 	 1, 	 19, 	 18, 	 Geometric Mean Matlab Method, 	 3.837334e+05, 	 -3.835796e+05, 	 1.807906e+05, 	 -2.007979e+05, 	 y, 	 1.320286e+00, 	 2.583720e+00 
+10-Oct-2016 11:34:37, 	 GCD, 	 1, 	 4, 	 4, 	 Geometric Mean Matlab Method, 	 2.507703e+00, 	 1.929003e-01, 	 2.912178e+00, 	 1.213408e-01, 	 y, 	 1, 	 1 
+10-Oct-2016 11:34:38, 	 GCD, 	 1, 	 4, 	 4, 	 Geometric Mean Matlab Method, 	 6.524479e+00, 	 7.716011e-01, 	 6.945429e+00, 	 8.213836e-01, 	 y, 	 9.393918e-01, 	 1.613002e+00 
+10-Oct-2016 11:42:40, 	 GCD, 	 Example 7.1, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.193601e+02, 	 -1.932640e+02, 	 5.804493e+01, 	 -5.677002e+01, 	 y, 	 1, 	 1 
+10-Oct-2016 11:42:40, 	 GCD, 	 Example 7.1, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.786498e+00, 	 -2.719734e+00, 	 1.401686e+00, 	 -1.224589e+00, 	 y, 	 1.461591e-01, 	 6.528863e-01 
+10-Oct-2016 11:43:22, 	 GCD, 	 Example 7.2, 	 21, 	 20, 	 Geometric Mean Matlab Method, 	 5.379834e+02, 	 -5.140996e+02, 	 9.111889e+01, 	 -9.956699e+01, 	 y, 	 1, 	 1 
+10-Oct-2016 11:43:22, 	 GCD, 	 Example 7.2, 	 21, 	 20, 	 Geometric Mean Matlab Method, 	 1.862631e+00, 	 -1.840075e+00, 	 1.575366e+00, 	 -1.685321e+00, 	 y, 	 1.105209e+00, 	 6.687605e-01 
+10-Oct-2016 11:47:30, 	 GCD, 	 Example 7.1, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.193601e+02, 	 -1.932640e+02, 	 5.804493e+01, 	 -5.677002e+01, 	 y, 	 1, 	 1 
+10-Oct-2016 11:47:30, 	 GCD, 	 Example 7.1, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.786498e+00, 	 -2.719734e+00, 	 1.401686e+00, 	 -1.224589e+00, 	 y, 	 1.461591e-01, 	 6.528863e-01 
+10-Oct-2016 11:47:49, 	 GCD, 	 Example 7.1, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.193601e+02, 	 -1.932640e+02, 	 5.804493e+01, 	 -5.677002e+01, 	 y, 	 1, 	 1 
+10-Oct-2016 11:47:49, 	 GCD, 	 Example 7.1, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.786498e+00, 	 -2.719734e+00, 	 1.401686e+00, 	 -1.224589e+00, 	 y, 	 1.461591e-01, 	 6.528863e-01 
+10-Oct-2016 11:50:14, 	 GCD, 	 0, 	 4, 	 4, 	 Geometric Mean Matlab Method, 	 2.591907e+00, 	 1.524651e-01, 	 6.988271e-01, 	 -2.795308e+00, 	 y, 	 1, 	 1 
+10-Oct-2016 11:50:14, 	 GCD, 	 0, 	 4, 	 4, 	 Geometric Mean Matlab Method, 	 6.348851e+00, 	 9.147909e-01, 	 2.679065e+00, 	 -4.374894e+00, 	 y, 	 1.006836e+00, 	 1.565085e+00 
+10-Oct-2016 11:52:36, 	 GCD, 	 Example 7.1, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.193601e+02, 	 -1.932640e+02, 	 5.804493e+01, 	 -5.677002e+01, 	 y, 	 1, 	 1 
+10-Oct-2016 11:52:36, 	 GCD, 	 Example 7.1, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.786498e+00, 	 -2.719734e+00, 	 1.401686e+00, 	 -1.224589e+00, 	 y, 	 1.461591e-01, 	 6.528863e-01 
+10-Oct-2016 11:53:15, 	 GCD, 	 Example 7.2, 	 21, 	 20, 	 Geometric Mean Matlab Method, 	 5.379834e+02, 	 -5.140996e+02, 	 9.111889e+01, 	 -9.956699e+01, 	 y, 	 1, 	 1 
+10-Oct-2016 11:53:15, 	 GCD, 	 Example 7.2, 	 21, 	 20, 	 Geometric Mean Matlab Method, 	 1.862631e+00, 	 -1.840075e+00, 	 1.575366e+00, 	 -1.685321e+00, 	 y, 	 1.105209e+00, 	 6.687605e-01 
+11-Oct-2016 11:58:08, 	 GCD, 	 Example 7.1, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.193601e+02, 	 -1.932640e+02, 	 5.804493e+01, 	 -5.677002e+01, 	 y, 	 1, 	 1 
+11-Oct-2016 11:58:08, 	 GCD, 	 Example 7.1, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.786498e+00, 	 -2.719734e+00, 	 1.401686e+00, 	 -1.224589e+00, 	 y, 	 1.461591e-01, 	 6.528863e-01 
+11-Oct-2016 12:00:06, 	 GCD, 	 Example 7.1, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.193601e+02, 	 -1.932640e+02, 	 5.804493e+01, 	 -5.677002e+01, 	 y, 	 1, 	 1 
+11-Oct-2016 12:00:06, 	 GCD, 	 Example 7.1, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.786498e+00, 	 -2.719734e+00, 	 1.401686e+00, 	 -1.224589e+00, 	 y, 	 1.461591e-01, 	 6.528863e-01 
+11-Oct-2016 12:01:37, 	 GCD, 	 Example 7.1, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.193601e+02, 	 -1.932640e+02, 	 5.804493e+01, 	 -5.677002e+01, 	 y, 	 1, 	 1 
+11-Oct-2016 12:01:37, 	 GCD, 	 Example 7.1, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.786498e+00, 	 -2.719734e+00, 	 1.401686e+00, 	 -1.224589e+00, 	 y, 	 1.461591e-01, 	 6.528863e-01 
+11-Oct-2016 12:02:56, 	 GCD, 	 Example 7.1, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.193601e+02, 	 -1.932640e+02, 	 5.804493e+01, 	 -5.677002e+01, 	 y, 	 1, 	 1 
+11-Oct-2016 12:02:56, 	 GCD, 	 Example 7.1, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.786498e+00, 	 -2.719734e+00, 	 1.401686e+00, 	 -1.224589e+00, 	 y, 	 1.461591e-01, 	 6.528863e-01 
+11-Oct-2016 12:06:13, 	 GCD, 	 1, 	 4, 	 4, 	 Geometric Mean Matlab Method, 	 2.591907e+00, 	 1.524651e-01, 	 6.988271e-01, 	 -2.795308e+00, 	 y, 	 1, 	 1 
+11-Oct-2016 12:06:13, 	 GCD, 	 1, 	 4, 	 4, 	 Geometric Mean Matlab Method, 	 6.348851e+00, 	 9.147909e-01, 	 2.679065e+00, 	 -4.374894e+00, 	 y, 	 1.006836e+00, 	 1.565085e+00 
+11-Oct-2016 12:07:58, 	 GCD, 	 4, 	 5, 	 6, 	 Geometric Mean Matlab Method, 	 2.440503e+00, 	 -1.592999e+00, 	 3.525104e+00, 	 -4.133013e+00, 	 y, 	 1, 	 1 
+11-Oct-2016 12:07:58, 	 GCD, 	 4, 	 5, 	 6, 	 Geometric Mean Matlab Method, 	 4.326515e+00, 	 -2.121021e+00, 	 4.693549e+00, 	 -6.349814e+00, 	 y, 	 1.169625e+00, 	 1.153891e+00 
+11-Oct-2016 12:08:19, 	 GCD, 	 4, 	 5, 	 6, 	 Geometric Mean Matlab Method, 	 2.440503e+00, 	 -1.592999e+00, 	 3.525104e+00, 	 -4.133013e+00, 	 y, 	 1, 	 1 
+11-Oct-2016 12:08:19, 	 GCD, 	 4, 	 5, 	 6, 	 Geometric Mean Matlab Method, 	 4.326515e+00, 	 -2.121021e+00, 	 4.693549e+00, 	 -6.349814e+00, 	 y, 	 1.169627e+00, 	 1.153891e+00 
+11-Oct-2016 12:08:41, 	 GCD, 	 4, 	 5, 	 6, 	 Geometric Mean Matlab Method, 	 2.440503e+00, 	 -1.592999e+00, 	 3.525104e+00, 	 -4.133013e+00, 	 y, 	 1, 	 1 
+11-Oct-2016 12:08:41, 	 GCD, 	 4, 	 5, 	 6, 	 Geometric Mean Matlab Method, 	 4.326515e+00, 	 -2.121021e+00, 	 4.693549e+00, 	 -6.349814e+00, 	 y, 	 1.169627e+00, 	 1.153891e+00 
+11-Oct-2016 12:12:24, 	 GCD, 	 4, 	 5, 	 6, 	 Geometric Mean Matlab Method, 	 2.440502e+00, 	 -1.592999e+00, 	 3.525104e+00, 	 -4.133013e+00, 	 y, 	 1, 	 1 
+11-Oct-2016 12:12:24, 	 GCD, 	 4, 	 5, 	 6, 	 Geometric Mean Matlab Method, 	 4.326515e+00, 	 -2.121021e+00, 	 4.693549e+00, 	 -6.349814e+00, 	 y, 	 1.169619e+00, 	 1.153891e+00 
+11-Oct-2016 12:12:38, 	 GCD, 	 4, 	 5, 	 6, 	 Geometric Mean Matlab Method, 	 2.440502e+00, 	 -1.592999e+00, 	 3.525104e+00, 	 -4.133013e+00, 	 y, 	 1, 	 1 
+11-Oct-2016 12:12:38, 	 GCD, 	 4, 	 5, 	 6, 	 Geometric Mean Matlab Method, 	 4.326515e+00, 	 -2.121021e+00, 	 4.693549e+00, 	 -6.349814e+00, 	 y, 	 1.169619e+00, 	 1.153891e+00 
+11-Oct-2016 13:32:09, 	 GCD, 	 4, 	 5, 	 6, 	 Geometric Mean Matlab Method, 	 2.440502e+00, 	 -1.592999e+00, 	 3.525104e+00, 	 -4.133013e+00, 	 y, 	 1, 	 1 
+11-Oct-2016 13:32:09, 	 GCD, 	 4, 	 5, 	 6, 	 Geometric Mean Matlab Method, 	 4.326515e+00, 	 -2.121021e+00, 	 4.693549e+00, 	 -6.349814e+00, 	 y, 	 1.169619e+00, 	 1.153891e+00 
+24-Oct-2016 15:36:25, 	 GCD, 	 1, 	 4, 	 4, 	 Geometric Mean Matlab Method, 	 2.591907e+00, 	 1.524651e-01, 	 6.988271e-01, 	 -2.795308e+00, 	 y, 	 1, 	 1 
+24-Oct-2016 15:36:25, 	 GCD, 	 1, 	 4, 	 4, 	 Geometric Mean Matlab Method, 	 6.348851e+00, 	 9.147909e-01, 	 2.679065e+00, 	 -4.374894e+00, 	 y, 	 1.006836e+00, 	 1.565085e+00 
+24-Oct-2016 15:39:52, 	 GCD, 	 1, 	 4, 	 4, 	 Geometric Mean Matlab Method, 	 2.591907e+00, 	 1.524651e-01, 	 6.988271e-01, 	 -2.795308e+00, 	 y, 	 1, 	 1 
+24-Oct-2016 15:39:52, 	 GCD, 	 1, 	 4, 	 4, 	 Geometric Mean Matlab Method, 	 6.348851e+00, 	 9.147909e-01, 	 2.679065e+00, 	 -4.374894e+00, 	 y, 	 1.006836e+00, 	 1.565085e+00 
+24-Oct-2016 15:40:33, 	 GCD, 	 2, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.193601e+02, 	 -1.932640e+02, 	 5.804493e+01, 	 -5.677002e+01, 	 y, 	 1, 	 1 
+24-Oct-2016 15:40:34, 	 GCD, 	 2, 	 19, 	 16, 	 Geometric Mean Matlab Method, 	 2.786498e+00, 	 -2.719734e+00, 	 1.401686e+00, 	 -1.224589e+00, 	 y, 	 1.461591e-01, 	 6.528863e-01 
