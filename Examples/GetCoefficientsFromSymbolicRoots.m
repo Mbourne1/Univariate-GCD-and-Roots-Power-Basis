@@ -36,5 +36,4 @@ display(sym_poly);
 
 % Get coefficients of the polynomial 
 fx = double(fliplr(coeffs(sym_poly,x,'All')))';
-
 end
