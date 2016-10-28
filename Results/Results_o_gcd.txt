@@ -19,3 +19,7 @@ date,type,example_num,m,n,t,error,mean method, preproc, noise low, noise high, l
 24-Oct-2016 15:39:55, 	 GCD, 	 1, 	 4, 	 4, 	     3, 	 2.227229e-13, 	 Geometric Mean Matlab Method, 	 y, 	 1.000000e-12, 	 1.000000e-10, 	 Standard STLN 
 24-Oct-2016 15:40:38, 	 GCD, 	 2, 	 19, 	 16, 	    16, 	 , 	 Geometric Mean Matlab Method, 	 y, 	 1.000000e-12, 	 1.000000e-10, 	 Standard STLN 
 24-Oct-2016 15:43:53, 	 GCD, 	 2, 	 19, 	 16, 	     0, 	 1.000003e+00, 	 None, 	 n, 	 1.000000e-12, 	 1.000000e-10, 	 None 
+26-Oct-2016 17:18:48, 	 GCD, 	 1, 	 4, 	 4, 	     3, 	 2.227229e-13, 	 Geometric Mean Matlab Method, 	 y, 	 1.000000e-12, 	 1.000000e-10, 	 Standard STLN 
+26-Oct-2016 17:27:16, 	 GCD, 	 2, 	 19, 	 16, 	    16, 	 , 	 Geometric Mean Matlab Method, 	 y, 	 1.000000e-12, 	 1.000000e-10, 	 Standard STLN 
+26-Oct-2016 17:31:58, 	 GCD, 	 1, 	 4, 	 4, 	     3, 	 2.227229e-13, 	 Geometric Mean Matlab Method, 	 y, 	 1.000000e-12, 	 1.000000e-10, 	 Standard STLN 
+26-Oct-2016 17:32:21, 	 GCD, 	 1, 	 4, 	 4, 	     3, 	 2.227229e-13, 	 Geometric Mean Matlab Method, 	 y, 	 1.000000e-12, 	 1.000000e-10, 	 None 

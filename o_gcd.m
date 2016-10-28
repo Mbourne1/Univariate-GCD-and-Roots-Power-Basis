@@ -65,8 +65,8 @@ emax = SETTINGS.EMAX;
 
 % Add noise to the coefficients of polynomials f(x) and g(x) at a
 % predefined signal-to-noise ratio.
-[fx_noisy,~] = Noise(fx_exact,emin);
-[gx_noisy,~] = Noise(gx_exact,emin);
+[fx_noisy,~] = AddNoiseToPoly(fx_exact,emin);
+[gx_noisy,~] = AddNoiseToPoly(gx_exact,emin);
 
 fx = fx_noisy;
 gx = gx_noisy;

@@ -1,4 +1,4 @@
-function [h] = PolyAdd(f,g)
+function [h] = AddPolynomials(f,g)
 
 % if nCols > 1, not a column vector
 if size(f,2) >1 || size(g,2) >1

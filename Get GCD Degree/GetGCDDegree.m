@@ -5,13 +5,11 @@ function t = GetGCDDegree(fx,gx,degree_limits)
 %
 % Inputs.
 %
-% fw : Coefficients of polynomial f(w)
+% fx : Coefficients of polynomial f(w)
 %
-% gw : Coefficietns of polynomial g(w)
+% gx : Coefficietns of polynomial g(w)
 %
 % degree_limits : 
-%
-% bool_PossCoprime : 
 %
 % Outputs.
 %

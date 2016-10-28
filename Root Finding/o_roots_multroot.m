@@ -16,8 +16,7 @@ function [root_mult_array] = o_roots_multroot(fx)
 
 
 % Build the vector of corresponding binomial coefficients
-addpath('multroot')
-addpath('multroot/multroot')
+
 roots_calc = multroot(fx);
 
 

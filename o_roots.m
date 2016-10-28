@@ -35,15 +35,19 @@ function [] = o_roots(ex_num,emin,emax,mean_method,bool_alpha_theta,low_rank_app
 % >> O_ROOTS('Custom:m=5 low=-1 high=2', 1e-10, 1e-12, 'Geometric Mean Matlab Method', 'y', 'Standard STLN')
 
 % Add Subfolders
-addpath('Root Finding',...
+restoredefaultpath
+addpath(...
+    'Build Matrices',...
     'Deconvolution',...
     'Examples',...
     'Formatting',...
     'GCD Finding',...
-    'GetGCDDegree',...
-    'LowRankApproximation',...
+    'Get GCD Degree',...
+    'Low Rank Approximation',...
     'Plotting',...
-    'Preprocessing');
+    'Preprocessing',...
+    'Root Finding',...
+    'Root Finding/multroot/multroot');
 
 % Initialise global variables
 global SETTINGS
@@ -66,8 +70,8 @@ SetGlobalVariables(problem_type,ex_num,emin,emax,mean_method,bool_alpha_theta,lo
 % Get polynomial f(x)
 fx = Examples_Roots(ex_num);
 
-% Add Noise to f(x)
-fx = Noise(fx,emin);
+% Add noise to coefficients of f(x)
+fx = AddNoiseToPoly(fx,emin);
 
 % %
 % % MY METHOD
@@ -76,7 +80,7 @@ fx = Noise(fx,emin);
 
 % try
     mymethod_tic = tic;
-    % Get roots by my method and compare the computed f(x) with the exact f(x)
+%    Get roots by my method and compare the computed f(x) with the exact f(x)
     [root_multiplicity_array_mymethod] = o_roots_mymethod(fx);
     rel_err.MyMethod = GetRelativeError(root_multiplicity_array_mymethod,fx,'My Method');
     LineBreakLarge()
@@ -202,13 +206,14 @@ end
 function [] = PrintToFile(rel_err,time)
 
 global SETTINGS
+addpath 'Results'
 
 fullFileName = 'Results/Results_o_roots.txt';
 
 
-if exist(fullFilename, 'file')
+if exist(fullFileName, 'file')
     
-    fileID = fopen(fullFilename,'a');
+    fileID = fopen(fullFileName,'a');
     
     format_str = ...
         '%s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s, \t %s \n';

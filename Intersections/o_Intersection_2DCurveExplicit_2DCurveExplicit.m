@@ -53,8 +53,8 @@ switch EXAMPLE_TYPE
         PrintCoefficientsBivariate(gx,'g');
         
         % Add noise to the coefficients
-        fx = Noise(fx,el);
-        gx = Noise(gx,el);
+        fx = AddNoiseToPoly(fx,el);
+        gx = AddNoiseToPoly(gx,el);
                 
     case 'SamePoly'
         fx = Examples_Univariate_Implicit(ex_num_f);
