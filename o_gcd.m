@@ -1,5 +1,5 @@
-function [] = o_gcd(ex_num,emin,emax,mean_method, bool_alpha_theta,low_rank_approx_method)
-% o_gcd(ex_num,el,mean_method, bool_alpha_theta,low_rank_approx_method)
+function [] = o_gcd(ex_num,emin,emax,mean_method, bool_alpha_theta, low_rank_approx_method, apf_method)
+% o_gcd(ex_num,el,mean_method, bool_alpha_theta,low_rank_approx_method,apf_method)
 %
 % Given two polynomials f(x) and g(x) calculate the GCD d(x).
 %
@@ -23,12 +23,16 @@ function [] = o_gcd(ex_num,emin,emax,mean_method, bool_alpha_theta,low_rank_appr
 %       'Standard STLN'
 %       'None'
 %
+% apf_method : 
+%       'Standard Nonlinear'
+%       'Standard Linear'
+%       'None'
 %
 % % Example
 %
-% >> o_gcd('1',1e-12,1e-10,'Geometric Mean Matlab Method', 'y','Standard STLN')
+% >> o_gcd('1',1e-12,1e-10,'Geometric Mean Matlab Method', 'y','Standard STLN','Standard APF Nonlinear')
 %
-% >> o_gcd(ex_num,1e-12,1e-10,'Geometric Mean Matlab Method', 'y','Standard STLN')
+% >> o_gcd(ex_num,1e-12,1e-10,'Geometric Mean Matlab Method', 'y','Standard STLN', 'Standard APF Nonlinear')
 % >> ex_num = 'Custom:m=10n=5t=2.low=-1high=2'
 
 % Initialise global variables
@@ -38,7 +42,7 @@ global SETTINGS
 problem_type = 'GCD';
 
 % Set global variables
-SetGlobalVariables(problem_type,ex_num,emin,emax,mean_method,bool_alpha_theta,low_rank_approx_method)
+SetGlobalVariables(problem_type,ex_num,emin,emax,mean_method,bool_alpha_theta,low_rank_approx_method,apf_method)
 
 
 
@@ -47,15 +51,16 @@ restoredefaultpath
 
 % Add Relevant Paths
 addpath('Build Matrices',...
-    'Examples',...
-    'Examples/Examples GCD',...
     'Formatting',...
     'Get GCD Degree',...
     'GCD Finding',...
-    'Low Rank Approximation',...
-    'Low Rank Approximation/STLN',...
     'Plotting',...
     'Preprocessing');
+
+addpath(genpath('APF'));
+addpath(genpath('Examples'));
+addpath(genpath('Low Rank Approximation'));
+
 
 % Get coefficients of f(x,y) g(x,y) from example file
 [fx_exact, gx_exact, dx_exact,ux_exact,vx_exact] = Examples_GCD(ex_num);
@@ -90,11 +95,20 @@ lower_bound = 1;
 deg_limits = [lower_bound,upper_bound];
 
 % Compute degree of gcd by my method
-[~,~,dx_calc,ux_calc,vx_calc,~,~] = o_gcd_mymethod(fx,gx,deg_limits);
+[fx_calc,gx_calc,dx_calc,ux_calc,vx_calc,~,~] = o_gcd_mymethod(fx,gx,deg_limits);
 
 % Get distance of the computed d(x) from the exact d(x)
 try
-    error.MyMethod = GetDistance(dx_exact,dx_calc);
+    
+    error_dx = GetDistance(dx_exact,dx_calc);
+    error.MyMethod = error_dx;
+    error_ux = GetDistance(ux_exact,ux_calc);
+    error_vx = GetDistance(vx_exact,vx_calc);
+    
+    display(error_ux);
+    display(error_vx);
+    display(error_dx);
+    
 catch err
     error.MyMethod = 9999999;
     fprintf([mfilename ' : ' err.message '\n'])
@@ -135,33 +149,6 @@ end
 
 end
 
-function [] = PrintCoefficients(f_exact,f_computed,name)
-% Print coefficients of f(x) exact and f(x) computed.
-%
-% Inputs.
-%
-% f_exact : Coefficients of polynomial f(x)
-%
-% f_computed : Coefficients of polynomial f(x) computed
-%
-% name :
-try
-fprintf('\nCoefficients of %s \n\n',name);
-fprintf('\t Exact \t \t \t \t\t \t \t   Computed \n')
-
-f_exact = Normalise(f_exact);
-f_computed = Normalise(f_computed);
-
-mat = [real(f_exact(:,1))';  real(f_computed(:,1))' ];
-fprintf('%f \t \t \t \t %f   \t \t \n', mat);
-fprintf('\n');
-
-distance = GetDistance(f_exact,f_computed);
-fprintf('Distance between %s exact and %s computed : %2.4e \n \n',name,name,distance)
-catch
-end
-
-end
 
 function [dist] = GetDistance(f_exact,f_computed)
 % GetDistance(u_exact,u_computed,name)
@@ -182,7 +169,6 @@ f_computed = Normalise(f_computed);
 
 % Get distance
 dist = norm(f_exact - f_computed) ./ norm(f_exact);
-display(dist)
 
 end
 

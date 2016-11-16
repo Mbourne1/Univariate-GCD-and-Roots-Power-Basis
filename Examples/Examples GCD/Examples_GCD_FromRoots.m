@@ -1,5 +1,9 @@
 
-function [root_mult_array_fx,root_mult_array_gx,root_mult_array_dx,root_mult_array_ux,root_mult_array_vx] = Examples_GCD_FromRoots(ex_num)
+function [root_mult_array_fx, ...
+            root_mult_array_gx, ...
+            root_mult_array_dx, ...
+            root_mult_array_ux, ...
+            root_mult_array_vx] = Examples_GCD_FromRoots(ex_num)
 % Given an example number, return the coefficients of two polynomials
 %
 % Inputs:
@@ -369,25 +373,19 @@ else
             
             prompt = 'Enter the degree of Polynomial d(x) :';
             t = input(prompt);
-            
-            
-            
+                        
             [root_mult_array_fx,root_mult_array_gx] = BuildRandomPolynomials(m,n,t,intvl_low, intvl_high);
+            
         otherwise
-            error(sprintf([mfilename ' : Not a valid example number' ex_num]))
+            
+            error([mfilename ' : Not a valid example number' ]);
     end
-    
-    %PrintFactorization(root_mult_array_fx,'f');
-    %PrintFactorization(root_mult_array_gx,'g');
+
     
 end
 
 root_mult_array_dx = GetDivisor(root_mult_array_fx,root_mult_array_gx);
 root_mult_array_ux = GetQuotient(root_mult_array_fx,root_mult_array_dx);
 root_mult_array_vx = GetQuotient(root_mult_array_gx,root_mult_array_dx);
-
-display(root_mult_array_fx)
-display(root_mult_array_gx)
-display(root_mult_array_dx)
 
 end

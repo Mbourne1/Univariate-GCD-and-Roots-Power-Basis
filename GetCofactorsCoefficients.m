@@ -1,37 +1,48 @@
-function [ux,vx] = GetCofactorsCoefficients(fx,gx,t,opt_col)
+function [ux,vx] = GetCofactorsCoefficients(fx, gx, k)
 % Get Quotient polynomials u(x) and v(x) such that
 % f(x)/u(x) = g(x)/v(x) = d(x)
 %
-%   Inputs.
+% % Inputs.
 %
-%   fx_n  : Coefficients of polynomial f(x)
+% fx  : Coefficients of polynomial f(x)
 %
-%   gx_n  : Coefficients of polynomial g(x)
+% gx  : Coefficients of polynomial g(x)
 %
-%   t     : Degree of GCD d(x)
+% k     : Degree of common divisor d(x) of degree k.
+%
+% % Outputs
+%
+% ux : Coefficients of the polynomial u(x)
+%
+% vx : Coefficients of the polynomial v(x)
+
 
 % Get degree of polynomial g(x).
 n = GetDegree(gx);
 
 % Build the t-th subresultant S_{t}(f,g)
-St = BuildT(fx,gx,t);
+Sk = BuildT(fx,gx,k);
+
+% Get index of optimal column for removal from S_{k}(f,g)
+[~, idx_col] = GetMinDistance(Sk);
 
 % Get the matrix A_{t}(f,g), S_{t} with the optimal column removed
-At = St;
-At(:,opt_col) = [];
+Ak = Sk;
+Ak(:,idx_col) = [];
 
 % Get the column c_{t} removed from S_{t}
-ct = St(:,opt_col);
+ck = Sk(:,idx_col);
 
 % get the vector x_ls
-x_ls = SolveAx_b(At,ct);
+x_ls = SolveAx_b(Ak,ck);
 
 % insert 1 into x_ls in the position corresponding to the col
-x = [x_ls(1:opt_col-1); -1 ; x_ls(opt_col:end)];
+x = [x_ls(1:idx_col-1); -1 ; x_ls(idx_col:end)];
 
 % Split x into v(\omega) and u(\omega)
-vx =  x(1:n-t+1);
-ux = -x(n-t+2:end);
+nCoeffs_vx = n-k+1;
+vx =  x(1:nCoeffs_vx);
+ux = -x(nCoeffs_vx + 1:end);
 
 
 end

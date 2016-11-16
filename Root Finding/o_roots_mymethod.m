@@ -1,14 +1,14 @@
 function [root_mult_array] = o_roots_mymethod(fx)
-% Given the polynomial f(x) calculate its real roots by square free 
+% Given the polynomial f(x) calculate its real roots by square free
 % decomposition.
-% 
+%
 % Inputs.
-% 
-% fx : Coefficients of polynomial f(x)
+%
+% fx : Coefficients of the polynomial f(x)
 %
 % Outputs.
-% 
-% root_mult_array : output two columns, the first containing the root, the
+%
+% root_mult_array : Output two columns, the first containing the root, the
 %                   second its corresponding multiplicity.
 
 global SETTINGS
@@ -37,7 +37,7 @@ vNum_distinct_roots_fx(1,1) = GetDegree(arr_fx);
 % derivative.
 
 while GetDegree(arr_fx{ite,1}) > 0
-
+    
     % If degree of f(ite_num) is greater than one
     if vDegt_fx(ite,1) > 1
         
@@ -52,27 +52,27 @@ while GetDegree(arr_fx{ite,1}) > 0
         if ite > 1
             switch SETTINGS.BOOL_LIMITS
                 case 'y'
+                    
                     lower_lim = vDegt_fx(ite) - vNum_distinct_roots_fx(ite-1);
                     upper_lim = vDegt_fx(ite)-1;
+                    
                 case 'n'
+                    
                     lower_lim = 1;
                     upper_lim = vDegt_fx(ite)-1;
+                    
             end
-            
-            
-
             
         else
             lower_lim = 1;
             upper_lim = vDegt_fx(ite)-1;
-           
+            
         end
         
-        
-        
+
         fprintf([ mfilename ' : ' sprintf('Minimum degree of f_{%i}: %i \n', ite, lower_lim)]);
         fprintf([ mfilename ' : ' sprintf('Maximum degree of f_{%i}: %i \n\n', ite, upper_lim)]);
-            
+        
         
         
         
@@ -88,7 +88,7 @@ while GetDegree(arr_fx{ite,1}) > 0
         
         
         fprintf([ mfilename ' : ' sprintf('Number of distinct roots in f_{%i} : %i \n',ite,vNum_distinct_roots_fx(ite))]);
-
+        
         % increment iteration number.
         ite = ite+1;
         
@@ -136,15 +136,15 @@ switch SETTINGS.ROOTS_HX
         
         fprintf([mfilename ' : ' sprintf('Deconvolution Method : %s',SETTINGS.DECONVOLUTION_METHOD_FX_HX)]);
         arr_hx = Deconvolve_Set(arr_fx,SETTINGS.DECONVOLUTION_METHOD_FX_HX);
-                
-            
+        
+        
     case 'From ux'
         fprintf([mfilename ' : ' sprintf('Deconvolution Method : %s',SETTINGS.ROOTS_HX)]);
         arr_hx = arr_ux;
         
     otherwise
-        str = sprintf([mfilename ' : ' sprintf('ROOTS_UX is either From Deconvolutions or From ux') '\n']); 
-        error(str)
+        str = sprintf([mfilename ' : ' sprintf('ROOTS_UX is either From Deconvolutions or From ux') '\n']);
+        error(str);
         
 end
 
@@ -152,7 +152,7 @@ end
 % for i = 1:1:length(arr_wx_new)
 %     wx_new = arr_wx_new{i}
 %     wx_new = wx_new./wx_new(2)
-% 
+%
 % end
 
 
@@ -171,7 +171,7 @@ if nPolys_arr_hx == 1
     % deconvolution, since only one entry in h1.
     % Note - this is a rare exception.
     vRoots = [];
-
+    
     factor_x = arr_hx{1};
     
     % Normalise the polynomial coefficients by the leading coefficient x^m
@@ -183,9 +183,10 @@ if nPolys_arr_hx == 1
     % get the roots with respect to y, and their multiplicities all set
     % to one.
     arr_wx = rt;
-        
+    
     % add the roots to the array of roots
     vRoots = [vRoots ; arr_wx];
+    
 else
     % perform deconvolutions
     
@@ -217,8 +218,8 @@ else
         % If w_{i} is of degree one, then is of the form (ax+b)
         % and has only one root. Add it to the list of roots.
         if vDeg_arr_wx(i,1) == 1;
-                        
-                 
+            
+            
             % Normalise the coefficients of w_{i} by dividing by the
             % leading coefficient. Since coefficients are orders in
             % asending powers, LC is the second coefficient.
@@ -226,7 +227,7 @@ else
             
             % Get the root
             rt = - poly_wi(1);
-                      
+            
             % Add the root to the [root, mult] matrix
             vRoots = [vRoots ; rt];
             
@@ -234,9 +235,9 @@ else
             % The given multiplicity contains more than one root, such that
             % number of coefficients in greater than 2, use MATLAB roots
             % function to find roots.
-                  
+            
             % Get the roots in terms of w_{i} using Matlab Roots function.
-            rts = roots(flipud(poly_wi));    
+            rts = roots(flipud(poly_wi));
             
             % Add the computed roots to the array of roots.
             vRoots = [vRoots ; rts];

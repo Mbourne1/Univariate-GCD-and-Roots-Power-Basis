@@ -1,4 +1,4 @@
-function [] = o_roots(ex_num,emin,emax,mean_method,bool_alpha_theta,low_rank_approx_method)
+function [] = o_roots(ex_num, emin, emax, mean_method, bool_alpha_theta, low_rank_approx_method, apf_method)
 % O_ROOTS(ex_num,el,mean_method,bool_alpha_theta,low_rank_approx_method)
 %
 %
@@ -29,25 +29,32 @@ function [] = o_roots(ex_num,emin,emax,mean_method,bool_alpha_theta,low_rank_app
 %   'Standard SNTLN'
 %   'Root Specific SNTLN'
 %
+% apf_method
+%   'None'
+%   'Standard APF Nonlinear' - Not Developed
+%   'Standard APF Linear' - Not Developed
 %
 % % Example
-% >> O_ROOTS('1', 1e-10, 1e-12, 'Geometric Mean Matlab Method', 'y', 'Standard STLN')
-% >> O_ROOTS('Custom:m=5 low=-1 high=2', 1e-10, 1e-12, 'Geometric Mean Matlab Method', 'y', 'Standard STLN')
+% >> O_ROOTS('1', 1e-10, 1e-12, 'Geometric Mean Matlab Method', 'y', 'Standard STLN','Standard APF Nonlinear')
+% >> O_ROOTS('Custom:m=5 low=-1 high=2', 1e-10, 1e-12, 'Geometric Mean Matlab Method', 'y', 'Standard STLN','Standard APF Nonlinear')
 
 % Add Subfolders
 restoredefaultpath
 addpath(...
     'Build Matrices',...
     'Deconvolution',...
-    'Examples',...
     'Formatting',...
     'GCD Finding',...
     'Get GCD Degree',...
     'Low Rank Approximation',...
     'Plotting',...
-    'Preprocessing',...
-    'Root Finding',...
-    'Root Finding/multroot/multroot');
+    'Preprocessing'...
+    );
+
+addpath(genpath('APF'));
+addpath(genpath('Examples'));
+addpath(genpath('Root Finding'));
+addpath(genpath('Low Rank Approximation'));
 
 % Initialise global variables
 global SETTINGS
@@ -63,7 +70,7 @@ end
 problem_type = 'Roots';
 
 % Set global input by user.
-SetGlobalVariables(problem_type,ex_num,emin,emax,mean_method,bool_alpha_theta,low_rank_approx_method)
+SetGlobalVariables(problem_type, ex_num, emin, emax, mean_method, bool_alpha_theta, low_rank_approx_method, apf_method)
 
 % %
 % %

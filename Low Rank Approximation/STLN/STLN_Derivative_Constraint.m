@@ -1,7 +1,19 @@
-function [fx_output,gx_output] = STLN_Derivative_Constraint(fx,t)
+function [fx_lr, gx_lr, ux_lr, vx_lr] = STLN_Derivative_Constraint(fx,k)
 % Given the polynomial f(x) and the degree of the GCD of f(x) and its
 % derivative. Calculate the low rank approximation of the Sylvester
 % subresultant matrix S_{t}(f,f')
+%
+% % Inputs
+%
+% fx : Coefficients of polynomial f(x)
+%
+% k : Degree of GCD d(x)
+%
+% % Outputs
+%
+% fx_lr :
+%
+% gx_lr :
 
 global MAX_ERROR_SNTLN 
 global MAX_ITE_SNTLN
@@ -15,26 +27,26 @@ gx = Differentiate(fx);
 n = m -1 ;
 
 % Build the Sylvester matrix
-C1 = BuildT1(fx,n-t);
-C2 = BuildT1(gx,m-t);
+C1 = BuildT1(fx,n-k);
+C2 = BuildT1(gx,m-k);
 St = [C1 C2];
 
 % Get the index of the optimal colummn for removal
-[~,colIndex] = GetMinDistance(St);
+[~,idx_col] = GetMinDistance(St);
 
 % Get Ak
-At = St;
-At(:,colIndex) = [];
-ct = St(:,colIndex);
+Ak = St;
+Ak(:,idx_col) = [];
+ck = St(:,idx_col);
 
 % Initialise the matrix of perturbations E_t
-Et = zeros(size(At));
+Ek = zeros(size(Ak));
 
 % Initialise the vector h_{t} 
-ht = zeros(size(ct));
+hk = zeros(size(ck));
 
 % Build the matrix P
-Pt = BuildP(colIndex,m,t);
+Pk = BuildP(idx_col,m,k);
 
 
 % Initalise the matrix z of structured perturbations to f(x)
@@ -44,56 +56,54 @@ Pt = BuildP(colIndex,m,t);
 % Build the matrix D
 D = ...
     [
-    m-t             zeros(1,m);
-    zeros(m,1)    (2*m-t*t+1).*eye(m);
+    m-k             zeros(1,m);
+    zeros(m,1)    (2*m-k*k+1).*eye(m);
     ];
 
 % Build the matrix Y_{t}
-x_ls = SolveAx_b(At,ct);
-x = [x_ls(1:colIndex-1) ;0; x_ls(colIndex:end)];
-Yt = BuildY(x,m,t);
+xk = SolveAx_b(Ak,ck);
+x = [xk(1:idx_col-1) ;0; xk(idx_col:end)];
+Yt = BuildY(x,m,k);
 
 
 % Build the matrix E from the minimsation problem. Minimise Ew-p subject to
 % Cw = q.
-E = [D zeros(m+1,2*m-2*t+1)];
+E = [D zeros(m+1,2*m-2*k+1)];
 
 % Get the residual vector
-res_vec = (ct+ht) - (At*x_ls);
+res_vec = (ck + hk) - (Ak*xk);
 
 % Initialise iteration number
 ite = 1;
-% Get termination criterion - Set to the norm of the residual vector
-condition(ite) = norm(res_vec) ./ norm(ct);
 
-% Initialise p vector
-p = zeros(3*m-2*t+1,1);
+% Get termination criterion - Set to the norm of the residual vector
+condition(ite) = norm(res_vec) ./ norm(ck);
 
 % Initialise z vector of perturbations to f
-z = zeros(m+1,1);
+zf = zeros(m+1,1);
 
-%H_z = Pt - Yt
-%H_x = At - Et
 
-H_z = Yt - Pt;
-H_x = At + Et;
+H_z = Yt - Pk;
+H_x = Ak + Ek;
 C = [H_z H_x];
 
 % Define the starting vector for the iterations for the LSE problem.
 start_point     =   ...
     [
-    z;
-    x_ls;
+    zf;
+    xk;
     ];
 
-yy              =   start_point;
+yy =   start_point;
 
+f = -(yy-start_point);
 
 while condition(ite) > MAX_ERROR_SNTLN && ite < MAX_ITE_SNTLN
     
     
     
-    y = LSE(E,p,C,res_vec);
+    y = LSE(E,f,C,res_vec);
+    
     delta_z = y(1:m+1,1);
     delta_x = y(m+2:end,1);
     
@@ -101,46 +111,47 @@ while condition(ite) > MAX_ERROR_SNTLN && ite < MAX_ITE_SNTLN
     
     % (f) set x:=x+\delta x and z:= z+\delta_z
     % Update z
-    z = z + delta_z;
+    zf = zf + delta_z;
     
     % Update x
-    x_ls = x_ls + delta_x;
+    xk = xk + delta_x;
     
     
     % (g) Update E_{t} and h_{t} from z, and Yk from x
     
     % % Build new Et
-    zg = Differentiate(z);
+    zg = Differentiate(zf);
     
     % Build the matrix E_{t}
-    E1 = BuildT1(z,m-1-t);
-    E2 = BuildT1(zg,m-t);
+    E1 = BuildT1(zf,m-1-k);
+    E2 = BuildT1(zg,m-k);
     Bt = [E1 E2];
     
-    Et = Bt;
-    Et(:,colIndex) = [];
-    ht = Bt(:,colIndex);
+    Ek = Bt;
+    Ek(:,idx_col) = [];
+    hk = Bt(:,idx_col);
 
     % % Build new Yt
-    x_ls = SolveAx_b(At+Et,ct+ht);
-    x= [x_ls(1:colIndex-1) ;0; x_ls(colIndex:end)];
-    Yt = BuildY(x,m,t);
+    x = [xk(1:idx_col-1) ;0; xk(idx_col:end)];
+    Yt = BuildY(x,m,k);
     
-    res_vec = (ct+ht) - ((At+Et)*x_ls);
+    res_vec = (ck+hk) - ((Ak+Ek)*xk);
     
     % Update the matrix C
-    H_z = Yt - Pt;
-    H_x = At + Et;
+    H_z = Yt - Pk;
+    H_x = Ak + Ek;
     C = [H_z H_x];
     
     
-    rk = res_vec;
+
     
     % Update fnew - used in LSE Problem.
-    p = -(yy-start_point);
+    f = -(yy-start_point);
     
+    % Increment iteration number
     ite = ite + 1;
-    condition(ite) = norm(rk) ./ norm(ct+ht) ;
+    
+    condition(ite) = norm(res_vec) ./ norm(ck+hk) ;
     
     
     
@@ -151,45 +162,71 @@ hold on
 plot(log10(condition));
 hold off
 
+LineBreakLarge()
 fprintf('Required number of iterations : %i \n',ite)
-
-% Output coefficients of f(x)
-display(fx);
+LineBreakLarge()
 
 % Output coefficients of f(x) + delta f(x)
-fx_output = fx + z;
-gx_output = gx + zg;
+fx_lr = fx + zf;
+gx_lr = gx + zg;
+
+% Get u(x) and v(x)
+x = [xk(1:idx_col-1) ; -1 ; xk(idx_col:end)];
+vx_lr = x(1:nCoeffs_vx);
+ux_lr = -1.* x(nCoeffs_vx + 1: end);
 
 end
 
 
 
 
-function Pk = BuildP(colIndex,m,t)
+function Pk = BuildP(idx_col,m,k)
 % Build the matrix P such that a column in Ek, specified by the column index
 % is generated by the matrix vector product P*z, or a column of Ak is given
 % by P*z
+%
+% % Inputs
+%
+% idx_col : Index of column c_{k} removed from S_{k}(f,g)
+%
+% m : Degree of polynomial f(x)
+%
+% k : index of kth Sylvester subresultant matrix S_{k}(f,g)
 
-if colIndex <= m-t
-    i = colIndex;
+
+n = m-1;
+% Get number of columns in the first partition T_{n-k}(f) of the Sylvester
+% subresultant matrix
+nCols_Tf = n-k+1;
+
+if idx_col <= nCols_Tf % Column is from 1st partition T(f)
+    
+    % Get the index of the column relative to T_{n-k}(f)
+    idx_col_rel = idx_col;
+    
     mat = ...
         [
-        zeros(i-1,m+1);
+        zeros(idx_col_rel-1,m+1);
         diag(ones(m+1,1));
-        zeros(m-t-i,m+1);
+        zeros(m-k-idx_col_rel,m+1);
         ];
+    
     Pk = mat;
     
-elseif colIndex > m-t && colIndex <= 2*m-2*t+1
-    i = colIndex - (m-t);
+elseif idx_col > m-k && idx_col <= 2*m-2*k+1 % Column is from 2nd partition
+    
+    % Get the index of the column relative to T_{n-k}(f)
+    idx_col_rel = idx_col - (m-k);
+    
     mat = ...
         [
-        zeros(i-1,m+1);
+        zeros(idx_col_rel-1,m+1);
         zeros(m,1) diag(1:1:m);
-        zeros(m-t-i+1,m+1);
+        zeros(m-k-idx_col_rel+1,m+1);
         ];
     % Remove the first row
     Pk = mat;
+    
 end
 
 end

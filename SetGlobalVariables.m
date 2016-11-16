@@ -1,4 +1,9 @@
-function [] = SetGlobalVariables(problem_type,ex_num,emin,emax,mean_method, bool_alpha_theta, low_rank_approx_method)
+function [] = SetGlobalVariables(problem_type, ex_num, emin, emax, ...
+    mean_method, bool_alpha_theta, low_rank_approx_method, apf_method)
+
+
+
+
 global SETTINGS
 
 % % Problem Type
@@ -25,9 +30,7 @@ SETTINGS.PLOT_GRAPHS = 'y';
 %
 %           SETTINGS : PREPROCESSING
 %
-%--------------------------------------------------------------------------
-
-
+%
 
 % Method of computing mean
 SETTINGS.MEAN_METHOD = mean_method;
@@ -43,12 +46,11 @@ SETTINGS.BOOL_ALPHA_THETA = bool_alpha_theta;
 %
 %
 %
-%--------------------------------------------------------------------------
-
+%
 
 
 % Threshold defined for use in computing the degree of the GCD
-SETTINGS.THRESHOLD = 3.1;
+SETTINGS.THRESHOLD = 1;
 SETTINGS.THRESHOLD_RANK = 1e-5;
 
 % (Roots Only)
@@ -62,7 +64,7 @@ SETTINGS.BOOL_LIMITS = 'y';
 %       SETTINGS : Low rank approximation method
 %
 %
-%--------------------------------------------------------------------------
+%
 
 %
 % STLN
@@ -71,10 +73,16 @@ SETTINGS.LOW_RANK_APPROXIMATION_METHOD = low_rank_approx_method;
 
 % Settings for SNTLN/STLN
 SETTINGS.MAX_ERROR_SNTLN = 1e-12;
-SETTINGS.MAX_ITE_SNTLN = 100;
+SETTINGS.MAX_ITE_SNTLN = 50;
 
+%--------------------------------------------------------------------------
+% 
+%       SETTINGS : APF Method
+%
+%
+%
 
-
+SETTINGS.APF_METHOD = apf_method;
 
 
 %-------------------------------------------------------------------------

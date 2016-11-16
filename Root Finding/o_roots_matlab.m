@@ -16,8 +16,6 @@ function [root_mult_array] = o_roots_matlab(fx)
 
 
 % Build the vector of corresponding binomial coefficients
-addpath('multroot')
-addpath('multroot/multroot')
 roots_calc = roots(flipud(fx));
 
 [nEntries,~] = size(roots_calc);

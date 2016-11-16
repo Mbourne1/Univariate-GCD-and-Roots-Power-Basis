@@ -68,8 +68,10 @@ A = -[Part1; Part2; Part3; Part4];
 
 b = -[log10(abs(lambda_vec)); log10(abs(mu_vec)); -log10(abs(rho_vec));-log10(abs(tau_vec))];
 
-
+warning('off')
 x = linprog(f,A,b);
+warning('on')
+
 
 try
     theta = 10^x(3);

@@ -1,4 +1,4 @@
-function [fx_lr,gx_lr] = STLN(fx,gx,k)
+function [fx_lr, gx_lr, ux_lr, vx_lr, alpha_lr, theta_lr] = STLN(fx,gx,k)
 % Perform Structured Total Least Norm to obtain a low rank approximation
 % of the t-th Sylvester matrix. Note this is a linear problem, any
 % alpha and theta values are already included in f(x) and g(x).
@@ -66,15 +66,15 @@ hk = Sk_zfzg(:,idx_col);
 Pk = BuildP(idx_col,m,n,k);
 
 % Get the solution vector x of A_{t}x = c_{t}.
-x_ls = SolveAx_b(At_fg,ck);
+xk = SolveAx_b(At_fg,ck);
 
 % Get initial residual (A_{t}+E_{t})x = (c_{t} + h_{t})
-res_vec = (ck + hk) - At_fg*x_ls;
+res_vec = (ck + hk) - At_fg*xk;
 
 % Build the matrix Y_{t}
-vec_x = [x_ls(1:idx_col-1) ; 0 ; x_ls(idx_col:end)];
+x = [xk(1:idx_col-1) ; 0 ; xk(idx_col:end)];
 
-Yk = BuildY(vec_x,m,n,k);
+Yk = BuildY(x,m,n,k);
 
 % Build the matrix C for LSE Problem
 H_z = Yk - Pk;
@@ -90,7 +90,7 @@ E = eye(2*m+2*n-2*k+3);
 start_point     =   ...
     [...
     z;...
-    x_ls;
+    xk;
     ];
 
 % Set yy to be the vector which stores all cummulative perturbations.
@@ -115,7 +115,7 @@ while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTL
     
     % Get small petrubations by LSE
     y_lse = LSE(E,f,C,res_vec);
-        
+    
     % Increment cummulative peturbations
     yy = yy + y_lse;
     
@@ -140,16 +140,16 @@ while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTL
     % and equivalent to c_{t} removed from S_{t}
     hk = Sk_zfzg(:,idx_col);
     
-   
+    
     delta_xk        = y_lse((m+n+3):(2*m+2*n-2*k+3),1);
-    x_ls = x_ls + delta_xk;
-    vec_x = [x_ls(1:idx_col-1) ; 0 ; x_ls(idx_col:end)];
+    xk = xk + delta_xk;
+    x = [xk(1:idx_col-1) ; 0 ; xk(idx_col:end)];
     
     % Build the matrix Y_{t} where Y_{t}(x)*z = E_{t}(z) * x
-    Yk = BuildY(vec_x,m,n,k);
+    Yk = BuildY(x,m,n,k);
     
     % Get the residual vector
-    res_vec = (ck+hk) - ((At_fg+Ak_zfzg)*x_ls);
+    res_vec = (ck+hk) - ((At_fg+Ak_zfzg)*xk);
     
     % Update the matrix C
     H_z = Yk - Pk;
@@ -165,30 +165,27 @@ while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTL
     
 end
 
+Plot_SNTLN();
 
-switch SETTINGS.PLOT_GRAPHS
-    case 'y'
-        figure_name = sprintf('%s - Residuals',mfilename);
-        figure('name',figure_name)
-        hold on
-        plot(log10(condition),'-s');
-        hold off
-        
-    case 'n'
-end
+LineBreakLarge()
+fprintf([mfilename ' : ' sprintf('Required number of iterations : %i \n',ite)])
+LineBreakLarge()
+
 
 % If the final condition is less than the original, output the new values,
 % otherwise output the old values for f(x) and g(x).
-if (condition(ite) < condition(1))
-    fx_lr = fx + zf;
-    gx_lr = gx + zg;
-else
-    % Do nothing
-    fx_lr = fx;
-    gx_lr = gx;
-end
 
-fprintf([mfilename ' : ' sprintf('Required number of iterations : %i \n',ite)])
+fx_lr = fx + zf;
+gx_lr = gx + zg;
+
+
+% Get u(x) and v(x)
+x = [xk(1:idx_col-1) ; -1 ; xk(idx_col:end)];
+nCoeffs_vx = n-k+1;
+vx_lr = x(1:nCoeffs_vx);
+ux_lr = -1 .* x(nCoeffs_vx + 1 : end);
+
+
 
 
 
