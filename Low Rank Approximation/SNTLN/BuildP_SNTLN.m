@@ -1,5 +1,5 @@
 
-function P = BuildP_SNTLN(m,n,k,alpha,theta,idx_col)
+function P = BuildP_SNTLN(m, n, k, alpha, theta, idx_col)
 % The matrix P is such that a column c_{t} can be expressed as P_{t}[f;g]
 % Given a column of the Sylvester matrix S_{t}(f,g), obtain a decomposition
 % so that it is expressed as a matrix vector product where the vector
@@ -25,34 +25,25 @@ function P = BuildP_SNTLN(m,n,k,alpha,theta,idx_col)
 
 nCols_Tf = n-k+1;
 
-if idx_col <= nCols_Tf
+if idx_col <= nCols_Tf % column is in the 1st partiton of Sk(f,g)
     
+    % Build the partiton P1
+    P1 = BuildP1(m,n,k,idx_col);
+    
+    % Build P2
     P2 = zeros(m+n-k+1,n+1);
     
-    % P1 is a diagonalisation of a vector given by [zeros; ones; zeros]
-    num_zero_rows_top = idx_col-1;
-    num_zero_rows_bottom = (m+n-k+1) - (m+1) - num_zero_rows_top;
-    P1 = ...
-        [
-        zeros(num_zero_rows_top,m+1);
-        diag(ones(m+1,1));
-        zeros(num_zero_rows_bottom,m+1);
-        ];
     
+else % Column is in the second partition of Sk(f,g)
     
-    % Suppose the column is from the second partitno, then P has the structure
-    % [0 P2].
-else
+    % Get index of column relative to T_{m-k}(g) (the second partition)
+    opt_col_rel = idx_col - (n-k+1);
+    
+    % Build P1
     P1 = zeros(m+n-k+1,m+1);
-    opt_col_n = idx_col - (n-k+1);
     
-    num_zero_rows_top = opt_col_n-1;
-    num_zero_rows_bottom = (m+n-k+1) - (n+1) - num_zero_rows_top;
-    P2 = ...
-        [
-        zeros(num_zero_rows_top,n+1);
-        diag(ones(n+1,1));
-        zeros(num_zero_rows_bottom,n+1)];
+    % Build P2
+    P2 = BuildP1(n,m,k,opt_col_rel);
     
 end
 
@@ -67,3 +58,4 @@ P = [P1*th_f alpha.*P2*th_g];
 
 
 end
+

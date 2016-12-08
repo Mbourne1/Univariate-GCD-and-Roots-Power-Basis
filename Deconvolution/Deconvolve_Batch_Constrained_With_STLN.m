@@ -49,8 +49,6 @@ nCoefficients_fx = sum(vDeg_arr_fx+1);
 % Define N to be the number of coefficients of all h_{i}
 nCoefficients_hx = sum(vDeg_arr_hx+1);
 
-
-
 % Obtain theta such that the ratio of max element to min element is
 % minimised
 
@@ -274,8 +272,10 @@ end
 
 
 % Print outputs to command line
-fprintf([mfilename ' : ' 'Performed Deconvolutions\n'])
+LineBreakLarge()
+fprintf([mfilename ' : ' 'Performed Deconvolutions \n'])
 fprintf([mfilename ' : ' sprintf('Iterations required for Batch Deconvolution %i\n', ite)])
+LineBreakLarge()
 
 switch SETTINGS.PLOT_GRAPHS
     case 'y'
@@ -330,8 +330,10 @@ Y = [zeros(nRows,nCols) Y];
 end
 
 function Y1 = BuildY1(hx,m1)
+
 % Construct a partition Y1 of the matrix Y.
 Y1 = BuildT1(hx,m1);
+
 end
 
 function LHS_Matrix = BuildC(arr_fx,vMult)

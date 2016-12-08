@@ -63,7 +63,7 @@ Ak_zfzg(:,idx_col) = [];
 hk = Sk_zfzg(:,idx_col);
 
 % Build Pt
-Pk = BuildP(idx_col,m,n,k);
+Pk = BuildP_STLN(m,n,k,idx_col);
 
 % Get the solution vector x of A_{t}x = c_{t}.
 xk = SolveAx_b(At_fg,ck);
@@ -74,7 +74,7 @@ res_vec = (ck + hk) - At_fg*xk;
 % Build the matrix Y_{t}
 x = [xk(1:idx_col-1) ; 0 ; xk(idx_col:end)];
 
-Yk = BuildY(x,m,n,k);
+Yk = BuildY_STLN(x,m,n,k);
 
 % Build the matrix C for LSE Problem
 H_z = Yk - Pk;
@@ -146,7 +146,7 @@ while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTL
     x = [xk(1:idx_col-1) ; 0 ; xk(idx_col:end)];
     
     % Build the matrix Y_{t} where Y_{t}(x)*z = E_{t}(z) * x
-    Yk = BuildY(x,m,n,k);
+    Yk = BuildY_STLN(x,m,n,k);
     
     % Get the residual vector
     res_vec = (ck+hk) - ((At_fg+Ak_zfzg)*xk);
@@ -170,19 +170,28 @@ Plot_SNTLN();
 LineBreakLarge()
 fprintf([mfilename ' : ' sprintf('Required number of iterations : %i \n',ite)])
 LineBreakLarge()
-
+SETTINGS.LOW_RANK_APPROX_REQ_ITE = ite;
 
 % If the final condition is less than the original, output the new values,
 % otherwise output the old values for f(x) and g(x).
+
 
 fx_lr = fx + zf;
 gx_lr = gx + zg;
 
 
 % Get u(x) and v(x)
+
+% Get the vector x
 x = [xk(1:idx_col-1) ; -1 ; xk(idx_col:end)];
+
+% Get the number of coefficients in v(x)
 nCoeffs_vx = n-k+1;
+
+% Get coefficients of v(x)
 vx_lr = x(1:nCoeffs_vx);
+
+% Get coefficients of u(x)
 ux_lr = -1 .* x(nCoeffs_vx + 1 : end);
 
 

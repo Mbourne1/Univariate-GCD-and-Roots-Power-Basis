@@ -74,7 +74,7 @@ parfor i = 1:1:size(vars,1)
     low_rank_approx_method = low_rank_approx_method_arr{var(5)};
     
     try
-        o_gcd(ex_num,emin,emax,mean_method,bool_alpha_theta,low_rank_approx_method);
+        o_gcd_2Polys(ex_num,emin,emax,mean_method,bool_alpha_theta,low_rank_approx_method);
     catch err
         fprintf(err.message);
     end

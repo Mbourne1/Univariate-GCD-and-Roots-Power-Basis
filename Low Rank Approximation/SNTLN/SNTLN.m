@@ -290,6 +290,7 @@ end
 LineBreakLarge()
 fprintf('Required Number of iterations : %i \n',ite)
 LineBreakLarge()
+SETTINGS.LOW_RANK_APPROX_REQ_ITE = ite;
 
 fx_lr = fx + z_fx;
 gx_lr = gx + z_gx;

@@ -16,17 +16,18 @@ function [] = o_Deconvolution(ex_num,emin,bool_preproc)
 %
 % Example
 %
-% >> Test_Deconvolution('1',1e-10,1e-8)
+% >> o_Deconvolution('1',1e-10,'y')
 
 % Add path for examples
-restoredefaultpath
+restoredefaultpath; savepath
 addpath (...
-    '../Examples',...
+    'Build Matrices',...
     'Deconvolution',...
     'Formatting',...
-    'Matrix Building',...
     'Preprocessing'...
     );
+
+addpath(genpath('../Examples'));
 
 
 % Set settings pertaining to this test
@@ -40,7 +41,10 @@ SETTINGS.PREPROC_DECONVOLUTIONS = bool_preproc;
 
 
 % % Get the factor array and multiplicity vector
-[factor,vMult] = Univariate_Deconvolution_Examples(ex_num);
+[factor_mult_arr_f] = Univariate_Deconvolution_Examples(ex_num);
+
+factor = factor_mult_arr_f(:,1);
+vMult = double(factor_mult_arr_f(:,2));
 
 % Get highest power of any factor
 highest_pwr = max(vMult);
@@ -49,7 +53,7 @@ highest_pwr = max(vMult);
 % %
 % Generate polynomials f_{0}(x) ,..., f_{m}(x) = 1. Where each f_{i+1}(x) is
 % the f_{i+1} = GCD(f_{i},f'_{i}).
-arr_sym_f = cell(highest_pwr+1,1);
+arr_sym_fx = cell(highest_pwr+1,1);
 vDeg_fx = zeros(highest_pwr+1,1);
 
 for i = 0:1:highest_pwr
@@ -58,14 +62,14 @@ for i = 0:1:highest_pwr
     mults = ((vMult - i) + abs(vMult-i)) ./2;
     
     % Get the symbolic polynomial f_{i+1}
-    arr_sym_f{i+1} = prod(factor.^(mults));
+    arr_sym_fx{i+1} = prod(factor.^(mults));
     
     % Get the degree of polynomial f_{i+1}(x)
-    vDeg_fx(i+1) = double(feval(symengine, 'degree', (arr_sym_f{i+1})));
+    vDeg_fx(i+1) = double(feval(symengine, 'degree', (arr_sym_fx{i+1})));
 end
 
 % Display Polynomial f(x) in symbolic form
-display(arr_sym_f{1})
+display(arr_sym_fx{1})
 
 % Get the degree structure of the polynomials h_{i} where h_{i} =
 % f_{i-1}(x)/f_{i}(x)
@@ -79,24 +83,29 @@ vDeg_arr_wx = diff([vDeg_arr_hx; 0]);
 vMultiplicities = find(vDeg_arr_wx~=0);
 
 % Get the sequence of polynomials h_{i}(x) in symbolic form
-sym_arr_h = cell(length(arr_sym_f)-1,1);
-for i = 1:1:length(arr_sym_f)-1
-    sym_arr_h{i} = arr_sym_f{i} / arr_sym_f{i+1};
+sym_arr_h = cell(length(arr_sym_fx)-1,1);
+for i = 1:1:length(arr_sym_fx)-1
+    sym_arr_h{i} = arr_sym_fx{i} / arr_sym_fx{i+1};
 end
 
 % %
 % %
 % Get coefficients vectors of f_{i}(x) and h_{i}(x)
-nPolys_arr_fx = size(arr_sym_f,1);
-nPolys_arr_hx = size(arr_sym_f,1) - 1;
 
+% Get the number of polynomials in the array of f_{i}(x)
+nPolys_arr_fx = size(arr_sym_fx,1);
+
+% Get the number of polynomials in the solution array h_{i}(x)
+nPolys_arr_hx = size(arr_sym_fx,1) - 1;
+
+% Initialise the arrays f_{i}(x) and h_{i}(x)
 arr_fx = cell(nPolys_arr_fx,1);
-arr_hx = cell(nPolys_arr_hx,1);
+arr_hx_exact = cell(nPolys_arr_hx,1);
 
 for i = 1:1:nPolys_arr_fx
     if i <= nPolys_arr_hx
-        arr_fx{i,1} = sym2poly(arr_sym_f{i})';
-        arr_hx{i,1} = sym2poly(sym_arr_h{i})';
+        arr_fx{i,1} = sym2poly(arr_sym_fx{i})';
+        arr_hx_exact{i,1} = sym2poly(sym_arr_h{i})';
     else
         arr_fx{i,1} = 1;
     end
@@ -123,7 +132,7 @@ LineBreakLarge();
 fprintf([mfilename 'Deconvolution Separate'  '\n']);
 
 arr_hx_test_4 = Deconvolve_Separate(arr_fx_noisy);
-err_deconvolveSeparate = GetErrors(arr_hx_test_4,arr_hx);
+vErrors_separate = GetErrors(arr_hx_test_4,arr_hx_exact);
 
 %--------------------------------------------------------------------------
 % %
@@ -134,7 +143,7 @@ LineBreakLarge();
 fprintf([mfilename ' : ' 'Deconvolve Batch' '\n']);
 
 arr_hx_deconvolveBatch = Deconvolve_Batch(arr_fx_noisy);
-err_deconvolveBatch = GetErrors(arr_hx_deconvolveBatch,arr_hx);
+vErrors_batch = GetErrors(arr_hx_deconvolveBatch,arr_hx_exact);
 
 %--------------------------------------------------------------------------
 % %
@@ -145,7 +154,7 @@ LineBreakLarge();
 fprintf([mfilename ' : ' 'Deconvolve batch with STLN' '\n'])
 
 arr_hx_deconvolveBatchWithSTLN = Deconvolve_Batch_With_STLN(arr_fx_noisy);
-err_deconvolveBatchWithSTLN = GetErrors(arr_hx_deconvolveBatchWithSTLN,arr_hx);
+vErrors_batch_with_STLN = GetErrors(arr_hx_deconvolveBatchWithSTLN,arr_hx_exact);
 
 
 % -------------------------------------------------------------------------
@@ -158,7 +167,7 @@ LineBreakLarge()
 fprintf([mfilename ' : ' 'Deconvolvve Batch Constrained' '\n'])
 
 arr_hx_batchConstrained = Deconvolve_Batch_Constrained(arr_fx_noisy,vMultiplicities);
-err_batchConstrained = GetErrors(arr_hx_batchConstrained,arr_hx);
+vErrors_batch_constrained = GetErrors(arr_hx_batchConstrained,arr_hx_exact);
 
 
 % -------------------------------------------------------------------------
@@ -168,10 +177,10 @@ err_batchConstrained = GetErrors(arr_hx_batchConstrained,arr_hx);
 % Testing deconvolution batch method with constraints and low rank approx
 
 LineBreakLarge()
-fprintf([mfilename ' : ' 'Deconvolve Batch Constrained With STLN'])
+fprintf([mfilename ' : ' 'Deconvolve Batch Constrained With STLN \n'])
 
 arr_hx_batchConstrainedWithSTLN = Deconvolve_Batch_Constrained_With_STLN(arr_fx_noisy,vMultiplicities);
-err_batchConstrainedWithSTLN = GetErrors(arr_hx_batchConstrainedWithSTLN,arr_hx);
+vErrors_batch_constrained_with_STLN = GetErrors(arr_hx_batchConstrainedWithSTLN,arr_hx_exact);
 
 
 
@@ -185,11 +194,11 @@ switch SETTINGS.PLOT_GRAPHS
         figure_name = sprintf([mfilename ' : ' 'Plotting errors of h(x)']);
         figure('name',figure_name)
         hold on
-        plot(log10(err_deconvolveSeparate),'-.','DisplayName','Separate')
-        plot(log10(err_deconvolveBatch),'-*','DisplayName','Batch')
-        plot(log10(err_deconvolveBatchWithSTLN),'-s','DisplayName','Batch with STLN')
-        plot(log10(err_batchConstrained),'-s','DisplayName','Batch Constrained')
-        plot(log10(err_batchConstrainedWithSTLN),'-s','DisplayName','Batch Constrained with STLN')
+        plot(log10(vErrors_separate),'-.','DisplayName','Separate')
+        plot(log10(vErrors_batch),'-*','DisplayName','Batch')
+        plot(log10(vErrors_batch_with_STLN),'-s','DisplayName','Batch with STLN')
+        plot(log10(vErrors_batch_constrained),'-s','DisplayName','Batch Constrained')
+        plot(log10(vErrors_batch_constrained_with_STLN),'-s','DisplayName','Batch Constrained with STLN')
         xlabel('k');
         ylabel('log_{10} error h_{i}(x)');
         xlim([ 1 nPolys_arr_hx])
@@ -201,11 +210,11 @@ switch SETTINGS.PLOT_GRAPHS
 end
 % ------------------------------------------------------------------------
 
-Disp_error(err_deconvolveSeparate,'Separate');
-Disp_error(err_deconvolveBatch,'Batch');
-Disp_error(err_deconvolveBatchWithSTLN, 'Batch STLN');
-Disp_error(err_batchConstrained, 'Batch Constrained');
-Disp_error(err_batchConstrainedWithSTLN, 'Batch Constrained STLN');
+Disp_error(vErrors_separate,'Separate');
+Disp_error(vErrors_batch,'Batch');
+Disp_error(vErrors_batch_with_STLN, 'Batch STLN');
+Disp_error(vErrors_batch_constrained, 'Batch Constrained');
+Disp_error(vErrors_batch_constrained_with_STLN, 'Batch Constrained STLN');
 
 
 
@@ -217,16 +226,75 @@ Disp_error(err_batchConstrainedWithSTLN, 'Batch Constrained STLN');
 
 A = ...
     [
-    norm(err_deconvolveSeparate),...
-    norm(err_deconvolveBatch),...
-    norm(err_deconvolveBatchWithSTLN),...
-    norm(err_batchConstrained),...
-    norm(err_batchConstrainedWithSTLN)
+    norm(vErrors_separate),...
+    norm(vErrors_batch),...
+    norm(vErrors_batch_with_STLN),...
+    norm(vErrors_batch_constrained),...
+    norm(vErrors_batch_constrained_with_STLN)
     ];
 
-fileID = fopen('Deconvolution/Test_Deconvolution.txt','a');
-fprintf(fileID,'%s %s %6.2e %6.2e %6.2e %6.2e %6.2e %6.2e\n',ex_num,bool_preproc,emin,A);
-fclose(fileID);
+
+my_error.separate = norm(vErrors_separate);
+my_error.batch = norm(vErrors_batch);
+my_error.batchSTLN = norm(vErrors_batch_with_STLN);
+my_error.batchConstrained = norm(vErrors_batch_constrained);
+my_error.batchConstrainedSTLN = norm(vErrors_batch_constrained_with_STLN);
+
+PrintToResultsFile(ex_num,bool_preproc,emin,my_error);
+
+
+end
+
+function [] = PrintToResultsFile(ex_num, bool_preproc, emin, my_error)
+%
+% % Inputs
+%
+% ex_num :Example Number
+%
+% bool_preproc
+
+
+fullFileName = sprintf('Deconvolution/Results/Results_o_deconvolutions%s.txt',datetime('today'));
+
+% If file already exists append a line
+if exist(fullFileName, 'file')
+    
+    fileID = fopen(fullFileName,'a');
+    WriteNewLine()
+    fclose(fileID);
+    
+else % File doesnt exist so create it
+    
+    fileID = fopen( fullFileName, 'wt' );
+    WriteHeader()
+    WriteNewLine()
+    fclose(fileID);
+    
+end
+
+    function WriteNewLine()
+        
+        %
+        fprintf(fileID,'%s,%s,%s,%s,%s,%s,%s,%s,%s \n',...
+            datetime('now'),...
+            ex_num,...
+            bool_preproc,...
+            emin,...
+            my_error.separate,...
+            my_error.batch,...
+            my_error.batchSTLN ,...
+            my_error.batchConstrained ,...
+            my_error.batchConstrainedSTLN....
+            );
+        
+    end
+
+    function WriteHeader()
+        
+        fprintf(fileID,'DATE,EX_NUM,BOOL_PREPROC,NOISE,err_separate,err_batch,err_batch_STLN,err_constrained,err_constrained_STLN \n');
+        
+    end
+
 
 end
 

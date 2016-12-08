@@ -24,15 +24,13 @@ for i = 1:1:nFactors
     % Get the factor
     sym_factor = f_root_mult_arr(i,1);
     
-    % Get the multiplicity
+    % Get the multiplicity of the factor in f(x)
     mult = f_root_mult_arr(i,2); 
     
     sym_factor = sym_factor^mult;
         
     sym_poly = sym_poly * sym_factor;
 end
-
-display(sym_poly);
 
 % Get coefficients of the polynomial 
 fx = double(fliplr(coeffs(sym_poly,x,'All')))';

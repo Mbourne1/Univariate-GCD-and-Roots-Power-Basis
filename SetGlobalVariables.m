@@ -25,6 +25,9 @@ SETTINGS.EMAX = emax;
 % Include/Exclude plotting of graphs
 SETTINGS.PLOT_GRAPHS = 'y';
 
+SETTINGS.BOOL_LOG = 'n';
+
+SETTINGS.GCD_COEFFICIENT_METHOD = 'ux and vx';
 
 %--------------------------------------------------------------------------
 %

@@ -4,6 +4,7 @@
 *.eps
 *.txt
 *.fig
+*.xlsx
 
 # Windows image file caches
 Thumbs.db
