@@ -12,11 +12,11 @@ function [fx, gx, dx, ux, vx] = Examples_GCD_FromCoefficients(ex_num)
 %
 % [ux, vx] : Coefficients of the cofactor polynomials u(x) and v(x)
 
-addpath('../Examples')
+addpath(genpath('../Examples'));
 
 % Get the rm (Root - Multiplicity) array for each of the polynomials
 [f_rm_array, g_rm_array, d_rm_array, u_rm_array, v_rm_array] = ...
-    Univariate_GCD_Examples(ex_num);
+    GCD_Examples_Univariate_2Polys(ex_num);
 
 % Get coefficients of polynomials f(x) and g(x)
 fx = GetCoefficientsFromSymbolicRoots(f_rm_array);

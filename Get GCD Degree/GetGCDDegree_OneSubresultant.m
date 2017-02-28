@@ -12,15 +12,15 @@ calling_function = St(2).name;
 
 % Only one subresultant
 fprintf([mfilename ' : ' calling_function ' : ' 'Only one subresultant exists. \n'])
-switch SETTINGS.PLOT_GRAPHS
-    case 'y'
+if(SETTINGS.PLOT_GRAPHS)
+    
         figure_name = sprintf([calling_function ' : Singular values of S_{1}']);
         figure('name',figure_name)
         hold on
         title('Singular values of S_{1}')
         plot(log10(vSingularValues))
         hold off
-    case 'n'
+    
 end
 
 [deltaSingularValues,~] = Analysis(vSingularValues);

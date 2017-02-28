@@ -1,28 +1,28 @@
-function [h] = Deconvolve(f,g)
+function [hx] = Deconvolve(fx, gx)
 % DECONVOLVE Given two polynomails f(x,y) and g(x,y), computes the
 % polynomail division f(x)/g(x) = h(x)
 %
 % % Inputs.
 %
-% f : Coefficients of polynomial f(x)
+% fx : Coefficients of polynomial f(x)
 %
-% g : Coefficients of polynomial g(x)
+% gx : Coefficients of polynomial g(x)
 %
 % % Outputs.
 %
-% h : Coefficients of polynomial h(x)
+% hx : Coefficients of polynomial h(x)
 
 
 % Get degree of polynomial f(x).
-m = GetDegree(f);
+m = GetDegree(fx);
 
 % Get degree of polynomial g(x).
-n = GetDegree(g);
+n = GetDegree(gx);
 
-% Build the matrix C_{m-n}(g)
-C_g = BuildT1(g,m-n);
+% Build the matrix T_{m-n}(g(x))
+C_g = BuildT1(gx, m-n);
 
-% Solve C_{m-n}(g)*h = f
-h = SolveAx_b(C_g,f);
+% Solve T_{m-n}(g(x))*h = f
+hx = SolveAx_b(C_g, fx);
 
 end

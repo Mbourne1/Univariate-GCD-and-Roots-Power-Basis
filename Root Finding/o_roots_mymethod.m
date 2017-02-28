@@ -30,7 +30,7 @@ vTheta(1,1) = 1;
 
 % Get the number of distinct roots of f_{1}. Since this is unknown at this
 % time, set number of distinct roots to be m_{1} = deg(f_{1}).
-vNum_distinct_roots_fx(1,1) = GetDegree(arr_fx);
+vNumberDistinctRoots_fx(1,1) = GetDegree(arr_fx);
 
 % Whilst the most recently calculated GCD has a degree greater than
 % zero. ie is not a constant, perform a gcd calculation on it and its
@@ -53,41 +53,38 @@ while GetDegree(arr_fx{ite,1}) > 0
             switch SETTINGS.BOOL_LIMITS
                 case 'y'
                     
-                    lower_lim = vDegt_fx(ite) - vNum_distinct_roots_fx(ite-1);
-                    upper_lim = vDegt_fx(ite)-1;
+                    lowerLimit = vDegt_fx(ite) - vNumberDistinctRoots_fx(ite-1);
+                    upperLimit = vDegt_fx(ite)-1;
                     
                 case 'n'
                     
-                    lower_lim = 1;
-                    upper_lim = vDegt_fx(ite)-1;
+                    lowerLimit = 1;
+                    upperLimit = vDegt_fx(ite)-1;
                     
             end
             
         else
-            lower_lim = 1;
-            upper_lim = vDegt_fx(ite)-1;
+            lowerLimit = 1;
+            upperLimit = vDegt_fx(ite)-1;
             
         end
         
 
-        fprintf([ mfilename ' : ' sprintf('Minimum degree of f_{%i}: %i \n', ite, lower_lim)]);
-        fprintf([ mfilename ' : ' sprintf('Maximum degree of f_{%i}: %i \n\n', ite, upper_lim)]);
+        fprintf([ mfilename ' : ' sprintf('Minimum degree of f_{%i}: %i \n', ite, lowerLimit)]);
+        fprintf([ mfilename ' : ' sprintf('Maximum degree of f_{%i}: %i \n\n', ite, upperLimit)]);
         
-        
-        
-        
+
         % (fx_n,gx_n,dx, ux, vx, alpha, theta, t , lambda,mu)
-        [arr_fx{ite,1},~,arr_fx{ite+1,1}, arr_ux{ite,1} ,arr_vx{ite,1},~,vTheta(ite+1,1),vDegt_fx(ite+1,1),~,~] ...
-            = o_gcd_mymethod( arr_fx{ite,1} , Differentiate(arr_fx{ite,1}) , [lower_lim,upper_lim]);
+        [arr_fx{ite,1},~,arr_fx{ite+1,1}, arr_ux{ite,1} ,arr_vx{ite,1}, ~, vTheta(ite+1,1),vDegt_fx(ite+1,1),~,~] ...
+            = o_gcd_mymethod_Univariate_2Polys( arr_fx{ite,1} , Differentiate(arr_fx{ite,1}) , [lowerLimit,upperLimit]);
         
         
         fprintf([ mfilename ' : ' sprintf('Computed degree of f_{%i}: %i \n', ite, vDegt_fx(ite+1) )]);
         
         % Get number of distinct roots of f(ite), given by
-        vNum_distinct_roots_fx(ite,1) = vDegt_fx(ite,1) - vDegt_fx(ite+1,1);
-        
-        
-        fprintf([ mfilename ' : ' sprintf('Number of distinct roots in f_{%i} : %i \n',ite,vNum_distinct_roots_fx(ite))]);
+        vNumberDistinctRoots_fx(ite,1) = vDegt_fx(ite,1) - vDegt_fx(ite+1,1);
+
+        fprintf([ mfilename ' : ' sprintf('Number of distinct roots in f_{%i} : %i \n',ite,vNumberDistinctRoots_fx(ite))]);
         
         % increment iteration number.
         ite = ite+1;
@@ -131,14 +128,15 @@ vMultiplicities = find(vDeg_arr_wx~=0);
 % we can use the already calculated values ux{i}
 %method = 'By Deconvolution';
 
-switch SETTINGS.ROOTS_HX
+switch SETTINGS.ROOTS_HX_COMPUTATION_METHOD
+    
     case 'From Deconvolutions'
         
         fprintf([mfilename ' : ' sprintf('Deconvolution Method : %s',SETTINGS.DECONVOLUTION_METHOD_FX_HX)]);
         arr_hx = Deconvolve_Set(arr_fx,SETTINGS.DECONVOLUTION_METHOD_FX_HX);
         
         
-    case 'From ux'
+    case 'From GCD Computation'
         fprintf([mfilename ' : ' sprintf('Deconvolution Method : %s',SETTINGS.ROOTS_HX)]);
         arr_hx = arr_ux;
         
@@ -148,21 +146,10 @@ switch SETTINGS.ROOTS_HX
         
 end
 
-% for each w_{i}
-% for i = 1:1:length(arr_wx_new)
-%     wx_new = arr_wx_new{i}
-%     wx_new = wx_new./wx_new(2)
-%
-% end
-
 
 % Get the number of polynomials in h_{x}
 [nPolys_arr_hx] = size(arr_hx,1);
 
-
-
-
-% If only one entry in h_{x}
 % If only one entry in h_{x}
 if nPolys_arr_hx == 1
     

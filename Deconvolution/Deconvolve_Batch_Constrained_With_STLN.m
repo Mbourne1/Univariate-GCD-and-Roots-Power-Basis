@@ -1,4 +1,4 @@
-function [arr_hx] = Deconvolve_Batch_Constrained_With_STLN(arr_fx,vMult)
+function [arr_hx] = Deconvolve_Batch_Constrained_With_STLN(arr_fx, vMult)
 % Let vMultiplicities be a vector containing the multiplicities of the
 % roots of f_{0}(x). vMult = [m_{1}, m_{2} ,..., m_{n}]
 % The division f_{0}/f_{1},...,f_{m_{1}-1} / f_{m_{1}} all have the same solution
@@ -25,9 +25,9 @@ nPolys_arr_fx = length(arr_fx);
 % Get the number of polynomials in the array of h_{i}(x)
 nPolys_arr_hx = nPolys_arr_fx - 1;
 
-% % Get the degree m_{i} of each of the polynomials f_{i} 
+% % Get the degree m_{i} of each of the polynomials f_{i}(x)
 
-% Initialise vector
+% Initialise vector to store degree of polynomials f_{i}(x)
 vDeg_arr_fx = zeros(nPolys_arr_fx,1);
 
 % For each polynomial f_{i} get the degree
@@ -39,7 +39,7 @@ end
 vDeg_arr_hx = vDeg_arr_fx(1:end-1) - vDeg_arr_fx(2:end);
 
 % Define M to be the total number of all coefficients of the first d polynomials
-% f_{0}...f_{d-1},
+% f_{0},...,f_{d-1},
 M = sum(vDeg_arr_fx+1) - (vDeg_arr_fx(end)+1);
 
 % Define M1 to be the total number of all coefficients of polynomials
@@ -52,9 +52,9 @@ nCoefficients_hx = sum(vDeg_arr_hx+1);
 % Obtain theta such that the ratio of max element to min element is
 % minimised
 
-% 
+%
 % y - Preprocess
-% n - Dont preprocess 
+% n - Dont preprocess
 SETTINGS.PREPROC_DECONVOLUTIONS;
 
 switch SETTINGS.PREPROC_DECONVOLUTIONS
@@ -65,7 +65,7 @@ switch SETTINGS.PREPROC_DECONVOLUTIONS
 end
 
 % Initialise a cell-array for f(w)
-arr_fw = cell(nPolys_arr_fx,1);
+arr_fw = cell(nPolys_arr_fx, 1);
 
 % for each f_{i} get fw_{i}
 for i = 1 : 1 : nPolys_arr_fx
@@ -105,7 +105,7 @@ for i = 1:1: nPolys_arr_px
     vDeg_arr_px(i) = deg;
 end
 
-% % 
+% %
 % %
 % Get the polynomials p_{i}(x) repeated to give the set of polynomials
 % h_{i}(x).
@@ -135,7 +135,7 @@ v_zw = cell2mat(arr_zw);
 P = [eye(M) zeros(M,nCoefficients_fx-M)];
 
 % Build Matrix Y, where E(z)h = Y(h)z
-Y_h = BuildY(arr_hw,vDeg_arr_fx);
+Y_h = BuildY(arr_hw, vDeg_arr_fx);
 
 % Set the iteration number
 ite = 1;
@@ -266,7 +266,7 @@ end
 % Remove thetas from h_{i}(w) to get h_{i}(x)
 arr_hx = cell(nPolys_arr_hx,1);
 for i = 1:1:nPolys_arr_hx
-   arr_hx{i} = GetWithoutThetas(arr_hw{i}, theta); 
+    arr_hx{i} = GetWithoutThetas(arr_hw{i}, theta);
 end
 
 
@@ -277,14 +277,13 @@ fprintf([mfilename ' : ' 'Performed Deconvolutions \n'])
 fprintf([mfilename ' : ' sprintf('Iterations required for Batch Deconvolution %i\n', ite)])
 LineBreakLarge()
 
-switch SETTINGS.PLOT_GRAPHS
-    case 'y'
-        figure_name = sprintf('%s : Condition',mfilename);
-        figure('name',figure_name)
-        hold on
-        plot(log10(condition),'-s')
-        hold off
-    case 'n'
+if(SETTINGS.PLOT_GRAPHS)
+    
+    figure_name = sprintf('%s : Condition',mfilename);
+    figure('name',figure_name)
+    hold on
+    plot(log10(condition),'-s')
+    hold off
 end
 
 

@@ -23,7 +23,7 @@ SETTINGS.EMIN = emin;
 SETTINGS.EMAX = emax;
 
 % Include/Exclude plotting of graphs
-SETTINGS.PLOT_GRAPHS = 'y';
+SETTINGS.PLOT_GRAPHS = true;
 
 SETTINGS.BOOL_LOG = 'n';
 
@@ -61,6 +61,13 @@ SETTINGS.THRESHOLD_RANK = 1e-5;
 % degree t of the GCD(f,f').
 SETTINGS.BOOL_LIMITS = 'y';
 
+% Metric used to compute the degree of the GCD
+%   * Singular Values
+%   * R1 Row Norms
+%   * R1 Row Diagonals
+%   * Residuals
+SETTINGS.METRIC = 'Singular Values';
+
 
 %--------------------------------------------------------------------------
 % 
@@ -94,6 +101,7 @@ SETTINGS.APF_METHOD = apf_method;
 %               DECONVOLUTION SETTINGS
 %
 %-------------------------------------------------------------------------
+
 
 % Deconvolution Method
 % Method for performing deconvolutions.
@@ -130,11 +138,15 @@ SETTINGS.DECONVOLUTION_METHOD_HX_WX = 'Separate';
 
 SETTINGS.PREPROC_DECONVOLUTIONS = 'y';
 
+% 
 %
-% From ux
+% From GCD Computation
 % From Deconvolutions
 %
-SETTINGS.ROOTS_HX = 'From ux';
+SETTINGS.ROOTS_HX_COMPUTATION_METHOD = 'From GCD Computation';
+
+
+SETTINGS.ROOTS_HX_COMPUTATION_METHOD_IN_MUSSER_ALGORITHM = 'From GCD Computation';
 end
 
 

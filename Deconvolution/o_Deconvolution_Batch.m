@@ -14,16 +14,22 @@ arr_bool_preproc = {'y','n'};
 
 
 parfor i1 = 1:1:length(arr_ex_num)
+    
     ex_num = arr_ex_num{i1};
+    
     for i2 = 1:1:length(arr_noise)
+        
         emin = arr_noise{i2};
+        
         for i3 = 1:1:length(arr_bool_preproc)
+            
             bool_preproc = arr_bool_preproc{i3};
             
             try
+                
                 close all;
                 clc;
-                o_Deconvolution(ex_num,emin,bool_preproc)
+                o_Deconvolution(ex_num, emin, bool_preproc)
                 
                 % Print success to log file
                 fileId = fopen('log.txt','a');
@@ -31,10 +37,12 @@ parfor i1 = 1:1:length(arr_ex_num)
                 fclose(fileId);
                 
             catch err
+                
                 % Print failure to log file
                 fileId = fopen('log.txt','a');
                 fprintf(fileId,'%s \n\n\n',getReport(err));
                 fclose(fileId);
+                
             end
             
             

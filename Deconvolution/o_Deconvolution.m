@@ -1,4 +1,4 @@
-function [] = o_Deconvolution(ex_num,emin,bool_preproc)
+function [] = o_Deconvolution(ex_num, emin, bool_preproc)
 % O_DECONVOLUTION Test the different methods of deconvolving the set of
 % polynomials f_{i}(x), to form the set of polynomials h_{i}
 % where h_{i} = f{i}/f_{i+1}
@@ -32,7 +32,7 @@ addpath(genpath('../Examples'));
 
 % Set settings pertaining to this test
 global SETTINGS
-SETTINGS.PLOT_GRAPHS = 'y';
+SETTINGS.PLOT_GRAPHS = true;
 SETTINGS.MAX_ERROR_DECONVOLUTIONS = 1e-20;
 SETTINGS.MAX_ITERATIONS_DECONVOLUTIONS = 20;
 SETTINGS.SEED = 1024;
@@ -41,7 +41,7 @@ SETTINGS.PREPROC_DECONVOLUTIONS = bool_preproc;
 
 
 % % Get the factor array and multiplicity vector
-[factor_mult_arr_f] = Univariate_Deconvolution_Examples(ex_num);
+[factor_mult_arr_f] = Deconvolution_Examples_Univariate(ex_num);
 
 factor = factor_mult_arr_f(:,1);
 vMult = double(factor_mult_arr_f(:,2));
@@ -53,8 +53,8 @@ highest_pwr = max(vMult);
 % %
 % Generate polynomials f_{0}(x) ,..., f_{m}(x) = 1. Where each f_{i+1}(x) is
 % the f_{i+1} = GCD(f_{i},f'_{i}).
-arr_sym_fx = cell(highest_pwr+1,1);
-vDeg_fx = zeros(highest_pwr+1,1);
+arr_sym_fx = cell(highest_pwr+1, 1);
+vDeg_fx = zeros(highest_pwr+1, 1);
 
 for i = 0:1:highest_pwr
     
@@ -83,8 +83,9 @@ vDeg_arr_wx = diff([vDeg_arr_hx; 0]);
 vMultiplicities = find(vDeg_arr_wx~=0);
 
 % Get the sequence of polynomials h_{i}(x) in symbolic form
-sym_arr_h = cell(length(arr_sym_fx)-1,1);
-for i = 1:1:length(arr_sym_fx)-1
+sym_arr_h = cell(length(arr_sym_fx)-1, 1);
+
+for i = 1 : 1 : length(arr_sym_fx)-1
     sym_arr_h{i} = arr_sym_fx{i} / arr_sym_fx{i+1};
 end
 
@@ -93,21 +94,25 @@ end
 % Get coefficients vectors of f_{i}(x) and h_{i}(x)
 
 % Get the number of polynomials in the array of f_{i}(x)
-nPolys_arr_fx = size(arr_sym_fx,1);
+nPolys_arr_fx = size(arr_sym_fx, 1);
 
 % Get the number of polynomials in the solution array h_{i}(x)
-nPolys_arr_hx = size(arr_sym_fx,1) - 1;
+nPolys_arr_hx = size(arr_sym_fx, 1) - 1;
 
 % Initialise the arrays f_{i}(x) and h_{i}(x)
-arr_fx = cell(nPolys_arr_fx,1);
-arr_hx_exact = cell(nPolys_arr_hx,1);
+arr_fx = cell(nPolys_arr_fx , 1);
+arr_hx_exact = cell(nPolys_arr_hx , 1);
 
 for i = 1:1:nPolys_arr_fx
     if i <= nPolys_arr_hx
+        
         arr_fx{i,1} = sym2poly(arr_sym_fx{i})';
         arr_hx_exact{i,1} = sym2poly(sym_arr_h{i})';
+        
     else
+        
         arr_fx{i,1} = 1;
+        
     end
     
 end
@@ -116,10 +121,12 @@ end
 % %
 % %
 % Add noise to the coefficients of f_{i}(x)
-arr_fx_noisy = cell(nPolys_arr_fx,1);
+arr_fx_noisy = cell(nPolys_arr_fx, 1);
 
-for i = 1:1:nPolys_arr_fx
+for i = 1 : 1 : nPolys_arr_fx
+    
     arr_fx_noisy{i,1} = AddNoiseToPoly(arr_fx{i},emin);
+    
 end
 
 
@@ -189,8 +196,8 @@ vErrors_batch_constrained_with_STLN = GetErrors(arr_hx_batchConstrainedWithSTLN,
 
 % %
 % Plot Errors
-switch SETTINGS.PLOT_GRAPHS
-    case 'y'
+if(SETTINGS.PLOT_GRAPHS)
+    
         figure_name = sprintf([mfilename ' : ' 'Plotting errors of h(x)']);
         figure('name',figure_name)
         hold on
@@ -204,9 +211,7 @@ switch SETTINGS.PLOT_GRAPHS
         xlim([ 1 nPolys_arr_hx])
         legend(gca,'show');
         hold off
-    case 'n'
-    otherwise
-        error('err');
+    
 end
 % ------------------------------------------------------------------------
 

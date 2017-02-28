@@ -6,13 +6,9 @@ function [ux_lra, vx_lra, fx_lra, gx_lra, dx_lra, alpha_lra, theta_lra] ...
 %
 % % Inputs.
 %
-% ux : Coefficients of input polynomial u(x)
+% [ux, vx] : Coefficients of input polynomials u(x) and v(x)
 %
-% vx : Coefficients of input polynomial v(x)
-%
-% fx : Coefficients of the polynomial f(x)
-%
-% gx : Coefficients of the polynomial g(x)
+% [fx, gx] : Coefficients of the polynomial f(x) and g(x)
 %
 % alpha : Optimal value of \alpha
 %
@@ -33,7 +29,7 @@ switch SETTINGS.APF_METHOD
         vw = GetWithThetas(vx,theta);
         
         % Get d(\omega)
-        [dw] = GetGCDCoefficients(uw, vw, fw, a_gw,k);
+        [dw] = GetGCDCoefficients_2Polys(uw, vw, fw, a_gw,k);
         
         % Get d(x) output
         dx_lra = GetWithoutThetas(dw,theta);
@@ -56,10 +52,12 @@ switch SETTINGS.APF_METHOD
         
         error([mfilename ' : ' 'Code not completed']);
         SETTINGS.APF_REQ_ITE = 0;
+        
     case 'Standard APF Linear'
         
         error([mfilename ' : ' 'Code not completed']);
         SETTINGS.APF_REQ_ITE = 0;
+        
     otherwise
         error('err')
 end

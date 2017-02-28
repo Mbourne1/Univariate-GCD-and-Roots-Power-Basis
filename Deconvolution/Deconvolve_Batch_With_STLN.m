@@ -206,14 +206,14 @@ end
 fprintf([mfilename ' : ' 'Performed Deconvolutions\n'])
 fprintf([mfilename ' : ' sprintf('Iterations required for Batch Deconvolution %i\n', ite)])
 
-switch SETTINGS.PLOT_GRAPHS
-    case 'y'
+if(SETTINGS.PLOT_GRAPHS)
+    
         figure_name = sprintf('%s : Condition',mfilename);
         figure('name',figure_name)
         hold on
         plot(log10(condition),'-s')
         hold off
-    case 'n'
+    
 end
 
 

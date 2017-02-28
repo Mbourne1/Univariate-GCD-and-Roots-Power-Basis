@@ -1,5 +1,5 @@
 function [] = o_Intersection_2DCurveExplicit_2DCurveExplicit(...
-    ex_num_f,ex_num_g,el,bool_preproc,low_rank_approx_method)
+    ex_num_f, ex_num_g, el, bool_preproc, low_rank_approx_method)
 % o_Intersection_2DCurveExplicit_2DCurveExplicit...
 %       (ex_num_f,ex_num_g,bool_preproc,low_rank_approx_method)
 %
@@ -7,13 +7,13 @@ function [] = o_Intersection_2DCurveExplicit_2DCurveExplicit(...
 % calculate their intersections.
 %
 
-SetGlobalVariables(bool_preproc,low_rank_approx_method);
-global PLOT_GRAPHS
+SetGlobalVariables(bool_preproc, low_rank_approx_method);
+global SETTINGS
+
 
 
 % Get the type of example used
 EXAMPLE_TYPE = 'Coefficients';
-%EXAMPLE_TYPE = 'SamePoly';
 
 switch EXAMPLE_TYPE
     case 'Coefficients'
@@ -41,20 +41,20 @@ switch EXAMPLE_TYPE
         gx_root_mult_arr = Examples_Univariate_Implicit(ex_num_g);
         
         % Print the factorisation of f(x) and g(x)
-        PrintFactorization(fx_root_mult_arr,'f')
-        PrintFactorization(gx_root_mult_arr,'g')
+        PrintFactorization(fx_root_mult_arr, 'f')
+        PrintFactorization(gx_root_mult_arr, 'g')
                
         % Get the coefficients of the polynomails f(x) and g(x)
         fx = GetCoefficientsFromRoots(fx_root_mult_arr);
         gx = GetCoefficientsFromRoots(gx_root_mult_arr);
         
         % Print the coefficients of f(x) and g(x)             
-        PrintCoefficientsBivariate(fx,'f');
-        PrintCoefficientsBivariate(gx,'g');
+        PrintCoefficientsBivariate(fx, 'f');
+        PrintCoefficientsBivariate(gx, 'g');
         
         % Add noise to the coefficients
-        fx = AddNoiseToPoly(fx,el);
-        gx = AddNoiseToPoly(gx,el);
+        fx = AddNoiseToPoly(fx, el);
+        gx = AddNoiseToPoly(gx, el);
                 
     case 'SamePoly'
         fx = Examples_Univariate_Implicit(ex_num_f);
@@ -80,8 +80,8 @@ f_y = polyval(flipud(fx),t);
 g_y = polyval(flipud(gx),t);
 
 
-switch PLOT_GRAPHS
-    case 'y'
+IF(SETTINGS.PLOT_GRAPHS)
+    
         figure('name','Curve Plot : f(y) and g(y)')
         hold on
         plot(t,f_y,'DisplayName','f(y)')
@@ -89,9 +89,7 @@ switch PLOT_GRAPHS
         legend(gca,'show');
         hold off
 
-    case 'n'
-    otherwise
-        error('PLOT_GRAPHS is either y or n')
+    
 end
 
 

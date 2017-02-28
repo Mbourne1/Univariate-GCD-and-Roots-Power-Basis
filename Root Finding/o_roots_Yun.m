@@ -16,7 +16,7 @@ function [root_mult_array] = o_roots_Yun(fx)
 % corresponding multiplicities.
 
 global SETTINGS
-SETTINGS.PLOT_GRAPHS = 'y';
+SETTINGS.PLOT_GRAPHS = true;
 
 % Set Iteration number
 ite = 1;
@@ -32,7 +32,7 @@ deg_limits = [1,min(m,n)];
 % Perform GCD computation.
 
 [fx_n,gx_n,u, C{ite}, w{ite}, alpha, theta, t , lambda,mu] ...
-    = o_gcd_mymethod(fx,Differentiate(fx),deg_limits);
+    = o_gcd_mymethod(fx,Differentiate(fx), deg_limits);
 d{ite} = w{ite}-Differentiate(C{ite});
 LineBreakMedium();
 
@@ -47,8 +47,8 @@ while (GetDegree(C{ite}) > 0 )
     limits = [1,min(m,n)];
     
     % Get GCD
-    [fx,gx,h{ite+1},C{ite+1},w{ite+1},~,~,~,~,~] =...
-        o_gcd_mymethod(C{ite},d{ite},limits);
+    [fx,gx, h{ite+1},C{ite+1},w{ite+1},~,~,~,~,~] =...
+        o_gcd_mymethod(C{ite}, d{ite}, limits);
     
    
     
@@ -60,7 +60,7 @@ while (GetDegree(C{ite}) > 0 )
     
 end
 
-SETTINGS.PLOT_GRAPHS = 'n';
+SETTINGS.PLOT_GRAPHS = false;
 
 root_mult_array = [];
 

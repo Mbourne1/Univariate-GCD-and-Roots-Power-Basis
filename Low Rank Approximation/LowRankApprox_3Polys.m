@@ -57,10 +57,10 @@ switch SETTINGS.LOW_RANK_APPROXIMATION_METHOD
         % Get f(\omega) and alpha.*g(\omega) and w(\omega)
         fw = GetWithThetas(fx,theta);
         a_gw = alpha.* GetWithThetas(gx,theta);
-        hw = GetWithThetas(hx,theta);
+        a_hw = alpha.* GetWithThetas(hx,theta);
         
         % Get u(\omega) and v(\omega)
-        [uw,vw,ww] = GetCofactorsCoefficients_3Polys(fw,a_gw,hw,k);
+        [uw,vw,ww] = GetCofactorsCoefficients_3Polys(fw,a_gw,a_hw,k);
         
         % Get u(x) and v(x)
         ux_lr = GetWithoutThetas(uw,theta);
@@ -75,6 +75,8 @@ switch SETTINGS.LOW_RANK_APPROXIMATION_METHOD
         % Get \alpha and \theta output, which are unchanged from input
         alpha_lr = alpha;
         theta_lr = theta;
+        
+        SETTINGS.LOW_RANK_APPROX_REQ_ITE = 0;
         
     otherwise
         

@@ -6,17 +6,9 @@ function [ux_lra, vx_lra, wx_lra, fx_lra, gx_lra, hx_lra, dx_lra, alpha_lra, the
 %
 % % Inputs.
 %
-% ux : Coefficients of input polynomial u(x)
+% [ux, vx, wx] : Coefficients of input polynomial u(x), v(x) and w(x)
 %
-% vx : Coefficients of input polynomial v(x)
-%
-% wx :
-%
-% fx : Coefficients of the polynomial f(x)
-%
-% gx : Coefficients of the polynomial g(x)
-%
-% hx : 
+% [fx, gx, hx] : Coefficients of the polynomial f(x), g(x) and h(x)
 %
 % alpha : Optimal value of \alpha
 %
@@ -26,15 +18,17 @@ function [ux_lra, vx_lra, wx_lra, fx_lra, gx_lra, hx_lra, dx_lra, alpha_lra, the
 %
 % % Outputs
 %
-% [ux_lra vx_lra wx_lra]
+% [ux_lra vx_lra wx_lra] : coefficients of output polynomials u(x), v(x)
+% and w(x) after APF.
 %
-% [fx_lra gx_lra hx_lra]
+% [fx_lra, gx_lra, hx_lra] : coefficients of output polynomials f(x), g(x)
+% and h(x) after APF.
 %
-% dx_lra
+% dx_lra : coefficients of polynomial d(x)
 %
-% alpha_lra
+% alpha_lra : Optimal value of \alpha
 %
-% theta_lra
+% theta_lra : Optimal value of \theta
 
 global SETTINGS
 switch SETTINGS.APF_METHOD
@@ -43,7 +37,7 @@ switch SETTINGS.APF_METHOD
         % Get f(\omega) and g(\omega) and h(\omega)
         fw = GetWithThetas(fx,theta);
         a_gw = alpha.* GetWithThetas(gx,theta);
-        hw = GetWithThetas(hx,theta);
+        a_hw = alpha.* GetWithThetas(hx,theta);
         
         % Get u(\omega) and v(\omega) and w(\omega)
         uw = GetWithThetas(ux,theta);
@@ -51,7 +45,7 @@ switch SETTINGS.APF_METHOD
         ww = GetWithThetas(wx,theta);
         
         % Get d(\omega)
-        [dw] = GetGCDCoefficients_3Polys(uw, vw, ww, fw, a_gw, hw, k);
+        [dw] = GetGCDCoefficients_3Polys(uw, vw, ww, fw, a_gw, a_hw, k);
         
         % Get d(x) output
         dx_lra = GetWithoutThetas(dw,theta);
@@ -76,10 +70,12 @@ switch SETTINGS.APF_METHOD
         
         error([mfilename ' : ' 'Code not completed']);
         SETTINGS.APF_REQ_ITE = 0;
+        
     case 'Standard APF Linear'
         
         error([mfilename ' : ' 'Code not completed']);
         SETTINGS.APF_REQ_ITE = 0;
+        
     otherwise
         error('err')
 end

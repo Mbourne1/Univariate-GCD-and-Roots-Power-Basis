@@ -112,8 +112,9 @@ disp([x' y'])
 
 % Substitute root values back into C_{1} x(t) and y(t) to obtain set of
 % intersection points
-switch PLOT_GRAPHS
-    case 'y'
+global SETTINGS
+if(SETTINGS.PLOT_GRAPHS)
+
         
 
         figure('name','Plotting C_{1} and C_{2}')
@@ -135,7 +136,7 @@ switch PLOT_GRAPHS
         grid on
         hold off
         
-    case 'n'
+   
 end
 
 
