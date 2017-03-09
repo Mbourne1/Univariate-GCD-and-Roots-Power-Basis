@@ -57,10 +57,10 @@ nCoefficients_hx = sum(vDeg_arr_hx+1);
 % n - Dont preprocess
 SETTINGS.PREPROC_DECONVOLUTIONS;
 
-switch SETTINGS.PREPROC_DECONVOLUTIONS
-    case 'y'
+if(SETTINGS.PREPROC_DECONVOLUTIONS)
+ 
         theta = GetOptimalTheta(arr_fx,vDeg_arr_fx);
-    case 'n'
+else
         theta = 1;
 end
 
@@ -123,7 +123,7 @@ arr_hw = Get_hx(arr_pw,unique_vMult);
 % perturbations of the array of polynomials f(x).
 
 
-arr_zw = cell(nPolys_arr_fx,1);
+arr_zw = cell(nPolys_arr_fx, 1);
 for i = 1 : 1 : nPolys_arr_fx
     arr_zw{i} = zeros(vDeg_arr_fx(i) +1,1);
 end

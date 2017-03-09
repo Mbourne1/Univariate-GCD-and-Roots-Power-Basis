@@ -20,8 +20,8 @@ function [] = o_roots_Univariate(ex_num, emin, emax, mean_method, bool_alpha_the
 %   'Geometric Mean Matlab Method' : Divide by Geometric Mean
 %
 % bool_alpha_theta :
-%   'y' : Include Preprocessing
-%   'n' : Exclude Preprocessing
+%   true : Include Preprocessing
+%   false : Exclude Preprocessing
 %
 % low_rank_approx_method :
 %   'None'
@@ -110,19 +110,19 @@ fx = AddNoiseToPoly(fx,emin);
 % %
 
 %try
-    MusserMethod_tic = tic;
-    [root_multiplicity_array_MusserMethod] = o_roots_Musser(fx);
-    rel_err.MusserMethod = GetRelativeError(root_multiplicity_array_MusserMethod,fx,'Musser Method');
-    LineBreakLarge()
-    time.MusserMethod = toc(MusserMethod_tic);
+%     MusserMethod_tic = tic;
+%     [root_multiplicity_array_MusserMethod] = o_roots_Musser(fx);
+%     rel_err.MusserMethod = GetRelativeError(root_multiplicity_array_MusserMethod,fx,'Musser Method');
+%     LineBreakLarge()
+%     time.MusserMethod = toc(MusserMethod_tic);
 %catch err
    
 %    fprintf([mfilename ' : ' sprintf('Error in Musser Method \n')])
 %    fprintf([err.message '\n']);
 %    rel_err.MusserMethod = 999999;
-%    time.MusserMethod = 999999;
-    
+%    time.MusserMethod = 999999;    
 %end
+rel_err.MusserMethod = 10000;
 
 % %
 % % YUN METHOD
@@ -136,10 +136,10 @@ fx = AddNoiseToPoly(fx,emin);
 % YunMethod_duration = toc(YunMethod_tic);
 
 
-LineBreakLarge();
-fprintf('Duration - My Method : %2.4f\n', time.MyMethod);
-fprintf('Duration - Musser Method : %2.4f\n', time.MusserMethod);
-LineBreakLarge();
+% LineBreakLarge();
+% fprintf('Duration - My Method : %2.4f\n', time.MyMethod);
+% fprintf('Duration - Musser Method : %2.4f\n', time.MusserMethod);
+% LineBreakLarge();
 
 
 % %
@@ -241,7 +241,7 @@ if exist(fullFileName, 'file')
         SETTINGS.DECONVOLUTION_METHOD_FX_HX,...
         time.MyMethod,...
         time.MusserMethod,...
-        SETTINGS.ROOTS_HX...
+        SETTINGS.ROOTS_HX_COMPUTATION_METHOD...
         );
     fclose(fileID);
     

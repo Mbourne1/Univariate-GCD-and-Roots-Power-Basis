@@ -1,5 +1,5 @@
 function arr_hx = Deconvolve_Batch(arr_fx)
-% DECONVOLVE_BATCH Given the set of polynomials f_{0},...,f_{1}. compute 
+% DECONVOLVE_BATCH Given the set of polynomials f_{0},...,f_{1}. compute
 % the series of deconvolutions h_{1} = f_{1}/f_{0} h_{2} = f_{2}/f_{1},...
 % Perform the deconvolutions by using the structure
 % diag [ C(f_{1}) C(f_{2}) ... ] [h1 h2 ...]^{T} = [f_{0} f_{1} ...]^{T}
@@ -33,17 +33,17 @@ end
 % Obtain theta such that the ratio of max element to min element is
 % minimised
 
-% 
+%
 % y - Preprocess
-% n - Dont preprocess 
+% n - Dont preprocess
 global SETTINGS
 SETTINGS.PREPROC_DECONVOLUTIONS;
 
-switch SETTINGS.PREPROC_DECONVOLUTIONS
-    case 'y'
-        theta = GetOptimalTheta(arr_fx,vDeg_arr_fx);
-    case 'n'
-        theta = 1;
+if( SETTINGS.PREPROC_DECONVOLUTIONS)
+    
+    theta = GetOptimalTheta(arr_fx,vDeg_arr_fx);
+else
+    theta = 1;
 end
 
 

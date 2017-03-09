@@ -7,33 +7,35 @@ function [] = o_gcd_Univariate_2Polys(ex_num, emin, emax, mean_method, bool_alph
 %
 % ex_num : (String) Example Number
 %
-% el : Noise lower level
+% el : (Float) Noise lower level
 %
-% em : Noise upper level
+% em : (Float) Noise upper level
 %
-% mean_method :
+% mean_method : (String)
 %       'None'
 %       'Geometric Mean Matlab Method'
 %       'Geometric Mean My Method'
 %
-% bool_alpha_theta : 'y' or 'n' (Include/ Exclude Preprocessing)
+% bool_alpha_theta (Boolean)
+%       * true :
+%       * false :
 %
-% low_rank_approx_method:
+% low_rank_approx_method: (String) 
 %       'Standard SNTLN'
 %       'Standard STLN'
 %       'None'
 %
-% apf_method :
+% apf_method :(String)
 %       'Standard Nonlinear'
 %       'Standard Linear'
 %       'None'
 %
 % % Example
 %
-% >> o_gcd_Univariate_2Polys('1',1e-12,1e-10,'Geometric Mean Matlab Method', true,'None','None')
-% >> o_gcd_Univariate_2Polys('1',1e-12,1e-10,'Geometric Mean Matlab Method', true,'Standard STLN','Standard APF Nonlinear')
+% >> o_gcd_Univariate_2Polys('1', 1e-12, 1e-10, 'Geometric Mean Matlab Method', true, 'None', 'None')
+% >> o_gcd_Univariate_2Polys('1', 1e-12, 1e-10, 'Geometric Mean Matlab Method', true, 'Standard STLN', 'Standard APF Nonlinear')
 %
-% >> o_gcd_Univariate_2Polys(ex_num,1e-12,1e-10,'Geometric Mean Matlab Method', true,'Standard STLN', 'Standard APF Nonlinear')
+% >> o_gcd_Univariate_2Polys(ex_num, 1e-12, 1e-10, 'Geometric Mean Matlab Method', true,'Standard STLN', 'Standard APF Nonlinear')
 % >> ex_num = 'Custom:m=10n=5t=2.low=-1high=2'
 
 % Initialise global variables
@@ -42,21 +44,14 @@ global SETTINGS
 % Set Problem Type : Either 'GCD' or 'Roots'
 problem_type = 'GCD';
 
-% % Add subfolders
+% Add subfolders
 restoredefaultpath
 
-addpath('Build Matrices',...
-    'Formatting',...
-    'Get Cofactor Coefficients',...
-    'Get GCD Coefficients',...
-    'GCD Finding',...
-    'Plotting',...
-    'Preprocessing');
+% Determine where your m-file's folder is.
+folder = fileparts(which(mfilename)); 
 
-addpath(genpath('APF'));
-addpath(genpath('Examples'));
-addpath(genpath('Get GCD Degree'));
-addpath(genpath('Low Rank Approximation'));
+% Add that folder plus all subfolders to the path.
+addpath(genpath(folder));
 
 % % Ensure that minimum noise level is less than maximum noise level
 if emin > emax
@@ -77,6 +72,10 @@ SetGlobalVariables(problem_type, ex_num, emin, emax, mean_method, ...
 [fx_noisy, ~] = AddVariableNoiseToPoly(fx_exact, emin, emax);
 [gx_noisy, ~] = AddVariableNoiseToPoly(gx_exact, emin, emax);
 
+% Get degree of polynomials f(x,y) and g(x,y)
+m = GetDegree(fx_noisy);
+n = GetDegree(gx_noisy);
+
 LineBreakLarge()
 fprintf([mfilename ' : ' sprintf('Degree of the GCD is : %s \n', int2str(GetDegree(dx_exact)))])
 LineBreakLarge()
@@ -96,12 +95,12 @@ gx = gx_noisy;
 % Get the GCD d(x) of f(x) and g(x) by my method
 
 % Get upper and lower bound of degree of GCD.
-upper_bound = min(GetDegree(fx),GetDegree(gx));
-lower_bound = 1;
-deg_limits = [lower_bound,upper_bound];
+upperLimit = min(m, n);
+lowerLimit = 1;
+limits = [lowerLimit, upperLimit];
 
 % Compute degree of gcd by my method
-[fx_calc, gx_calc, dx_calc, ux_calc, vx_calc, ~, ~] = o_gcd_mymethod_Univariate_2Polys(fx, gx, deg_limits);
+[fx_calc, gx_calc, dx_calc, ux_calc, vx_calc, ~, ~] = o_gcd_mymethod_Univariate_2Polys(fx, gx, limits);
 
 % Get distance of the computed d(x) from the exact d(x)
 

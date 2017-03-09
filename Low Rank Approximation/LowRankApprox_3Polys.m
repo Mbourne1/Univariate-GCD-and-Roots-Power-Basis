@@ -5,35 +5,35 @@ function [fx_lr, gx_lr, hx_lr, ux_lr, vx_lr, wx_lr, alpha_lr, theta_lr] ...
 %
 % % Inputs
 %
-% fx : Coefficients of the polynomial f(x)
+% fx : (Vector) Coefficients of the polynomial f(x)
 %
-% gx : Coefficients of the polynomial g(x)
+% gx : (Vector) Coefficients of the polynomial g(x)
 %
-% hx : Coefficients of the polynomial h(x)
+% hx : (Vector) Coefficients of the polynomial h(x)
 %
-% alpha : Optimal value of \alpha
+% alpha : (Float) Optimal value of \alpha
 %
-% theta : Optimal value of \theta
+% theta : (Float) Optimal value of \theta
 %
-% k : Index of Sylvester subresultant matrix S_{k}(f,g)
+% k : (Int) Index of Sylvester subresultant matrix S_{k}(f,g)
 %
 % % Outputs
 %
-% fx_lr :
+% fx_lr : (Vector)
 %
-% gx_lr :
+% gx_lr : (Vector)
 %
-% hx_lr :
+% hx_lr : (Vector)
 %
-% ux_lr :
+% ux_lr : (Vector)
 %
-% vx_lr :
+% vx_lr : (Vector)
 %
-% wx_lr :
+% wx_lr : (Vector)
 %
-% alpha_lr :
+% alpha_lr : (Float)
 %
-% theta_lr :
+% theta_lr : (Float)
 global SETTINGS
 
 % Perform SNTLN to obtain low rank approximation
@@ -60,7 +60,7 @@ switch SETTINGS.LOW_RANK_APPROXIMATION_METHOD
         a_hw = alpha.* GetWithThetas(hx,theta);
         
         % Get u(\omega) and v(\omega)
-        [uw,vw,ww] = GetCofactorsCoefficients_3Polys(fw,a_gw,a_hw,k);
+        [uw, vw, ww] = GetCofactorsCoefficients_3Polys(fw,a_gw,a_hw,k);
         
         % Get u(x) and v(x)
         ux_lr = GetWithoutThetas(uw,theta);

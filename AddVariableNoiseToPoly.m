@@ -1,4 +1,4 @@
-function [f_noisy,noisevector] = AddVariableNoiseToPoly(f, el, eu)
+function [f_noisy, noisevector] = AddVariableNoiseToPoly(f, el, eu)
 % This function adds noise in the componentwise sense to the coefficients
 % of the Bernstein basis polynomial.
 % The upper threshold \epsilon is a random variable between two values
@@ -8,19 +8,19 @@ function [f_noisy,noisevector] = AddVariableNoiseToPoly(f, el, eu)
 % Inputs:
 %
 %
-% f :- exact coefficients of polynomial f, in the Bernstein basis.
+% f : (Vector) Coefficients of polynomial f(x), in the Bernstein basis.
 %
-% el:- Lower threshold of the epsilon value (Noise/Signal)
+% el : (Float) Lower threshold of the epsilon value (Noise/Signal)
 %
-% eu:- Upper threshold of the epsilon value (Noise/Signal)
+% eu: (Float) Upper threshold of the epsilon value (Noise/Signal)
 %
 %
 % Outputs:
 %
 %
-% f_noisy :- the noisy coefficients of perturbed polynomial f.
+% f_noisy :(Vector) the noisy coefficients of perturbed polynomial f(x).
 %
-% noisevector:- vector of the noise added to f_exact.
+% noisevector : (Vector) Vector contains the noise added to f_exact.
 
 
 global SETTINGS

@@ -1,12 +1,14 @@
 function der_f = Differentiate(fx)
 % Get the derivative of the input polynomial f(x)
-
+%
 % Inputs.
 %
-% fx :  Coefficients of polynomial f(x)
+% fx : (Vector) Coefficients of polynomial f(x)
 %
+% % Outputs
+%
+% der_f : (Vector) Coefficients of the polynomail f'(x)
 
-%%
 
 % Get the degree of polynomial f(x)
 m = GetDegree(fx);

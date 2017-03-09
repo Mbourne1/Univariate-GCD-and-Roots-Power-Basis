@@ -1,5 +1,5 @@
 function [ux_lra, vx_lra, fx_lra, gx_lra, dx_lra, alpha_lra, theta_lra] ...
-    = APF(ux, vx, fx, gx, alpha, theta, k)
+    = APF_2Polys(ux, vx, fx, gx, alpha, theta, k)
 % Get the coefficients of the GCD d(x), of f(x) and g(x), given u(x) and v(x).
 % This function has two branches. d(x) can be computed either by utilising
 % [u(x), v(x),f(x) and g(x)], or just [u(x) and f(x)]

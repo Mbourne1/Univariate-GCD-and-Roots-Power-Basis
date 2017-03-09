@@ -12,7 +12,7 @@ function [arr_hx] = Deconvolve_Batch_Constrained(arr_fx,vMult)
 %
 % % Outputs.
 %
-% arr_hx : Array of polynomials h(x) where h_{i}(x) = f_{i-1}(x) / f_{i}(x) 
+% arr_hx : Array of polynomials h(x) where h_{i}(x) = f_{i-1}(x) / f_{i}(x)
 
 
 % Get the number of polynomials in the set arr_fx
@@ -32,17 +32,17 @@ for i = 1:1:nPolys_arr_hx
     vDeg_arr_hx(i) = vDeg_arr_fx(i)-vDeg_arr_fx(i+1);
 end
 
-% 
+%
 % y - Preprocess
-% n - Dont preprocess 
+% n - Dont preprocess
 global SETTINGS
 SETTINGS.PREPROC_DECONVOLUTIONS;
 
-switch SETTINGS.PREPROC_DECONVOLUTIONS
-    case 'y'
-        theta = GetOptimalTheta(arr_fx,vDeg_arr_fx);
-    case 'n'
-        theta = 1;
+if( SETTINGS.PREPROC_DECONVOLUTIONS)
+    
+    theta = GetOptimalTheta(arr_fx,vDeg_arr_fx);
+else
+    theta = 1;
 end
 
 
@@ -81,13 +81,13 @@ arr_pw = cell(length(unique_vMult),1);
 for i = 1:1:length(unique_vMult)
     mult = unique_vMult(i);
     deg = GetDegree(arr_fx{mult}) - GetDegree(arr_fx{mult+1});
-       
+    
     arr_pw{i} = x_temp(1:deg+1);
     x_temp(1:deg+1) = [];
 end
 
 
-% % 
+% %
 % %
 % Get the polynomials p_{i}(x) repeated to give the set of polynomials
 % h_{i}(x).
@@ -102,21 +102,21 @@ arr_hw = cell(nPolys_arr_hx,1);
 
 % Get the set of polynomials h_{i}(\omega)
 for i = 1:1:nEntries_px
-        
+    
     if i == 1
         nReps = unique_vMult(i);
     else
         nReps = (unique_vMult(i) - unique_vMult(i-1));
     end
-        
+    
     for j = 1:1:nReps
         arr_hw{count,1} = arr_pw{i,1};
-        count = count + 1; 
+        count = count + 1;
     end
     
 end
 
-% Get the set of polynomials h_{i}(x) 
+% Get the set of polynomials h_{i}(x)
 for i = 1:1:nPolys_arr_hx
     arr_hx{i,1} = GetWithoutThetas(arr_hw{i,1},theta);
 end
@@ -125,7 +125,7 @@ end
 end
 
 function LHS_Matrix = BuildC(arr_fx,vMult)
-% % 
+% %
 % %
 % Build the LHS Coefficient matrix
 
@@ -133,12 +133,14 @@ function LHS_Matrix = BuildC(arr_fx,vMult)
 % C(f_{1},...f_{m1}), C(f_{m1+1},...,f_{m2}),...
 % C(f_{1},...,f_{m1}) = [T(f1) ; T(f2) ; ... T(fm1)]
 
-% Get number of distinct polynomials in h_{i} 
+% Get number of distinct polynomials in h_{i}
 nDistinct_hx = length(vMult);
+
+arr_Cf = cell(1,nDistinct_hx);
 
 for i = 1:1:nDistinct_hx
     
-    if i > 1 
+    if i > 1
         old_mult = vMult(i-1);
     else % No previous multiplicity
         old_mult = 0;
@@ -146,9 +148,12 @@ for i = 1:1:nDistinct_hx
     
     new_mult = vMult(i);
     
-    Cf{i} = [];
+    arr_Cf{i} = [];
     
     % for each polynomial f_{i} in the interval f_{m_{i-1}+1}...f_{m_{i}}
+    
+    arr_Tf = cell((new_mult+1) - (old_mult+1+1),1);
+    
     for j = (old_mult+1+1) : 1 : (new_mult+1)
         
         % Get the degree of the previous polynomial f_{i-1}(x)
@@ -163,16 +168,16 @@ for i = 1:1:nDistinct_hx
         deg_hx = deg_fx_prev - deg_fx;
         
         % Build the Cauchy like matrix T_{m_{i} - m_{i-1}}(f_{i})
-        Tf{j} = BuildT1(fx, deg_hx);
+        arr_Tf{j} = BuildT1(fx, deg_hx);
         
         % Stack beneath all other T_{f} which are multiplied by [_{i}(x)
-        Cf{i} = [Cf{i} ; Tf{j}];
+        arr_Cf{i} = [arr_Cf{i} ; arr_Tf{j}];
     end
     
     
 end
 
-LHS_Matrix = blkdiag(Cf{:});
+LHS_Matrix = blkdiag(arr_Cf{:});
 
 
 end

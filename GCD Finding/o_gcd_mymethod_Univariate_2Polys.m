@@ -6,56 +6,49 @@ function [fx_o, gx_o, dx_o, ux_o, vx_o, alpha_o, theta_o, t , GM_fx,GM_gx] =...
 %
 % % Inputs.
 %
-% fx : Coefficients of polynomial f(x).
+% fx : (Vector) Coefficients of polynomial f(x).
 %
-% gx : Coefficients of polynomial g(x).
+% gx : (Vector) Coefficients of polynomial g(x).
 %
-% deg_limits : Specifiy upper and lower bound of the degree of the GCD
+% deg_limits : [(Int) (Int)] Specifiy upper and lower bound of the degree of the GCD
 % d(x), typically set when o_gcd_mymethod() is called from a root solving
 % problem, where deg_limits have been predetermined.
 %
 % % Outputs
 % 
-% fx_o : Coefficients of polynomial f(x)
+% fx_o : (Vector) Coefficients of polynomial f(x)
 %
-% gx_o : Coefficients of polynomial g(x)
+% gx_o : (Vector) Coefficients of polynomial g(x)
 %
-% dx_o : Coefficients of polynomial d(x)
+% dx_o : (Vector) Coefficients of polynomial d(x)
 %
-% ux_o : Coefficients of polynomial u(x)
+% ux_o : (Vector) Coefficients of polynomial u(x)
 % 
-% vx_o : Coefficients of polynomial v(x)
+% vx_o : (Vector) Coefficients of polynomial v(x)
 %
-% alpha_o : Optimal value of \alpha
+% alpha_o : (Float) Optimal value of \alpha
 %
-% theta_o : Optimal value of \theta
+% theta_o : (Float) Optimal value of \theta
 
 
 
 % Preprocess the polynomials f(x) and g(x)
 [GM_fx, GM_gx, alpha, theta] = Preprocess_2Polys(fx, gx);
 
-% Get f(x) normalised by mean
+% Get f(x) and g(x) normalised by corresponding means
 fx_n = fx./ GM_fx;
-
-% Get g(x) normalised by mean
 gx_n = gx./ GM_gx;
 
-% Get f(\omega) from f(x)
+% Get f(\omega) from f(x) and g(\omega) from g(x)
 fw = GetWithThetas(fx_n, theta);
-
-% Get g(\omega) from g(x)
 gw = GetWithThetas(gx_n, theta);
 
 % Get the degree of the GCD with limits defined
 t = GetGCDDegree_2Polys(fw, alpha.*gw, deg_limits);
 
-LineBreakLarge();
-
 % Print the degree of the GCD
+LineBreakLarge();
 fprintf([mfilename ' : ' sprintf('Degree of GCD : %s \n',int2str(t))]);
-
-
 
 if (t == 0)
     dx_o = 1;
@@ -78,7 +71,7 @@ end
 
 
 [ux_lra, vx_lra, fx_lra, gx_lra, dx_lra, alpha_lra, theta_lra] = ...
-    APF(ux_lr, vx_lr, fx_lr, gx_lr, alpha_lr, theta_lr, t);
+    APF_2Polys(ux_lr, vx_lr, fx_lr, gx_lr, alpha_lr, theta_lr, t);
 
 % Get f(x) and g(x)
 fx_o = fx_lra;

@@ -5,27 +5,32 @@ function [] = o_Deconvolution(ex_num, emin, bool_preproc)
 %
 % % Inputs
 %
-% ex_num : Example number (String)
+% ex_num : (String) Example number (String)
 %
-% emin : Lower noise level
+% emin : (Float) Lower noise level
 %
-% emax : Upper noise level
+% emax : (Float) Upper noise level
 %
 % % Outputs.
 %
+% Outputs are printed to file
 %
 % Example
 %
-% >> o_Deconvolution('1',1e-10,'y')
+% >> o_Deconvolution('1',1e-10, true)
+
 
 % Add path for examples
 restoredefaultpath; savepath
-addpath (...
-    'Build Matrices',...
-    'Deconvolution',...
-    'Formatting',...
-    'Preprocessing'...
-    );
+
+% Add subfolders
+restoredefaultpath
+
+% Determine where your m-file's folder is.
+folder = fileparts(which(mfilename)); 
+
+% Add that folder plus all subfolders to the path.
+addpath(genpath(folder));
 
 addpath(genpath('../Examples'));
 
@@ -43,29 +48,35 @@ SETTINGS.PREPROC_DECONVOLUTIONS = bool_preproc;
 % % Get the factor array and multiplicity vector
 [factor_mult_arr_f] = Deconvolution_Examples_Univariate(ex_num);
 
-factor = factor_mult_arr_f(:,1);
-vMult = double(factor_mult_arr_f(:,2));
+% Get the symbolic factors of f(x)
+vFactors = factor_mult_arr_f(:,1);
 
-% Get highest power of any factor
-highest_pwr = max(vMult);
+% Get the multiplicities of the factors of f(x)
+vMultiplicity = double(factor_mult_arr_f(:,2));
 
-% %
-% %
+% Get highest power of any of the factors of f(x)
+highest_pwr = max(vMultiplicity);
+
 % Generate polynomials f_{0}(x) ,..., f_{m}(x) = 1. Where each f_{i+1}(x) is
 % the f_{i+1} = GCD(f_{i},f'_{i}).
 arr_sym_fx = cell(highest_pwr+1, 1);
-vDeg_fx = zeros(highest_pwr+1, 1);
+vDegree_fx = zeros(highest_pwr+1, 1);
 
-for i = 0:1:highest_pwr
+% Get the number of polynomials in the array f_{i}(x)
+nPolys_arr_fx = highest_pwr + 1;
+
+for i = 1 : 1 : nPolys_arr_fx
     
-    % Get the multiplicities of the roots of f_{i+1}
-    mults = ((vMult - i) + abs(vMult-i)) ./2;
+    % Get the multiplicities of the factors of f_{i+1}(x). The
+    % multiplicities of each factor are one less than the previous
+    % f_{i}(x).
+    vMultiplicities = ((vMultiplicity - (i-1)) + abs(vMultiplicity - (i-1))) ./2;
     
     % Get the symbolic polynomial f_{i+1}
-    arr_sym_fx{i+1} = prod(factor.^(mults));
+    arr_sym_fx{i} = prod(vFactors.^(vMultiplicities));
     
     % Get the degree of polynomial f_{i+1}(x)
-    vDeg_fx(i+1) = double(feval(symengine, 'degree', (arr_sym_fx{i+1})));
+    vDegree_fx(i) = double(feval(symengine, 'degree', (arr_sym_fx{i})));
 end
 
 % Display Polynomial f(x) in symbolic form
@@ -73,45 +84,45 @@ display(arr_sym_fx{1})
 
 % Get the degree structure of the polynomials h_{i} where h_{i} =
 % f_{i-1}(x)/f_{i}(x)
-vDeg_arr_hx = diff(vDeg_fx);
+vDegree_arr_hx = diff(vDegree_fx);
 
 % Get the degree structure of the polynomials w_{i} where w_{i} =
 % h_{i-1}/h_{i}
-vDeg_arr_wx = diff([vDeg_arr_hx; 0]);
+vDegree_arr_wx = diff([vDegree_arr_hx; 0]);
 
-% Get the multiplicities of the roots.
-vMultiplicities = find(vDeg_arr_wx~=0);
+% Get the multiplicity of each of the factors of f(x) by finding where the
+% degree of the polynomials w_{i}(x) != 0.
+vMultiplicities = find(vDegree_arr_wx ~= 0);
 
-% Get the sequence of polynomials h_{i}(x) in symbolic form
-sym_arr_h = cell(length(arr_sym_fx)-1, 1);
-
-for i = 1 : 1 : length(arr_sym_fx)-1
-    sym_arr_h{i} = arr_sym_fx{i} / arr_sym_fx{i+1};
-end
-
-% %
-% %
-% Get coefficients vectors of f_{i}(x) and h_{i}(x)
-
-% Get the number of polynomials in the array of f_{i}(x)
-nPolys_arr_fx = size(arr_sym_fx, 1);
 
 % Get the number of polynomials in the solution array h_{i}(x)
-nPolys_arr_hx = size(arr_sym_fx, 1) - 1;
+nPolys_arr_hx = nPolys_arr_fx - 1;
+
+
+% Get the sequence of polynomials h_{i}(x) in symbolic form
+sym_arr_hx = cell(nPolys_arr_hx, 1);
+
+for i = 1 : 1 : nPolys_arr_hx
+    
+    sym_arr_hx{i} = arr_sym_fx{i} / arr_sym_fx{i+1};
+    
+end
+
 
 % Initialise the arrays f_{i}(x) and h_{i}(x)
-arr_fx = cell(nPolys_arr_fx , 1);
+arr_fx_exact = cell(nPolys_arr_fx , 1);
 arr_hx_exact = cell(nPolys_arr_hx , 1);
 
 for i = 1:1:nPolys_arr_fx
+    
     if i <= nPolys_arr_hx
         
-        arr_fx{i,1} = sym2poly(arr_sym_fx{i})';
-        arr_hx_exact{i,1} = sym2poly(sym_arr_h{i})';
+        arr_fx_exact{i,1} = sym2poly(arr_sym_fx{i})';
+        arr_hx_exact{i,1} = sym2poly(sym_arr_hx{i})';
         
     else
         
-        arr_fx{i,1} = 1;
+        arr_fx_exact{i,1} = 1;
         
     end
     
@@ -125,7 +136,7 @@ arr_fx_noisy = cell(nPolys_arr_fx, 1);
 
 for i = 1 : 1 : nPolys_arr_fx
     
-    arr_fx_noisy{i,1} = AddNoiseToPoly(arr_fx{i},emin);
+    arr_fx_noisy{i,1} = AddNoiseToPoly(arr_fx_exact{i},emin);
     
 end
 

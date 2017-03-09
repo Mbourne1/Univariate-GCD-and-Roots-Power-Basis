@@ -137,7 +137,7 @@ switch SETTINGS.ROOTS_HX_COMPUTATION_METHOD
         
         
     case 'From GCD Computation'
-        fprintf([mfilename ' : ' sprintf('Deconvolution Method : %s',SETTINGS.ROOTS_HX)]);
+        fprintf([mfilename ' : ' sprintf('Deconvolution Method : %s',SETTINGS.ROOTS_HX_COMPUTATION_METHOD)]);
         arr_hx = arr_ux;
         
     otherwise

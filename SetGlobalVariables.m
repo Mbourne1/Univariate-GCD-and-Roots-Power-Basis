@@ -53,7 +53,7 @@ SETTINGS.BOOL_ALPHA_THETA = bool_alpha_theta;
 
 
 % Threshold defined for use in computing the degree of the GCD
-SETTINGS.THRESHOLD = 1;
+SETTINGS.THRESHOLD = 2;
 SETTINGS.THRESHOLD_RANK = 1e-5;
 
 % (Roots Only)

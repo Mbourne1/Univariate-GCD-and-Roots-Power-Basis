@@ -37,15 +37,14 @@ nCoefficients_fx = sum(vDeg_arr_fx+1);
 % Define N to be the number of coefficients of all h_{i}
 nCoefficients_hx = sum(vDeg_arr_hx+1);
 
-% 
-% y - Preprocess
-% n - Dont preprocess 
-SETTINGS.PREPROC_DECONVOLUTIONS;
 
-switch SETTINGS.PREPROC_DECONVOLUTIONS
-    case 'y'
+% % Preprocess 
+
+if(SETTINGS.PREPROC_DECONVOLUTIONS)
+
         theta = GetOptimalTheta(arr_fx,vDeg_arr_fx);
-    case 'n'
+        
+else
         theta = 1;
 end
 

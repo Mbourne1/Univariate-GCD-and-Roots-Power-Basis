@@ -4,23 +4,29 @@ function [fx_lr, gx_lr, ux_lr, vx_lr, alpha_lr, theta_lr] = LowRankApprox_2Polys
 %
 % % Inputs
 %
-% [fx, gx] : Coefficients of the polynomial f(x) and g(x)
+% fx : (Vector) Coefficients of the polynomial f(x) 
 %
-% alpha : Optimal value of \alpha
+% gx : (Vector) Coefficients of the polynomial g(x)
 %
-% theta : Optimal value of \theta
+% alpha : (Float) Optimal value of \alpha
 %
-% k : Index of Sylvester subresultant matrix S_{k}(f,g)
+% theta : (Float) Optimal value of \theta
+%
+% k : (Int) Index of Sylvester subresultant matrix S_{k}(f,g)
 %
 % % Outputs
 %
-% [fx_lr, gx_lr] : Coefficients of f(x) and g(x)
+% fx_lr : (Vector) Coefficients of polynomial f(x)
 %
-% [ux_lr, vx_lr] : Coefficients of u(x) and v(x)
+% gx_lr : (Vector) Coefficients of g(x)
 %
-% alpha_lr :
+% ux_lr : (Vector) Coefficients of u(x) 
 %
-% theta_lr :
+% vx_lr : (Vector) Coefficients of v(x)
+%
+% alpha_lr : (Float)
+%
+% theta_lr : (Float)
 global SETTINGS
 
 % Perform SNTLN to obtain low rank approximation
@@ -28,19 +34,19 @@ switch SETTINGS.LOW_RANK_APPROXIMATION_METHOD
     case 'Standard STLN'
         
         % Get f(\omega) and \alpha.*g(\omega)
-        fw = GetWithThetas(fx,theta);
-        a_gw = alpha.* GetWithThetas(gx,theta);
+        fw = GetWithThetas(fx, theta);
+        a_gw = alpha.* GetWithThetas(gx, theta);
         
         % Get Low Rank Approximation of S_{k}(f,g)
         [fw_lr, a_gw_lr, uw_lr, vw_lr] = STLN(fw, a_gw, k);
         
         % Get f(x) and g(x) output
-        fx_lr = GetWithoutThetas(fw_lr,theta);
-        gx_lr = GetWithoutThetas(a_gw_lr,theta) ./ alpha;
+        fx_lr = GetWithoutThetas(fw_lr, theta);
+        gx_lr = GetWithoutThetas(a_gw_lr, theta) ./ alpha;
         
         % Get u(x) and v(x) output
-        ux_lr = GetWithoutThetas(uw_lr,theta);
-        vx_lr = GetWithoutThetas(vw_lr,theta);
+        ux_lr = GetWithoutThetas(uw_lr, theta);
+        vx_lr = GetWithoutThetas(vw_lr, theta);
         
         % Get \alpha and \theta output
         alpha_lr = alpha;
@@ -75,21 +81,21 @@ switch SETTINGS.LOW_RANK_APPROXIMATION_METHOD
         % Get f(\omega)
         fw = GetWithThetas(fx,theta);
         
-        [fw_lr,a_gw_lr,uw_lr,vw_lr] = STLN_Derivative_Constraint(fw,k);
+        [fw_lr, a_gw_lr, uw_lr, vw_lr] = STLN_Derivative_Constraint(fw,k);
         
         % Get f(x) = f(x) + \delta f(x)
-        fx_lr = GetWithoutThetas(fw_lr,theta);
-        gx_lr = GetWithoutThetas(a_gw_lr,theta)./alpha;
+        fx_lr = GetWithoutThetas(fw_lr, theta);
+        gx_lr = GetWithoutThetas(a_gw_lr, theta)./alpha;
         
-        ux_lr = GetWithoutThetas(uw_lr,theta);
-        vx_lr = GetWithoutThetas(vw_lr,theta);
+        ux_lr = GetWithoutThetas(uw_lr, theta);
+        vx_lr = GetWithoutThetas(vw_lr, theta);
         
         theta_lr = theta;
         alpha_lr = alpha;
         
     case 'Standard SNTLN'
         
-        [fx_lr, gx_lr, ux_lr, vx_lr, alpha_lr, theta_lr] = SNTLN(fx,gx,alpha,theta,k);
+        [fx_lr, gx_lr, ux_lr, vx_lr, alpha_lr, theta_lr] = SNTLN(fx, gx, alpha, theta, k);
         
         
         
