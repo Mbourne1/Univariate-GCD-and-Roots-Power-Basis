@@ -15,6 +15,8 @@ function [arr_hx] = Deconvolve_Batch_Constrained(arr_fx,vMult)
 % arr_hx : Array of polynomials h(x) where h_{i}(x) = f_{i-1}(x) / f_{i}(x)
 
 
+global SETTINGS
+
 % Get the number of polynomials in the set arr_fx
 nPolys_arr_fx = size(arr_fx,1);
 nPolys_arr_hx = size(arr_fx,1) - 1;
@@ -32,50 +34,32 @@ for i = 1:1:nPolys_arr_hx
     vDeg_arr_hx(i) = vDeg_arr_fx(i)-vDeg_arr_fx(i+1);
 end
 
-%
-% y - Preprocess
-% n - Dont preprocess
-global SETTINGS
-SETTINGS.PREPROC_DECONVOLUTIONS;
+% % Preprocess
 
-if( SETTINGS.PREPROC_DECONVOLUTIONS)
-    
+if( SETTINGS.PREPROC_DECONVOLUTIONS)    
     theta = GetOptimalTheta(arr_fx,vDeg_arr_fx);
 else
     theta = 1;
 end
 
 
-% Initialise a cell-array for f(w)
-arr_fw = cell(nPolys_arr_fx,1);
+% Get f(\omega) from f(x)
+arr_fw = GetPolynomialArrayWithThetas(arr_fx, theta);
 
-% for each f_{i} get fw_{i}
-for i = 1:1:nPolys_arr_fx
-    arr_fw{i,1} = GetWithThetas(arr_fx{i,1},theta);
-end
-
-
-% %
-% %
 % Build LHS Matrix
 C_fw = BuildC(arr_fw,vMult);
 
-% %
-% %
-% Build the RHS vector
+% % Build the RHS vector
+RHS_vec = BuildRHSF(arr_fw);
 
-% RHS vector consists of f_{1},...,f_{m_{i}} where m_{i} is the highest
-% degree of any root of f_{0}(x).
-RHS_vec = [];
-for i = 1:1:length(arr_fw)-1
-    RHS_vec = [RHS_vec ; arr_fw{i}];
-end
+% % Solve
+vec_pw = SolveAx_b(C_fw, RHS_vec);
 
-x = SolveAx_b(C_fw,RHS_vec);
+x_temp = vec_pw;
 
-x_temp = x;
-%for i = 1:1:length(vMult)
+% Get unique multiplicities of factors of f(x)
 unique_vMult = unique(vMult);
+
 
 arr_pw = cell(length(unique_vMult),1);
 for i = 1:1:length(unique_vMult)
@@ -92,7 +76,7 @@ end
 % Get the polynomials p_{i}(x) repeated to give the set of polynomials
 % h_{i}(x).
 
-nEntries_px = size(arr_pw,1);
+nEntries_arr_px = size(arr_pw, 1);
 
 % Initialise a counter
 count = 1;
@@ -101,7 +85,7 @@ count = 1;
 arr_hw = cell(nPolys_arr_hx,1);
 
 % Get the set of polynomials h_{i}(\omega)
-for i = 1:1:nEntries_px
+for i = 1:1:nEntries_arr_px
     
     if i == 1
         nReps = unique_vMult(i);
@@ -117,9 +101,8 @@ for i = 1:1:nEntries_px
 end
 
 % Get the set of polynomials h_{i}(x)
-for i = 1:1:nPolys_arr_hx
-    arr_hx{i,1} = GetWithoutThetas(arr_hw{i,1},theta);
-end
+arr_hx = GetPolynomialArrayWithoutThetas(arr_hw, theta);
+
 
 
 end

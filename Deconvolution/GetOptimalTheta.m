@@ -1,4 +1,19 @@
-function theta = GetOptimalTheta(arr_fx,vDeg_arr_fx)
+function theta = GetOptimalTheta(arr_fx, vDeg_arr_fx)
+% Compute optimal values of theta for the convolution matrix in the
+% deconvolution problem.
+%
+% % Inputs
+%
+% arr_fx : (Array of Vectors)
+%
+% vDeg_arr_x : (Vector) Degree of each of the polynomials f_{i}(x)
+%
+%
+% % Outputs
+%
+% theta : (Float) Optimal value of \theta
+
+
 
 f = [1 -1 0];
 

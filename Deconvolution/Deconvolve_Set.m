@@ -1,4 +1,4 @@
-function [arr_hx] = Deconvolve_Set(arr_fx,DECONVOLUTION_METHOD)
+function [arr_hx] = Deconvolve_Set(arr_fx, DECONVOLUTION_METHOD)
 % Deconvolve_Set
 % Deconvolve the set of polynomials f_{i}(x), where the polynomails
 % f_{i}(x) are outputs of a sequence of GCD computations in the Tobey and
@@ -17,16 +17,20 @@ function [arr_hx] = Deconvolve_Set(arr_fx,DECONVOLUTION_METHOD)
 % arr_hx : Array of polynomials h_{i}(x)
 
 % Get the number of polynomials in array of f_{i}
-nPolys_fx = size(arr_fx,1);
+nPolys_fx = size(arr_fx, 1);
+
+fprintf(['Deconvolution Method : ' DECONVOLUTION_METHOD '']);
 
 switch DECONVOLUTION_METHOD
     
     case 'Separate'
         
+        % Initialise an array 
         arr_hx = cell(nPolys_fx-1,1);
         
+        % For each pair f_{i}, f_{i+1} perform deconvolution
         for i = 1:1:nPolys_fx-1
-            arr_hx{i} = Deconvolve(arr_fx{i},arr_fx{i+1}) ;
+            arr_hx{i} = Deconvolve(arr_fx{i}, arr_fx{i+1}) ;
         end
         
     case 'Batch'
@@ -36,6 +40,7 @@ switch DECONVOLUTION_METHOD
             arr_fx{i} = arr_fx{i}./arr_fx{i}(1,1);
         end
         
+        % Deconvolve batch
         arr_hx = Deconvolve_Batch(arr_fx);
         
     case 'Batch With STLN'
@@ -63,10 +68,10 @@ switch DECONVOLUTION_METHOD
         % Get the degree structure of the polynomials w_{i}
         vDeg_wx = diff([vDeg_hx; 0]);
         
-        
+        % Get the vector of multiplicities of each of the factors of f(x)
         vMult = find(vDeg_wx~=0);
         
-        arr_hx = Deconvolve_Batch_Constrained(arr_fx,vMult);
+        arr_hx = Deconvolve_Batch_Constrained(arr_fx, vMult);
         
     case 'Batch Constrained With STLN'
         
@@ -87,7 +92,7 @@ switch DECONVOLUTION_METHOD
         % Get the degree structure of the polynomials w_{i}
         vDeg_wx = diff([vDeg_hx; 0]);
         
-        
+        % Get the vector of multiplicities of each of the factors of f(x)
         vMult = find(vDeg_wx~=0);
         
         arr_hx = Deconvolve_Batch_Constrained_With_STLN(arr_fx,vMult);
