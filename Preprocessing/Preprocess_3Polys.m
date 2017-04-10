@@ -1,5 +1,5 @@
-function [GM_fx, GM_gx, GM_hx, alpha, theta] = Preprocess_3Polys(fx, gx, hx)
-% Preprocess(fx,gx)
+function [GM_fx, GM_gx, GM_hx, alpha, beta, theta] = Preprocess_3Polys(fx, gx, hx)
+% Preprocess(fx, gx, hx)
 %
 % Preprocess the input polynomials to obtain geometric means of the
 % coefficients of f(x) and g(x), and optimal values of alpha and theta such
@@ -7,27 +7,24 @@ function [GM_fx, GM_gx, GM_hx, alpha, theta] = Preprocess_3Polys(fx, gx, hx)
 %
 % Inputs.
 %
-% fx : Vector of coefficients of polynomial f(x)
+% fx : (Vector) Vector of coefficients of polynomial f(x)
 %
-% gx : Vector of coefficients of polynomial g(x)
+% gx : (Vector) Vector of coefficients of polynomial g(x)
 %
-% hx : Vector of coefficients of polynomial h(x)
+% hx : (Vector) Vector of coefficients of polynomial h(x)
 %
 % % Outputs
 %
-% [GM_fx, GM_gx, GM_hx] : Geometric mean of entries of f(x), g(x) and h(x)
+% [GM_fx, GM_gx, GM_hx] : [Float Float Float] Geometric mean of entries 
+% of f(x), g(x) and h(x)
 %
-% alpha :
+% alpha : (Float)
+% 
+% beta : (Float)
 %
-% theta :
+% theta : (Float)
 
 global SETTINGS
-
-% Get the degree of polynomials f(x), g(x) and h(x)
-m = GetDegree(fx);
-n = GetDegree(gx);
-o = GetDegree(hx);
-
 
 % Get Mean of entries of f(x) in C_{n-k}(f)
 GM_fx = GetMean(fx);
@@ -45,67 +42,21 @@ gx_n = gx./ GM_gx;
 hx_n = hx./ GM_hx;
 
 switch SETTINGS.BOOL_ALPHA_THETA
-    case 'y'
+    case true
         
-        % Get opitmal values of alpha and theta
+        % Get opitmal values of alpha, beta and theta        
+        [alpha, beta, theta] = GetOptimalAlphaBetaAndTheta_3Polys(fx_n, gx_n, hx_n);
         
-        [alpha1, theta1] = GetOptimalAlphaAndTheta_3Polys(fx_n, gx_n, hx_n);
-        display(alpha1)
-        display(theta1)
-        
-%         alpha2 = GetOptimalAlpha_3Polys(fx_n, gx_n, hx_n);
-%         display(alpha2)
-%         
-%         theta2 = GetOptimalTheta_3Polys(fx_n, alpha2.*gx_n, alpha2.*hx_n);
-%         display(theta2)
-        
-        alpha = alpha1;
-        theta = theta1;
-        
-        
-        % Obtain f(w) and g(w) from f(x) and g(x)]
-        fw = GetWithThetas(fx_n, theta);
-        gw = GetWithThetas(gx_n, theta);
-        hw = GetWithThetas(hx_n, theta);
-        
-        F_max = max(fx_n);
-        F_min = min(fx_n);
-        G_max = max(gx_n);
-        G_min = min(gx_n);
-        H_max = max(hx_n);
-        H_min = min(hx_n);
-        
-        PrintToFile(F_max,F_min,G_max,G_min,m,n,'1','1');
-        
-        %%
-        F_max = max(fw);
-        F_min = min(fw);
-        G_max = max(gw);
-        G_min = min(gw);
-        H_max = max(hw);
-        H_min = min(hw);
-        
-        PrintToFile(F_max,F_min,G_max,G_min,m,n,alpha,theta);
-        
-        % Plot the unprocessed and preprocessed coefficients of
-        % f(x), f(w), g(x) and g(w).
-        
-%         switch SETTINGS.PLOT_GRAPHS
-%             case 'y'
-%                 PlotCoefficients(fx,fw,'f');
-%                 PlotCoefficients(gx,gw,'g');
-%                 PlotCoefficients(hx,hw,'h');
-%             case 'n'
-%             otherwise
-%                 error('err')
-%         end
-    case 'n'
+
+    case false
         
         % Dont apply preprocessing
         theta = 1;
         alpha = 1;
+        beta = 1;
         
     otherwise
+        
         error('bool_preproc either y or n');
 end
 

@@ -5,18 +5,21 @@ function plotMinimumSingularValues(vMinimumSingularValues, myLimits, limits)
 % 
 % vMinimumSingularValues :
 %
-% myLimits
+% myLimits (Int) (Int) : Limits on the degree of the GCD. Defines the range
+% of k values 
 %
-% limits
+% limits [Int Int] : Prior computed limits for the degree of the GCD
 
+% 
 myLowerLimit = myLimits(1);
 myUpperLimit = myLimits(2);
 
+%
 lowerLimit = limits(1);
 upperLimit = limits(2);
 
 
-
+%
 x_vec = myLowerLimit : 1 : myUpperLimit;
 
 figure_name = sprintf('%s : Minimum Singular Values of S_{k}',mfilename);

@@ -1,37 +1,46 @@
-function [alpha, theta] = GetOptimalAlphaAndTheta_3Polys(fx,gx,hx)
+function [alpha, beta, theta] = GetOptimalAlphaBetaAndTheta_3Polys(fx, gx, hx)
+% Compute the optimal values of \alpha, \beta and \theta
 %
 % % Inputs
 %
-% [fx, gx, hx] : Coefficients of polynomials f(x), g(x) and h(x)
+% fx : (Vector) Coefficients of polynomial f(x)
+%
+% gx : (Vector) Coefficients of polynomial g(x)
+%
+% hx : (Vector) Coefficients of polynomial h(x)
+%
+% % Outputs
+%
+% alpha : (Float)
+%
+% beta : (Float) 
+%
+% theta : (Float)
 
 % Ensure that f(x) and g(x) are column vectors
-if size(fx,2) >1  || size(gx,2)>2
-    error('f(x) and g(x) must be column vectors')
+if (size(fx,2) >1  || size(gx,2)>2 || size(gx,2) > 1)
+    error('f(x), g(x) and h(x) must be column vectors')
 end
 
-f = [1 -1 0  0];
+f = [1 -1 0  0 0 ];
 
-% Get degree of polynomial f(x)
+% Get degree of polynomial f(x), g(x) and h(x)
 m = GetDegree(fx);
-
-% Get degree of polynomial g(x)
 n = GetDegree(gx);
-
-% Get degree of polynomial h(x)
 o = GetDegree(hx);
 
 % Build the first partiion
-Part1 = [ones(m+1,1) zeros(m+1,1) -1.*(0:1:m)' zeros(m+1,1)];
+Part1 = [ones(m+1,1) zeros(m+1,1) -1.*(0:1:m)'  zeros(m+1,1)     zeros(m+1,1)];
 
-Part2 = [ones(n+1,1) zeros(n+1,1) -1.*(0:1:n)' -1.*ones(n+1,1)];
+Part2 = [ones(n+1,1) zeros(n+1,1) -1.*(0:1:n)'  -1.*ones(n+1,1)  zeros(n+1,1)];
 
-Part3 = [ones(o+1,1) zeros(o+1,1) -1.*(0:1:o)' -1.*ones(o+1,1)];
+Part3 = [ones(o+1,1) zeros(o+1,1) -1.*(0:1:o)'  zeros(o+1,1)     -1.*ones(o+1,1)];
 
-Part4 = [zeros(m+1,1) -1.*ones(m+1,1) (0:1:m)' zeros(m+1,1)];
+Part4 = [zeros(m+1,1) -1.*ones(m+1,1) (0:1:m)'  zeros(m+1,1)    zeros(m+1,1)];
 
-Part5 = [zeros(n+1,1) -1.*ones(n+1,1) (0:1:n)' ones(n+1,1)];
+Part5 = [zeros(n+1,1) -1.*ones(n+1,1) (0:1:n)'  ones(n+1,1)     zeros(n+1,1)];
 
-Part6 = [zeros(o+1,1) -1.*ones(o+1,1) (0:1:o)' ones(o+1,1)];
+Part6 = [zeros(o+1,1) -1.*ones(o+1,1) (0:1:o)'  zeros(o+1,1)    ones(o+1,1)];
 
 
 f_vec_a = fx;
@@ -107,10 +116,12 @@ warning('on')
 try
     theta = 10^x(3);
     alpha = 10^x(4);
+    beta = 10^x(5)
 catch
     fprintf('Failed to optimize\n')
     theta = 1;
     alpha = 1; 
+    beta = 1;
 
 end
 

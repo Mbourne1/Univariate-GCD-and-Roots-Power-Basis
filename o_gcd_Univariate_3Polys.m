@@ -17,7 +17,9 @@ function [] = o_gcd_Univariate_3Polys(ex_num, emin, emax, mean_method, ...
 %       'Geometric Mean Matlab Method'
 %       'Geometric Mean My Method'
 %
-% bool_alpha_theta : 'y' or 'n' (Include/ Exclude Preprocessing)
+% bool_alpha_theta : true false
+%       true  : Include preproc
+%   `   false : Exclude preproc
 %
 % low_rank_approx_method:
 %       'Standard SNTLN'
@@ -30,10 +32,10 @@ function [] = o_gcd_Univariate_3Polys(ex_num, emin, emax, mean_method, ...
 %       'None'
 %
 % % Example
-% >> o_gcd_3Polys('1',1e-12,1e-10,'Geometric Mean Matlab Method', 'y','None','None')
-% >> o_gcd_3Polys('1',1e-12,1e-10,'Geometric Mean Matlab Method', 'y','Standard STLN','Standard APF Nonlinear')
+% >> o_gcd_Univariate_3Polys('1', 1e-12, 1e-10, 'Geometric Mean Matlab Method', true, 'None', 'None')
+% >> o_gcd_Univariate_3Polys('1', 1e-12, 1e-10, 'Geometric Mean Matlab Method', true, 'Standard STLN', 'Standard APF Nonlinear')
 %
-% >> o_gcd_3Polys(ex_num,1e-12,1e-10,'Geometric Mean Matlab Method', 'y','Standard STLN', 'Standard APF Nonlinear')
+% >> o_gcd_Univariate_3Polys(ex_num,1e-12,1e-10,'Geometric Mean Matlab Method', true, 'Standard STLN', 'Standard APF Nonlinear')
 % >> ex_num = 'Custom:m=10n=5t=2.low=-1high=2'
 
 
@@ -48,13 +50,13 @@ addpath('Build Matrices',...
     'Formatting',...
     'Get Cofactor Coefficients',...
     'Get GCD Coefficients',...
-    'Get GCD Degree',...
     'GCD Finding',...
     'Plotting',...
     'Preprocessing');
 
 addpath(genpath('APF'));
 addpath(genpath('Examples'));
+addpath(genpath('Get GCD Degree'));
 addpath(genpath('Low Rank Approximation'));
 
 % % Ensure that minimum noise level is less than maximum noise level
@@ -74,9 +76,9 @@ SetGlobalVariables(problem_type,ex_num,emin,emax,mean_method,bool_alpha_theta,lo
 
 % Add noise to the coefficients of polynomials f(x) and g(x) at a
 % predefined signal-to-noise ratio.
-[fx_noisy,~] = AddVariableNoiseToPoly(fx_exact,emin,emax);
-[gx_noisy,~] = AddVariableNoiseToPoly(gx_exact,emin,emax);
-[hx_noisy,~] = AddVariableNoiseToPoly(hx_exact,emin,emax);
+[fx_noisy,~] = AddVariableNoiseToPoly(fx_exact, emin, emax);
+[gx_noisy,~] = AddVariableNoiseToPoly(gx_exact, emin, emax);
+[hx_noisy,~] = AddVariableNoiseToPoly(hx_exact, emin, emax);
 
 fx = fx_noisy;
 gx = gx_noisy;
@@ -94,9 +96,9 @@ hx = hx_noisy;
 % Get the GCD d(x) of f(x) and g(x) by my method
 
 % Get upper and lower bound of degree of GCD.
-upper_bound = min([GetDegree(fx),GetDegree(gx),GetDegree(hx)]);
+upper_bound = min([GetDegree(fx), GetDegree(gx), GetDegree(hx)]);
 lower_bound = 1;
-deg_limits = [lower_bound,upper_bound];
+deg_limits = [lower_bound, upper_bound];
 
 % Compute degree of gcd by my method
 [fx_calc, gx_calc, hx_calc, ...

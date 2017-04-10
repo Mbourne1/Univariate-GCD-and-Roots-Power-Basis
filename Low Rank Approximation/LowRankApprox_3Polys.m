@@ -55,17 +55,17 @@ switch SETTINGS.LOW_RANK_APPROXIMATION_METHOD
     case 'None'
         
         % Get f(\omega) and alpha.*g(\omega) and w(\omega)
-        fw = GetWithThetas(fx,theta);
-        a_gw = alpha.* GetWithThetas(gx,theta);
-        a_hw = alpha.* GetWithThetas(hx,theta);
+        fw = GetWithThetas(fx, theta);
+        a_gw = alpha.* GetWithThetas(gx, theta);
+        a_hw = alpha.* GetWithThetas(hx, theta);
         
         % Get u(\omega) and v(\omega)
         [uw, vw, ww] = GetCofactorsCoefficients_3Polys(fw,a_gw,a_hw,k);
         
         % Get u(x) and v(x)
-        ux_lr = GetWithoutThetas(uw,theta);
-        vx_lr = GetWithoutThetas(vw,theta);
-        wx_lr = GetWithoutThetas(ww,theta);
+        ux_lr = GetWithoutThetas(uw, theta);
+        vx_lr = GetWithoutThetas(vw, theta);
+        wx_lr = GetWithoutThetas(ww, theta);
         
         % Get f(x) and g(x) output, which are unchanged from input
         fx_lr = fx;

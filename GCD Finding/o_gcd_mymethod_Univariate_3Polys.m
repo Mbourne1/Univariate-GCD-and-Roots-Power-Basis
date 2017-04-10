@@ -6,61 +6,49 @@ function [fx_o, gx_o, hx_o, dx_o, ux_o, vx_o, wx_o, alpha_o, theta_o, t , GM_fx,
 %
 % % Inputs.
 %
-% fx : Coefficients of polynomial f(x)
+% fx : (Vector) Coefficients of polynomial f(x)
 %
-% gx : Coefficients of polynomial g(x)
+% gx : (Vector) Coefficients of polynomial g(x)
 %
-% hx : Coefficients of polynomial h(x)
+% hx : (Vector) Coefficients of polynomial h(x)
 %
-% deg_limits : Specifiy upper and lower bound of the degree of the GCD
+% deg_limits : (Int Int) Specifiy upper and lower bound of the degree of the GCD
 % d(x), typically set when o_gcd_mymethod() is called from a root solving
 % problem, where deg_limits have been predetermined.
 %
 % % Outputs
 % 
-% fx_o :
+% fx_o : (Vector) 
 %
-% gx_o :
+% gx_o : (Vector)
 %
-% dx_o
+% dx_o : (Vector)
 %
-% ux_o :
+% ux_o : (Vector)
 % 
-% vx_o :
+% vx_o : (Vector)
 %
-% alpha_o :
+% alpha_o : (Float)
 %
-% theta_o :
+% theta_o : (Float)
 
 
 
 % Preprocess the polynomials f(x) and g(x)
-[GM_fx, GM_gx, GM_hx, alpha, theta] = Preprocess_3Polys(fx, gx, hx);
+[GM_fx, GM_gx, GM_hx, alpha, beta, theta] = Preprocess_3Polys(fx, gx, hx);
 
+% Get f(x), g(x) and h(x) normalised by mean
+fx_n = fx./ GM_fx;
+gx_n = gx./ GM_gx;
+hx_n = hx./ GM_hx;
 
-
-% Get f(x) normalised by mean
-fx_n = fx./GM_fx;
-
-% Get g(x) normalised by mean
-gx_n = gx./GM_gx;
-
-% Get h(x) normalised by geometric mean
-hx_n = hx./GM_hx;
-
-% Get f(\omega)
+% Get f(\omega), g(\omega) and h(\omega)
 fw = GetWithThetas(fx_n, theta);
-
-% Get g(\omega)
 gw = GetWithThetas(gx_n, theta);
-
-% Get h(\omega)
 hw = GetWithThetas(hx_n, theta);
 
-
-
-% Get the degree of the GCD with limits defined
-t = GetGCDDegree_3Polys(fw, alpha.*gw, alpha.*hw, deg_limits);
+% Get the degree of the GCD
+t = GetGCDDegree_3Polys(fw, alpha.*gw, beta.*hw, deg_limits);
 LineBreakLarge();
 
 % Print the degree of the GCD
