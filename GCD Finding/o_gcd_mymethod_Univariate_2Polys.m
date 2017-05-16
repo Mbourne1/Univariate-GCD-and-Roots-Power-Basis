@@ -56,6 +56,10 @@ if (t == 0)
     vx_o = gx;
     fx_o = fx;
     gx_o = gx;
+    
+    alpha_o = alpha;
+    theta_o = theta;
+    
     return
 end
 
