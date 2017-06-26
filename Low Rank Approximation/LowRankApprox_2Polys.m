@@ -66,11 +66,11 @@ switch SETTINGS.LOW_RANK_APPROXIMATION_METHOD
                 vSingularValues4 = svd(S4);
                 
                 figure()
-                plot(log10(vSingularValues1),'-s','DisplayName','f(x) g(x)');
+                plot(log10(vSingularValues1), '-s', 'DisplayName', 'f(x) g(x)');
                 hold on
-                plot(log10(vSingularValues2),'-s','DisplayName','f(\omega) g(\omega)');
-                plot(log10(vSingularValues3),'-s','DisplayName','f(x)_lr g(x)_lr');
-                plot(log10(vSingularValues4),'-s','DisplayName','f(\omega)_lr g(\omega)_lr');
+                plot(log10(vSingularValues2), '-s', 'DisplayName', 'f(\omega) g(\omega)');
+                plot(log10(vSingularValues3), '-s', 'DisplayName', 'f(x)_lr g(x)_lr');
+                plot(log10(vSingularValues4), '-s', 'DisplayName', 'f(\omega)_lr g(\omega)_lr');
                 hold off
             
         end

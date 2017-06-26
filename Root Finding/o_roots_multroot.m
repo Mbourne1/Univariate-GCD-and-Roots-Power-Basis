@@ -15,17 +15,10 @@ function [root_mult_array] = o_roots_multroot(fx)
 %
 
 
-% Build the vector of corresponding binomial coefficients
-
 roots_calc = multroot(fx);
 
-
+% 
 root_mult_array = [roots_calc(:,1) roots_calc(:,2)];
-
-% Printout roots to screen
-PrintRoots(root_mult_array,'MULTROOTS METHOD');
-
-
 
 
 end

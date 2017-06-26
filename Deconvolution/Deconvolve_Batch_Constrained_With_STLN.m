@@ -364,10 +364,10 @@ for i = 1 : 1 : nDistinct_Polys_arr_hx
         deg_hx = deg_fx_prev - deg_fx;
         
         % Build the Cauchy like matrix T_{m_{i} - m_{i-1}}(f_{i})
-        arr_Tf{j} = BuildT1(fx, deg_hx);
+        arr_Tf{j,1} = BuildT1(fx, deg_hx);
         
         % Stack beneath all other T_{f} which are multiplied by [_{i}(x)
-        arr_Cf{i} = [arr_Cf{i} ; arr_Tf{j}];
+        arr_Cf{i,1} = [arr_Cf{i,1} ; arr_Tf{j,1}];
     end
     
     

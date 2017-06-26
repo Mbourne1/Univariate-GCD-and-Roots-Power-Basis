@@ -12,6 +12,8 @@ function arr_fw = GetPolynomialArrayWithThetas(arr_fx, theta)
 %
 % arr_fw : (Array of Vectors) Coefficients of polynomials f_{i}(\omega)
 
+nPolys_arr_fx = length(arr_fx);
+
 % Initialise a cell-array for f(w)
 arr_fw = cell(nPolys_arr_fx, 1);
 

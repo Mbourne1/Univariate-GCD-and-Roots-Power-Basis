@@ -21,17 +21,10 @@ function [] = o_Deconvolution(ex_num, emin, bool_preproc)
 
 
 % Add path for examples
-restoredefaultpath; savepath
-
-% Add subfolders
-restoredefaultpath
-
-% Determine where your m-file's folder is.
-folder = fileparts(which(mfilename)); 
+restoredefaultpath;
 
 % Add that folder plus all subfolders to the path.
-addpath(genpath(folder));
-
+addpath(genpath(pwd));
 addpath(genpath('../Examples'));
 
 
@@ -141,199 +134,215 @@ for i = 1 : 1 : nPolys_arr_fx
 end
 
 
-%--------------------------------------------------------------------------
-% %
-% %
-% %
-% Testing deconvolution separate
+% Define an array of deconvolution methods to be used
+arr_DeconvolutionMethod = {...
+    'Deconvolution Separate',...
+    'Deconvolution Batch',...
+    'Deconvolution Batch With STLN',...
+    'Deconvolution Batch Constrained',...
+    'Deconvolution Batch Constrained With STLN'};
+
+
+nMethods = length(arr_DeconvolutionMethod);
+
+% Testing deconvolution
 LineBreakLarge();
-fprintf([mfilename 'Deconvolution Separate'  '\n']);
+arr_hx = cell(nMethods,1);
+arr_Error = cell(nMethods,1);
 
-arr_hx_test_4 = Deconvolve_Separate(arr_fx_noisy);
-vErrors_separate = GetErrors(arr_hx_test_4,arr_hx_exact);
-
-%--------------------------------------------------------------------------
-% %
-% %
-% %
-% Testing standard deconvolution batch method
-LineBreakLarge();
-fprintf([mfilename ' : ' 'Deconvolve Batch' '\n']);
-
-arr_hx_deconvolveBatch = Deconvolve_Batch(arr_fx_noisy);
-vErrors_batch = GetErrors(arr_hx_deconvolveBatch,arr_hx_exact);
-
-%--------------------------------------------------------------------------
-% %
-% %
-% %
-% Testing standard deconvolution batch method with STLN
-LineBreakLarge();
-fprintf([mfilename ' : ' 'Deconvolve batch with STLN' '\n'])
-
-arr_hx_deconvolveBatchWithSTLN = Deconvolve_Batch_With_STLN(arr_fx_noisy);
-vErrors_batch_with_STLN = GetErrors(arr_hx_deconvolveBatchWithSTLN,arr_hx_exact);
-
-
-% -------------------------------------------------------------------------
-% %
-% %
-% %
-% Testing deconvolution batch method with constraints
-
-LineBreakLarge()
-fprintf([mfilename ' : ' 'Deconvolvve Batch Constrained' '\n'])
-
-arr_hx_batchConstrained = Deconvolve_Batch_Constrained(arr_fx_noisy,vMultiplicities);
-vErrors_batch_constrained = GetErrors(arr_hx_batchConstrained,arr_hx_exact);
-
-
-% -------------------------------------------------------------------------
-% %
-% %
-% %
-% Testing deconvolution batch method with constraints and low rank approx
-
-LineBreakLarge()
-fprintf([mfilename ' : ' 'Deconvolve Batch Constrained With STLN \n'])
-
-arr_hx_batchConstrainedWithSTLN = Deconvolve_Batch_Constrained_With_STLN(arr_fx_noisy,vMultiplicities);
-vErrors_batch_constrained_with_STLN = GetErrors(arr_hx_batchConstrainedWithSTLN,arr_hx_exact);
-
-
-
-
-%--------------------------------------------------------------------------
-
-% %
-% Plot Errors
-if(SETTINGS.PLOT_GRAPHS)
+for i = 1 : 1 : nMethods
     
-        figure_name = sprintf([mfilename ' : ' 'Plotting errors of h(x)']);
-        figure('name',figure_name)
-        hold on
-        plot(log10(vErrors_separate),'-.','DisplayName','Separate')
-        plot(log10(vErrors_batch),'-*','DisplayName','Batch')
-        plot(log10(vErrors_batch_with_STLN),'-s','DisplayName','Batch with STLN')
-        plot(log10(vErrors_batch_constrained),'-s','DisplayName','Batch Constrained')
-        plot(log10(vErrors_batch_constrained_with_STLN),'-s','DisplayName','Batch Constrained with STLN')
-        xlabel('k');
-        ylabel('log_{10} error h_{i}(x)');
-        xlim([ 1 nPolys_arr_hx])
-        legend(gca,'show');
-        hold off
+    % Get deconvolution method
+    method_name = arr_DeconvolutionMethod{i};
+    
+    switch method_name
+        
+        case 'Deconvolution Separate'
+            arr_hx{i,1} = Deconvolve_Separate(arr_fx_noisy);
+            
+        case 'Deconvolution Batch'
+            arr_hx{i,1} = Deconvolve_Batch(arr_fx_noisy);
+            
+        case 'Deconvolution Batch With STLN'
+            arr_hx{i,1} = Deconvolve_Batch_With_STLN(arr_fx_noisy);
+            
+        case 'Deconvolution Batch Constrained'
+            arr_hx{i,1} = Deconvolve_Batch_Constrained(arr_fx_noisy, vMultiplicities);
+            
+        case 'Deconvolution Batch Constrained With STLN'
+            arr_hx{i,1} = Deconvolve_Batch_Constrained_With_STLN(arr_fx_noisy, vMultiplicities);
+            
+        otherwise
+            error('err')
+            
+    end
+    
+    fprintf([mfilename ' : ' sprintf('%s \n', method_name )]);
+    
+    arr_Error{i,1} = GetErrors(arr_hx{i}, arr_hx_exact);
     
 end
-% ------------------------------------------------------------------------
-
-Disp_error(vErrors_separate,'Separate');
-Disp_error(vErrors_batch,'Batch');
-Disp_error(vErrors_batch_with_STLN, 'Batch STLN');
-Disp_error(vErrors_batch_constrained, 'Batch Constrained');
-Disp_error(vErrors_batch_constrained_with_STLN, 'Batch Constrained STLN');
 
 
 
 
-% %
-% %
-% %
-% Print to file
-
-A = ...
-    [
-    norm(vErrors_separate),...
-    norm(vErrors_batch),...
-    norm(vErrors_batch_with_STLN),...
-    norm(vErrors_batch_constrained),...
-    norm(vErrors_batch_constrained_with_STLN)
-    ];
 
 
-my_error.separate = norm(vErrors_separate);
-my_error.batch = norm(vErrors_batch);
-my_error.batchSTLN = norm(vErrors_batch_with_STLN);
-my_error.batchConstrained = norm(vErrors_batch_constrained);
-my_error.batchConstrainedSTLN = norm(vErrors_batch_constrained_with_STLN);
-
-PrintToResultsFile(ex_num,bool_preproc,emin,my_error);
-
+% Plotting
+nPolys_hx = size(arr_hx,1);
+if (SETTINGS.PLOT_GRAPHS)
+    
+    figure_name = sprintf([mfilename ':' 'Deconvolution Methods Error']);
+    figure('name',figure_name)
+    hold on
+    
+    
+    for i = 1:1:length(arr_DeconvolutionMethod)
+        
+        methodName = arr_DeconvolutionMethod{i};
+        vError = arr_Error{i};
+        plot(log10(vError), '-o', 'DisplayName', methodName)
+        
+    end
+    
+    
+   
+legend(gca,'show');
+xlim([1 nPolys_hx]);
+xlabel('Factor')
+ylabel('log_{10} error')
+hold off
 
 end
 
-function [] = PrintToResultsFile(ex_num, bool_preproc, emin, my_error)
+%--------------------------------------------------------------------------
+% Console writing
+
+for i = 1:1:nMethods
+    
+    methodName = arr_DeconvolutionMethod{i};
+    vError = arr_Error{i};
+    display([mfilename ' : ' sprintf('Error %s : %e', methodName, norm(vError))]);
+    
+end
+
+
+
+% Initialise array to store error for each method
+arr_ErrorNorm = cell(nMethods,1);
+
+for i = 1 : 1 : nMethods
+    arr_ErrorNorm{i} = norm(arr_Error{i});
+end
+
+
+PrintToResultsFile(ex_num, bool_preproc, emin, arr_DeconvolutionMethod, arr_ErrorNorm);
+
+end
+
+function [] = PrintToResultsFile(ex_num, bool_preproc, noise, arr_DeconvolutionMethod, arr_ErrorNorm)
 %
 % % Inputs
 %
-% ex_num :Example Number
+% ex_num : (String)
 %
-% bool_preproc
+% bool_preproc : (Boolean)
+%
+% noise : (float)
+%
+% arr_DeconvolutionMethod : (Array of Strings)
+%
+% arr_ErrorNorm : (Array of floats)
 
 
 fullFileName = sprintf('Deconvolution/Results/Results_o_deconvolutions%s.txt',datetime('today'));
+nMethods = length(arr_DeconvolutionMethod);
 
 % If file already exists append a line
 if exist(fullFileName, 'file')
     
     fileID = fopen(fullFileName,'a');
-    WriteNewLine()
+    
+    
+
+    for i = 1:1:nMethods
+    
+        method_name = arr_DeconvolutionMethod{i};
+        error_norm = arr_ErrorNorm{i};
+
+
+        WriteNewLine(method_name, error_norm)
+        
+    
+    end
     fclose(fileID);
     
 else % File doesnt exist so create it
     
     fileID = fopen( fullFileName, 'wt' );
+   
     WriteHeader()
-    WriteNewLine()
+    for i = 1 : 1 : nMethods
+        
+        method_name = arr_DeconvolutionMethod{i};
+        error_norm = arr_ErrorNorm{i};
+        WriteNewLine(method_name, error_norm);
+        
+    end
     fclose(fileID);
     
 end
 
-    function WriteNewLine()
+    function WriteNewLine(method_name, error_norm)
         
         %
-        fprintf(fileID,'%s,%s,%s,%s,%s,%s,%s,%s,%s \n',...
+        fprintf(fileID,'%s,%s,%s,%s,%s,%s \n',...
             datetime('now'),...
             ex_num,...
             bool_preproc,...
-            emin,...
-            my_error.separate,...
-            my_error.batch,...
-            my_error.batchSTLN ,...
-            my_error.batchConstrained ,...
-            my_error.batchConstrainedSTLN....
+            noise,...
+            method_name,...
+            error_norm...
             );
         
     end
 
     function WriteHeader()
         
-        fprintf(fileID,'DATE,EX_NUM,BOOL_PREPROC,NOISE,err_separate,err_batch,err_batch_STLN,err_constrained,err_constrained_STLN \n');
+        fprintf(fileID,'DATE, EX_NUM, BOOL_PREPROC, NOISE, method_name, error_norm \n');
         
     end
 
 
 end
 
-function Disp_error(v_err,name)
-
-err = norm(v_err);
-
-fprintf([sprintf('Error in %s method : %e',name,err) '\n']);
-
-end
-
-function [vErrors] =  GetErrors(arr_hx_comp , arr_hx_exact)
-% GETERRORS Get the distance between each h
-
-% Initialise vector to store errors.
-vErrors = zeros(size(arr_hx_comp,1),1);
-
+function vErrors = GetErrors(arr_hx_comp,arr_hx_exact)
 % Compare each computed h{i} with actual h_{i}
-for i = 1:1:size(arr_hx_comp,1)
+%
+% % Inputs
+%
+% arr_hx_comp : (Array of Vectors) Each vector contains coefficients of the
+% polynomial h_{i}(x)
+%
+% arr_hx_exact : (Array of Vectors) Each vector contains coefficients of
+% the polynomial h_{i}(x)
+
+% Get number of polynomials in the array
+nPolys_hx = size(arr_hx_comp,1);
+
+% Initialise vector to store errors
+vErrors = zeros(nPolys_hx,1);
+
+%
+for i = 1:1:nPolys_hx
     
+    % Get exact polynomial
     exact = arr_hx_exact{i}./ arr_hx_exact{i,1}(1,1);
+    
+    % Get computed polynomial
     comp = arr_hx_comp{i}./arr_hx_comp{i,1}(1,1);
     
+    % Get Error
     vErrors(i) = norm(exact - comp) ./ norm(exact);
     
     

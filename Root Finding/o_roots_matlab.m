@@ -1,4 +1,4 @@
-function [root_mult_array] = o_roots_matlab(fx)
+function [root_multiplicity_matrix] = o_roots_matlab(fx)
 % Given a vector of coefficients of a polynomail in Bernstein form. Return
 % the set of roots given by zheng MultRoots() function.
 %
@@ -18,12 +18,11 @@ function [root_mult_array] = o_roots_matlab(fx)
 % Build the vector of corresponding binomial coefficients
 roots_calc = roots(flipud(fx));
 
-[nEntries,~] = size(roots_calc);
+% Get the number of roots
+[nRoots,~] = size(roots_calc);
 
-root_mult_array = [roots_calc(:,1) ones(nEntries,1)];
+root_multiplicity_matrix = [roots_calc(:,1) ones(nRoots,1)];
 
-% Printout roots to screen
-PrintRoots(root_mult_array,'MATLAB METHOD');
 
 
 

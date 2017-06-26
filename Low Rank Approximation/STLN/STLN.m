@@ -6,24 +6,24 @@ function [fx_lr, gx_lr, ux_lr, vx_lr, alpha_lr, theta_lr] = STLN(fx,gx,k)
 %
 % % Inputs.
 %
-% fx : Coefficients of polynomial f(x)
+% fx : (Vector) Coefficients of polynomial f(x)
 %
-% gx : Coefficients of polynomial g(x)
+% gx : (Vector) Coefficients of polynomial g(x)
 %
-% t : Degree of GCD(f(x),g(x))
+% t : (Int) Degree of GCD(f(x),g(x))
 %
 % % Outputs.
 %
-% fx_lr : Coefficients of f(x) after refinement f(x) + \delta
+% fx_lr : (Vector) Coefficients of f(x) after refinement f(x) + \delta
 %
-% gx_lr : Coefficients of g(x) after refinement g(x) + \delta
-
+% gx_lr : (Vector) Coefficients of g(x) after refinement g(x) + \delta
+%
+% 
+%
 global SETTINGS
 
-% Get degree of polynomial f(x)
+% Get degree of polynomial f(x) and g(x)
 m = GetDegree(fx);
-
-% Get the derivative of f(x)
 n = GetDegree(gx);
 
 % Initialise the vector of perturbations zf(x)
@@ -35,13 +35,13 @@ zg = zeros(n+1,1);
 z = [zf ; zg];
 
 % Build the k'th subresultant
-T1_fx = BuildT1(fx,n-k);
-T1_gx = BuildT1(gx,m-k);
+T1_fx = BuildT1(fx, n-k);
+T1_gx = BuildT1(gx, m-k);
 Sk_fg = [T1_fx T1_gx];
 
 % Build the matrix E_{t}(z)
-T1_zf = BuildT1(zf,n-k);
-T2_zg = BuildT1(zg,m-k);
+T1_zf = BuildT1(zf, n-k);
+T2_zg = BuildT1(zg, m-k);
 Sk_zfzg = [T1_zf T2_zg];
 
 % Get the index of the optimal colummn for removal
@@ -63,7 +63,7 @@ Ak_zfzg(:,idx_col) = [];
 hk = Sk_zfzg(:,idx_col);
 
 % Build Pt
-Pk = BuildP_STLN(m,n,k,idx_col);
+Pk = BuildP_STLN(m, n, k, idx_col);
 
 % Get the solution vector x of A_{t}x = c_{t}.
 xk = SolveAx_b(At_fg,ck);
@@ -74,7 +74,7 @@ res_vec = (ck + hk) - At_fg*xk;
 % Build the matrix Y_{t}
 x = [xk(1:idx_col-1) ; 0 ; xk(idx_col:end)];
 
-Yk = BuildY_STLN(x,m,n,k);
+Yk = BuildY_STLN(x, m, n, k);
 
 % Build the matrix C for LSE Problem
 H_z = Yk - Pk;
@@ -89,15 +89,15 @@ E = eye(2*m+2*n-2*k+3);
 % Define the starting vector for the iterations for the LSE problem.
 start_point     =   ...
     [...
-    z;...
-    xk;
+        z;...
+        xk;
     ];
 
 % Set yy to be the vector which stores all cummulative perturbations.
 yy = start_point;
 
 % Set the initial value of vector p to be zero
-f = -(yy-start_point);
+f = -(yy - start_point);
 
 
 % Initialise the iteration counter
@@ -114,7 +114,7 @@ while condition(ite) >  SETTINGS.MAX_ERROR_SNTLN &&  ite < SETTINGS.MAX_ITE_SNTL
     ite = ite + 1;
     
     % Get small petrubations by LSE
-    y_lse = LSE(E,f,C,res_vec);
+    y_lse = LSE(E, f, C, res_vec);
     
     % Increment cummulative peturbations
     yy = yy + y_lse;
@@ -186,13 +186,13 @@ gx_lr = gx + zg;
 x = [xk(1:idx_col-1) ; -1 ; xk(idx_col:end)];
 
 % Get the number of coefficients in v(x)
-nCoeffs_vx = n-k+1;
+nCoefficients_vx = n-k+1;
 
 % Get coefficients of v(x)
-vx_lr = x(1:nCoeffs_vx);
+vx_lr = x(1:nCoefficients_vx);
 
 % Get coefficients of u(x)
-ux_lr = -1 .* x(nCoeffs_vx + 1 : end);
+ux_lr = -1 .* x(nCoefficients_vx + 1 : end);
 
 
 

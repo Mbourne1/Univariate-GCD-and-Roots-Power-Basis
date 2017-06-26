@@ -1,6 +1,6 @@
-function [fx_o, gx_o, dx_o, ux_o, vx_o, alpha_o, theta_o, t , GM_fx,GM_gx] =...
-    o_gcd_mymethod_Univariate_2Polys(fx, gx, deg_limits)
-% o_gcd_mymethod(fx,gx,deg_limits)
+function [fx_o, gx_o, dx_o, ux_o, vx_o, alpha_o, theta_o, t , GM_fx, GM_gx, rank_range] =...
+    o_gcd_mymethod_Univariate_2Polys(fx, gx, limits_t, rank_range)
+% o_gcd_mymethod(fx, gx, limits_t, rank_range)
 %
 % Given two polynomials f(x) and g(x) return the GCD d(x)
 %
@@ -10,9 +10,7 @@ function [fx_o, gx_o, dx_o, ux_o, vx_o, alpha_o, theta_o, t , GM_fx,GM_gx] =...
 %
 % gx : (Vector) Coefficients of polynomial g(x).
 %
-% deg_limits : [(Int) (Int)] Specifiy upper and lower bound of the degree of the GCD
-% d(x), typically set when o_gcd_mymethod() is called from a root solving
-% problem, where deg_limits have been predetermined.
+% t_limits : [(Int) (Int)] The interval which contains t
 %
 % % Outputs
 % 
@@ -29,6 +27,8 @@ function [fx_o, gx_o, dx_o, ux_o, vx_o, alpha_o, theta_o, t , GM_fx,GM_gx] =...
 % alpha_o : (Float) Optimal value of \alpha
 %
 % theta_o : (Float) Optimal value of \theta
+%
+% rank_range : [Float Float]
 
 
 
@@ -44,7 +44,7 @@ fw = GetWithThetas(fx_n, theta);
 gw = GetWithThetas(gx_n, theta);
 
 % Get the degree of the GCD with limits defined
-t = GetGCDDegree_2Polys(fw, alpha.*gw, deg_limits);
+[t, rank_range] = GetGCDDegree_2Polys(fw, alpha.*gw, limits_t, rank_range);
 
 % Print the degree of the GCD
 LineBreakLarge();

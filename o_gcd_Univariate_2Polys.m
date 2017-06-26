@@ -1,4 +1,5 @@
-function [] = o_gcd_Univariate_2Polys(ex_num, emin, emax, mean_method, bool_alpha_theta, low_rank_approx_method, apf_method)
+function [] = o_gcd_Univariate_2Polys(ex_num, emin, emax, mean_method, ...
+    bool_alpha_theta, low_rank_approx_method, apf_method)
 % o_gcd(ex_num,el,mean_method, bool_alpha_theta,low_rank_approx_method,apf_method)
 %
 % Given two polynomials f(x) and g(x) calculate the GCD d(x).
@@ -47,11 +48,8 @@ problem_type = 'GCD';
 % Add subfolders
 restoredefaultpath
 
-% Determine where your m-file's folder is.
-folder = fileparts(which(mfilename)); 
-
 % Add that folder plus all subfolders to the path.
-addpath(genpath(folder));
+addpath(genpath(pwd));
 
 % % Ensure that minimum noise level is less than maximum noise level
 if emin > emax
@@ -61,7 +59,7 @@ if emin > emax
 end
 
 % Set global variables
-SetGlobalVariables(problem_type, ex_num, emin, emax, mean_method, ...
+SetGlobalVariables_GCDFinding(problem_type, ex_num, emin, emax, mean_method, ...
     bool_alpha_theta, low_rank_approx_method, apf_method)
 
 % Get coefficients of f(x,y) g(x,y) from example file
@@ -95,18 +93,22 @@ gx = gx_noisy;
 % Get the GCD d(x) of f(x) and g(x) by my method
 
 % Get upper and lower bound of degree of GCD.
-upperLimit = min(m, n);
-lowerLimit = 1;
-limits = [lowerLimit, upperLimit];
+lowerLimit_t = 1;
+upperLimit_t = min(m, n);
+limits_t = [lowerLimit_t, upperLimit_t];
+
+rank_range = [0 0];
 
 % Compute degree of gcd by my method
-[fx_calc, gx_calc, dx_calc, ux_calc, vx_calc, ~, ~] = o_gcd_mymethod_Univariate_2Polys(fx, gx, limits);
+[fx_calc, gx_calc, dx_calc, ux_calc, vx_calc, ~, ~] = ...
+    o_gcd_mymethod_Univariate_2Polys(fx, gx, limits_t, rank_range);
 
 % Get distance of the computed d(x) from the exact d(x)
 
 my_error.dx = GetDistance(dx_exact, dx_calc);
 my_error.ux = GetDistance(ux_exact, ux_calc);
 my_error.vx = GetDistance(vx_exact, vx_calc);
+
 my_error.MyMethod = my_error.dx;
 
 fprintf([mfilename sprintf(': Error d(x) : %2.4e \n', my_error.dx)])
@@ -124,7 +126,7 @@ PrintToFile(GetDegree(fx), GetDegree(gx), GetDegree(dx_exact), GetDegree(dx_calc
 %[dx] = o_gcd_experiment_method(fx,gx)
 
 
-%% Plot the three curves f(x), g(x) and d(x)
+% % Plot the three curves f(x), g(x) and d(x)
 
 if( SETTINGS.PLOT_GRAPHS)
     
@@ -193,7 +195,7 @@ function [] = PrintToFile(m, n, t_exact, t_comp, error)
 
 global SETTINGS
 
-fullFileName = sprintf('Results/Results_o_gcd%s.txt',datetime('today'));
+fullFileName = sprintf('Results/Results_o_gcd.txt');
 
 % If file already exists append a line
 if exist(fullFileName, 'file')
@@ -225,7 +227,7 @@ end
             num2str(error.vx),...
             num2str(error.dx),...
             SETTINGS.MEAN_METHOD,...
-            SETTINGS.BOOL_ALPHA_THETA,...
+            num2str(SETTINGS.BOOL_ALPHA_THETA),...
             SETTINGS.EMIN,...
             SETTINGS.EMAX,...
             SETTINGS.LOW_RANK_APPROXIMATION_METHOD,...

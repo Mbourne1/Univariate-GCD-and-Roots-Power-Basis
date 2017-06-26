@@ -1,6 +1,6 @@
 function [] = o_gcd_Univariate_3Polys(ex_num, emin, emax, mean_method, ...
-    bool_alpha_theta, low_rank_approx_method, apf_method)
-% o_gcd_3Polys(ex_num,el,mean_method, bool_alpha_theta,low_rank_approx_method,apf_method)
+    bool_alpha_theta, low_rank_approx_method, apf_method, deconvolution_method)
+% o_gcd_3Polys(ex_num,el,mean_method, bool_alpha_theta,low_rank_approx_method,apf_method, deconvolution_method)
 %
 % Given THREE polynomials f(x) and g(x) calculate the GCD d(x).
 %
@@ -31,12 +31,17 @@ function [] = o_gcd_Univariate_3Polys(ex_num, emin, emax, mean_method, ...
 %       'Standard Linear'
 %       'None'
 %
-% % Example
-% >> o_gcd_Univariate_3Polys('1', 1e-12, 1e-10, 'Geometric Mean Matlab Method', true, 'None', 'None')
-% >> o_gcd_Univariate_3Polys('1', 1e-12, 1e-10, 'Geometric Mean Matlab Method', true, 'Standard STLN', 'Standard APF Nonlinear')
+% deconvolution_method : 
 %
-% >> o_gcd_Univariate_3Polys(ex_num,1e-12,1e-10,'Geometric Mean Matlab Method', true, 'Standard STLN', 'Standard APF Nonlinear')
-% >> ex_num = 'Custom:m=10n=5t=2.low=-1high=2'
+%
+%
+%
+%
+%
+% % Example
+% >> o_gcd_Univariate_3Polys('1', 1e-12, 1e-10, 'Geometric Mean Matlab Method', true, 'None', 'None',  )
+% >> o_gcd_Univariate_3Polys('1', 1e-12, 1e-10, 'Geometric Mean Matlab Method', true, 'Standard STLN', 'Standard APF Nonlinear',   )
+
 
 
 
@@ -67,7 +72,9 @@ if emin > emax
 end
 
 % Set global variables
-SetGlobalVariables(problem_type,ex_num,emin,emax,mean_method,bool_alpha_theta,low_rank_approx_method,apf_method)
+SetGlobalVariables_GCDFinding(problem_type, ex_num, emin, emax, ...
+    mean_method, bool_alpha_theta, low_rank_approx_method, apf_method, ...
+    deconvolution_method)
 
 % Get coefficients of f(x,y) g(x,y) from example file
 [fx_exact, gx_exact, hx_exact, dx_exact, ux_exact, vx_exact, wx_exact] = Examples_GCD_FromCoefficients_3Polys(ex_num);

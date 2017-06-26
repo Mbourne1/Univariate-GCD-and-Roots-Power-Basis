@@ -21,19 +21,20 @@ SETTINGS.PLOT_GRAPHS = true;
 % Set Iteration number
 ite = 1;
 
-fx;
 f_dash = Differentiate(fx);
 
+% Get degree of f(x) and g(x)
 m = GetDegree(fx);
 n = GetDegree(f_dash);
 
-deg_limits = [1,min(m,n)];
+limits_k = [1,min(m,n)];
 
 % Perform GCD computation.
 
-[fx_n,gx_n,u, C{ite}, w{ite}, alpha, theta, t , lambda,mu] ...
-    = o_gcd_mymethod(fx,Differentiate(fx), deg_limits);
-d{ite} = w{ite}-Differentiate(C{ite});
+[fx_n,gx_n,uxy, C{ite}, arr_wx{ite}, alpha, theta, t , lambda,mu] ...
+    = o_gcd_mymethod_Univariate_2Polys(fx, Differentiate(fx), limits_k);
+
+arr_dxy{ite} = arr_wx{ite} - Differentiate(C{ite});
 LineBreakMedium();
 
 
@@ -42,17 +43,17 @@ while (GetDegree(C{ite}) > 0 )
     % Get the degree of polynomial f(x)
     m = GetDegree(C{ite});
     % Get the degree of polynomial g(x)
-    n = GetDegree(d{ite});
+    n = GetDegree(arr_dxy{ite});
     
-    limits = [1,min(m,n)];
+    limits_t = [1,min(m,n)];
     
     % Get GCD
-    [fx,gx, h{ite+1},C{ite+1},w{ite+1},~,~,~,~,~] =...
-        o_gcd_mymethod(C{ite}, d{ite}, limits);
+    [fx,gx, arr_hx{ite+1},C{ite+1},arr_wx{ite+1},~,~,~,~,~] =...
+        o_gcd_mymethod_Univariate_2Polys(C{ite}, arr_dxy{ite}, limits_t);
     
    
     
-    d{ite+1} = w{ite} - Differentiate(C{ite});
+    arr_dxy{ite+1} = arr_wx{ite} - Differentiate(C{ite});
     
     ite = ite+1;
     
@@ -64,11 +65,11 @@ SETTINGS.PLOT_GRAPHS = false;
 
 root_mult_array = [];
 
-for i = 1:1:length(h)
+for i = 1:1:length(arr_hx)
 
     try
         
-    factor = h{i};
+    factor = arr_hx{i};
     % Divide by x coefficient
     factor = factor./factor(2);
     % Get root
@@ -79,5 +80,5 @@ for i = 1:1:length(h)
     end
 end
 
-PrintRoots(root_mult_array,'YUNS METHOD');
+
 end

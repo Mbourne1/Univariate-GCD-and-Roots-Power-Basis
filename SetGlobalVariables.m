@@ -1,5 +1,5 @@
-function [] = SetGlobalVariables(problem_type, ex_num, emin, emax, ...
-    mean_method, bool_alpha_theta, low_rank_approx_method, apf_method)
+function [] = SetGlobalVariables_RootFinding(problem_type, ex_num, emin, emax, ...
+    mean_method, bool_alpha_theta, low_rank_approx_method, apf_method, deconvolution_method)
 
 
 
@@ -54,7 +54,7 @@ SETTINGS.BOOL_ALPHA_THETA = bool_alpha_theta;
 
 % Threshold defined for use in computing the degree of the GCD
 SETTINGS.THRESHOLD = 2;
-SETTINGS.THRESHOLD_RANK = 1e-5;
+SETTINGS.THRESHOLD_RANK = -5;
 
 % (Roots Only)
 % Make use of precalculated limits on the upper and lower bounds of the
@@ -130,7 +130,7 @@ SETTINGS.MAX_ITERATIONS_DECONVOLUTIONS = 20;
 % 'Batch Constrained With STLN'
 %
 
-SETTINGS.DECONVOLUTION_METHOD_FX_HX = 'Batch Constrained With STLN';
+SETTINGS.DECONVOLUTION_METHOD_FX_HX = deconvolution_method;
 
 % Set the deconvolution method for computing the set of polynomials
 % w_{i}(x) from the set of polynomials h_{i}(x)

@@ -1,4 +1,4 @@
-function [root_mult_array] = o_roots_Musser(fx)
+function [root_mult_matrix] = o_roots_Musser(fx)
 % Given the polynomial f(x) compute its roots by Square free factorization.
 % This algorithm is referred to as Musser's Algorithm in 
 % http://www.cs.berkeley.edu/~fateman/282/F%20Wright%20notes/week6.pdf 
@@ -6,14 +6,14 @@ function [root_mult_array] = o_roots_Musser(fx)
 %
 % % Inputs
 %
-% fx : Coefficients of polynomial f(x) as a column vector where first
-% coefficient has lowest power [a_{0} ; ... ; a_{m}]^{T}
+% fx : (Vector) Coefficients of polynomial f(x) as a column vector where first
+%   coefficient has lowest power [a_{0} ; ... ; a_{m}]^{T}
 %
 % % Outputs 
 % 
-% root_mult_array : A matrix of roots and multiplicities, where the first
-% column contains all of the roots of f(x) and the second contains the
-% corresponding multiplicities.
+% root_mult_array : (Matrix) A matrix of roots and multiplicities, where the first
+%   column contains all of the roots of f(x) and the second contains the
+%   corresponding multiplicities.
 
 global SETTINGS
 
@@ -34,14 +34,15 @@ n = GetDegree(gx{1});
 
 % Set upper and lower limits of GCD(f,g) # Since number of distinct roots
 % is unknown, upper and lower limits are unknown.
-lower_lim = 1;
-upper_lim = min(m,n);
-deg_limits = [lower_lim, upper_lim];
+lowerLimit_t = 1;
+upperLimit_t = min(m,n);
+limits_t = [lowerLimit_t, upperLimit_t];
 
+rank_range = [0 -16];
 
 % Perform GCD computation.
-[fx_n,gx_n,dx, ux_o, vx_o, alpha, theta, t , lambda,mu] ...
-    = o_gcd_mymethod_Univariate_2Polys(f{1}, gx{ite}, deg_limits);
+[fx_n,gx_n,dx, ux_o, vx_o, alpha, theta, t , lambda,mu, rank_range] ...
+    = o_gcd_mymethod_Univariate_2Polys(f{1}, gx{ite}, limits_t, rank_range);
 
 
 LineBreakMedium();
@@ -59,9 +60,9 @@ while (GetDegree(arr_hx{ite}) > 0 )
     n = GetDegree(arr_hx{ite});
     
     % Set Limits
-    lower_lim = 1;
-    upper_lim = min(m,n);
-    deg_limits = [lower_lim, upper_lim];
+    lowerLimit_t = 1;
+    upperLimit_t = min(m,n);
+    limits_t = [lowerLimit_t, upperLimit_t];
     
     if (GetDegree(arr_hx{ite}) ==0 || GetDegree(arr_gx{ite}) == 0)
         arr_hx{ite+1} = 1;
@@ -70,8 +71,8 @@ while (GetDegree(arr_hx{ite}) > 0 )
     else
         
           
-          [fx_n, gx_n, arr_hx{ite+1}, arr_ux{ite}, arr_vx{ite}, ~, ~, ~ , ~,~] ...
-              = o_gcd_mymethod_Univariate_2Polys(arr_gx{ite}, arr_hx{ite}, deg_limits);
+          [fx_n, gx_n, arr_hx{ite+1}, arr_ux{ite}, arr_vx{ite}, ~, ~, ~ , ~,~, rank_range] ...
+              = o_gcd_mymethod_Univariate_2Polys(arr_gx{ite}, arr_hx{ite}, limits_t, rank_range);
         
     end
     
@@ -97,7 +98,7 @@ while (GetDegree(arr_hx{ite}) > 0 )
     
 end
 
-root_mult_array = [];
+root_mult_matrix = [];
 
 for i = 1:1:length(arr_vx)
     
@@ -117,7 +118,7 @@ for i = 1:1:length(arr_vx)
             new_roots_mults = [root i.*ones(nRoots,1)];
             
             % Add the new roots to the array of roots
-            root_mult_array = [root_mult_array ; new_roots_mults];
+            root_mult_matrix = [root_mult_matrix ; new_roots_mults];
             
         else
             % Divide by x coefficient
@@ -128,7 +129,7 @@ for i = 1:1:length(arr_vx)
             new_root_mult = [root i];
             
             % Add the new root to the array of roots
-            root_mult_array = [root_mult_array ; new_root_mult];
+            root_mult_matrix = [root_mult_matrix ; new_root_mult];
             
             
         end
@@ -138,5 +139,4 @@ for i = 1:1:length(arr_vx)
     end
 end
 
-PrintRoots(root_mult_array,'MUSSER METHOD');
 end

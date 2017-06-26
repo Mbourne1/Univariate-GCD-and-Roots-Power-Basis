@@ -1,15 +1,15 @@
-function [root_mult_array] = o_roots_mymethod(fx)
+function [root_multiplicity_matrix] = o_roots_mymethod(fx)
 % Given the polynomial f(x) calculate its real roots by square free
 % decomposition.
 %
 % Inputs.
 %
-% fx : Coefficients of the polynomial f(x)
+% fx : (Vector) Coefficients of the polynomial f(x)
 %
 % Outputs.
 %
-% root_mult_array : Output two columns, the first containing the root, the
-%                   second its corresponding multiplicity.
+% root_mult_array : (Matrix) Output two columns, the first containing the root, 
+%   the second its corresponding multiplicity.
 
 global SETTINGS
 
@@ -36,6 +36,9 @@ vNumberDistinctRoots_fx(1,1) = GetDegree(arr_fx);
 % zero. ie is not a constant, perform a gcd calculation on it and its
 % derivative.
 
+rank_range = [-16 0];
+
+
 while GetDegree(arr_fx{ite,1}) > 0
     
     % If degree of f(ite_num) is greater than one
@@ -53,30 +56,33 @@ while GetDegree(arr_fx{ite,1}) > 0
             switch SETTINGS.BOOL_LIMITS
                 case 'y'
                     
-                    lowerLimit = vDegt_fx(ite) - vNumberDistinctRoots_fx(ite-1);
-                    upperLimit = vDegt_fx(ite)-1;
+                    lowerLimit_t = vDegt_fx(ite) - vNumberDistinctRoots_fx(ite-1);
+                    upperLimit_t = vDegt_fx(ite)-1;
                     
                 case 'n'
                     
-                    lowerLimit = 1;
-                    upperLimit = vDegt_fx(ite)-1;
+                    lowerLimit_t = 1;
+                    upperLimit_t = vDegt_fx(ite)-1;
                     
             end
             
         else
-            lowerLimit = 1;
-            upperLimit = vDegt_fx(ite)-1;
+            
+            lowerLimit_t = 1;
+            upperLimit_t = vDegt_fx(ite)-1;
             
         end
         
 
-        fprintf([ mfilename ' : ' sprintf('Minimum degree of f_{%i}: %i \n', ite, lowerLimit)]);
-        fprintf([ mfilename ' : ' sprintf('Maximum degree of f_{%i}: %i \n\n', ite, upperLimit)]);
+        fprintf([ mfilename ' : ' sprintf('Minimum degree of f_{%i}: %i \n', ite, lowerLimit_t)]);
+        fprintf([ mfilename ' : ' sprintf('Maximum degree of f_{%i}: %i \n\n', ite, upperLimit_t)]);
         
 
-        % (fx_n,gx_n,dx, ux, vx, alpha, theta, t , lambda,mu)
-        [arr_fx{ite,1},~,arr_fx{ite+1,1}, arr_ux{ite,1} ,arr_vx{ite,1}, ~, vTheta(ite+1,1),vDegt_fx(ite+1,1),~,~] ...
-            = o_gcd_mymethod_Univariate_2Polys( arr_fx{ite,1} , Differentiate(arr_fx{ite,1}) , [lowerLimit,upperLimit]);
+        
+        
+        %        
+        [arr_fx{ite,1},~,arr_fx{ite+1,1}, arr_ux{ite,1} ,arr_vx{ite,1}, ~, vTheta(ite+1,1),vDegt_fx(ite+1,1),~,~, rank_range] ...
+            = o_gcd_mymethod_Univariate_2Polys( arr_fx{ite,1} , Differentiate(arr_fx{ite,1}) , [lowerLimit_t,upperLimit_t], rank_range);
         
         
         fprintf([ mfilename ' : ' sprintf('Computed degree of f_{%i}: %i \n', ite, vDegt_fx(ite+1) )]);
@@ -232,7 +238,7 @@ else
     end
 end
 
-%% Get multiplicities of the roots
+% % Get multiplicities of the roots
 % Obtaining multiplicities of the calculated roots
 
 
@@ -243,17 +249,17 @@ nPolys_wi = size(vDeg_arr_wx,1);
 mat = [(1:1:nPolys_wi)' vDeg_arr_wx];
 
 count = 1;
-root_mult_array = [];
+root_multiplicity_matrix = [];
 for i = 1:1:size(mat,1)
     % Get the number of roots of multiplicity i
     nRoots_of_Multi = mat(i,2);
     for j = 1:1:nRoots_of_Multi
-        root_mult_array = [root_mult_array ; vRoots(count,1) i];
+        root_multiplicity_matrix = [root_multiplicity_matrix ; vRoots(count,1) i];
         count= count +1;
     end
 end
 
 % % Print the calculated roots and the corresponding multiplicities.
-PrintRoots(root_mult_array,'MY METHOD');
+
 
 end
