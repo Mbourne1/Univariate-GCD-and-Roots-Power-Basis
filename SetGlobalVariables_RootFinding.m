@@ -1,16 +1,33 @@
-function [] = SetGlobalVariables_RootFinding(problem_type, ex_num, emin, emax, ...
-    mean_method, bool_alpha_theta, low_rank_approx_method, apf_method, deconvolution_method)
+function [] = SetGlobalVariables_RootFinding(ex_num, emin, emax, ...
+    mean_method, bool_alpha_theta, low_rank_approx_method, apf_method, rank_revealing_metric, deconvolution_method)
+
+%
+% % Input
+%
+% ex_num : (String)
+%
+% emin : (Float)
+%
+% emax : (Float)
+%
+% mean_method : (String)
+%
+% bool_alpha_theta : (Boolean)
+%
+% low_rank_approx_method : (String)
+%
+% apf_method : (String)
+%
+% rank_revealing_metric : (String)
+%
+% deconvolution_method : (String)
+
 
 
 
 
 global SETTINGS
 
-% % Problem Type
-% Roots
-% GCD
-%
-SETTINGS.PROBLEM_TYPE = problem_type;
 
 % Example Number
 SETTINGS.EX_NUM = ex_num;
@@ -24,8 +41,6 @@ SETTINGS.EMAX = emax;
 
 % Include/Exclude plotting of graphs
 SETTINGS.PLOT_GRAPHS = true;
-
-SETTINGS.BOOL_LOG = 'n';
 
 SETTINGS.GCD_COEFFICIENT_METHOD = 'ux and vx';
 

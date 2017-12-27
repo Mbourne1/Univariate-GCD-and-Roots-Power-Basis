@@ -4,31 +4,29 @@ function [ux, vx, wx] = GetCofactorsCoefficients_3Polys(fx, gx, hx, k)
 %
 % % Inputs.
 %
-% fx  : Coefficients of polynomial f(x)
+% fx  : (Vector) Coefficients of polynomial f(x)
 %
-% gx  : Coefficients of polynomial g(x)
+% gx  : (Vector) Coefficients of polynomial g(x)
 %
-% hx  : Coefficients of polynomial h(x)
+% hx  : (Vector) Coefficients of polynomial h(x)
 %
-% k     : Degree of common divisor d(x) of degree k.
+% k : (Int)  Degree of common divisor d(x) of degree k.
 %
 % % Outputs
 %
-% ux : Coefficients of the polynomial u(x)
+% ux : (Vector) Coefficients of the polynomial u(x)
 %
-% vx : Coefficients of the polynomial v(x)
+% vx : (Vector) Coefficients of the polynomial v(x)
 %
-% wx : Coefficients of the polynomial w(x)
+% wx : (Vector) Coefficients of the polynomial w(x)
 
 
 % Get degree of polynomial g(x).
 n = GetDegree(gx);
-
-% Get degree of polynomail h(x)
 o = GetDegree(hx);
 
 % Build the t-th subresultant S_{t}(f,g)
-Sk = BuildT_3Polys(fx, gx, hx, k);
+Sk = BuildSubresultant_3Polys(fx, gx, hx, k);
 
 % Get index of optimal column for removal from S_{k}(f,g)
 [~, idx_col] = GetMinDistance(Sk);
@@ -48,14 +46,14 @@ x = [x_ls(1:idx_col-1); -1 ; x_ls(idx_col:end)];
 
 
 % Get the number of coefficients in v(x)
-nCoeffs_vx = n-k+1;
+nCoeffs_vx = n - k + 1;
 
 % Get the number of coefficients in w(x)
-nCoeffs_wx = o-k+1;
+nCoeffs_wx = o - k + 1;
 
 % Get coefficients of v(x), w(x) and u(x)
 vx =  x(1:nCoeffs_vx);
-wx =  x(nCoeffs_vx+1 : nCoeffs_vx+nCoeffs_wx)
+wx =  x(nCoeffs_vx+1 : nCoeffs_vx+nCoeffs_wx);
 ux = -x(nCoeffs_vx+nCoeffs_wx + 1:end);
 
 

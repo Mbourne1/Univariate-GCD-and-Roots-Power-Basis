@@ -53,18 +53,11 @@ while GetDegree(arr_fx{ite,1}) > 0
         % Get upper and lower bounds of the next GCD computation
         % M_{i+1} > M_{i} - d_{i-1}
         if ite > 1
-            switch SETTINGS.BOOL_LIMITS
-                case 'y'
-                    
-                    lowerLimit_t = vDegt_fx(ite) - vNumberDistinctRoots_fx(ite-1);
-                    upperLimit_t = vDegt_fx(ite)-1;
-                    
-                case 'n'
-                    
-                    lowerLimit_t = 1;
-                    upperLimit_t = vDegt_fx(ite)-1;
-                    
-            end
+        
+            lowerLimit_t = vDegt_fx(ite) - vNumberDistinctRoots_fx(ite-1);
+            upperLimit_t = vDegt_fx(ite) - 1;
+
+
             
         else
             

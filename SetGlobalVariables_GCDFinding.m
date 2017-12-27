@@ -1,16 +1,32 @@
-function [] = SetGlobalVariables_GCDFinding(problem_type, ex_num, emin, emax, ...
-    mean_method, bool_alpha_theta, low_rank_approx_method, apf_method)
-
+function [] = SetGlobalVariables_GCDFinding(ex_num, emin, emax, ...
+    mean_method, bool_alpha_theta, sylvester_build_method, low_rank_approx_method, apf_method, rank_revealing_metric)
+%
+%
+% % Inputs
+%
+% ex_num : (String)
+%
+% emin : (Float)
+%
+% emax : (Float)
+%
+% mean_method : (String)
+%
+% bool_alpha_theta : (Boolean)
+%
+% sylvester_build_method : (String)
+%
+% low_rank_approx_method : (String)
+%
+% apf_method : (String)
+%
+% rank_revealing_metric : (String)
+%
 
 
 
 global SETTINGS
 
-% % Problem Type
-% Roots
-% GCD
-%
-SETTINGS.PROBLEM_TYPE = problem_type;
 
 % Example Number
 SETTINGS.EX_NUM = ex_num;
@@ -25,7 +41,6 @@ SETTINGS.EMAX = emax;
 % Include/Exclude plotting of graphs
 SETTINGS.PLOT_GRAPHS = true;
 
-SETTINGS.BOOL_LOG = 'n';
 
 SETTINGS.GCD_COEFFICIENT_METHOD = 'ux and vx';
 
@@ -38,10 +53,10 @@ SETTINGS.GCD_COEFFICIENT_METHOD = 'ux and vx';
 % Method of computing mean
 SETTINGS.MEAN_METHOD = mean_method;
 
-% Include/Exclude preprocessing 
+% Include/Exclude preprocessing
 SETTINGS.BOOL_ALPHA_THETA = bool_alpha_theta;
 
-
+SETTINGS.SYLVESTER_BUILD_METHOD = sylvester_build_method;
 
 %--------------------------------------------------------------------------
 %
@@ -62,15 +77,15 @@ SETTINGS.THRESHOLD_RANK = -5;
 SETTINGS.BOOL_LIMITS = 'y';
 
 % Metric used to compute the degree of the GCD
-%   * Singular Values
+%   * Minimum Singular Values
 %   * R1 Row Norms
 %   * R1 Row Diagonals
 %   * Residuals
-SETTINGS.METRIC = 'Singular Values';
 
+SETTINGS.METRIC = rank_revealing_metric;
 
 %--------------------------------------------------------------------------
-% 
+%
 %       SETTINGS : Low rank approximation method
 %
 %
@@ -86,7 +101,7 @@ SETTINGS.MAX_ERROR_SNTLN = 1e-12;
 SETTINGS.MAX_ITE_SNTLN = 50;
 
 %--------------------------------------------------------------------------
-% 
+%
 %       SETTINGS : APF Method
 %
 %
@@ -95,60 +110,4 @@ SETTINGS.MAX_ITE_SNTLN = 50;
 SETTINGS.APF_METHOD = apf_method;
 
 
-%-------------------------------------------------------------------------
-%
-% 
-%               DECONVOLUTION SETTINGS
-%
-%-------------------------------------------------------------------------
-
-
-% Deconvolution Method
-% Method for performing deconvolutions.
-%
-% Batch
-% Separate
-% Batch With STLN
-% Batch Constrained
-% Batch Constrained With STLN
-%
-
-
-% Settings for deconvolution
-SETTINGS.MAX_ERROR_DECONVOLUTIONS = 1e-13;
-SETTINGS.MAX_ITERATIONS_DECONVOLUTIONS = 20;
-
-
-% Set deconvolution method for computing set of polynomials h_{i}(x) from
-% the set of polynomials f_{i}(x)
-
-%
-% 'Separate'
-% 'Batch'
-% 'Batch With STLN'
-% 'Batch Constrained'
-% 'Batch Constrained With STLN'
-%
-
-SETTINGS.DECONVOLUTION_METHOD_FX_HX = deconvolution_method;
-
-% Set the deconvolution method for computing the set of polynomials
-% w_{i}(x) from the set of polynomials h_{i}(x)
-SETTINGS.DECONVOLUTION_METHOD_HX_WX = 'Separate';
-
-SETTINGS.PREPROC_DECONVOLUTIONS = 'y';
-
-% 
-%
-% From GCD Computation
-% From Deconvolutions
-%
-SETTINGS.ROOTS_HX_COMPUTATION_METHOD = 'From GCD Computation';
-
-
-SETTINGS.ROOTS_HX_COMPUTATION_METHOD_IN_MUSSER_ALGORITHM = 'From GCD Computation';
 end
-
-
-
-

@@ -1,6 +1,6 @@
 function [] = o_gcd_Univariate_2Polys(ex_num, emin, emax, mean_method, ...
-    bool_alpha_theta, low_rank_approx_method, apf_method)
-% o_gcd(ex_num,el,mean_method, bool_alpha_theta,low_rank_approx_method,apf_method)
+    bool_alpha_theta, low_rank_approx_method, apf_method, rank_revealing_metric)
+% o_gcd_Univariate_2Polys(ex_num, emin, emax, mean_method, bool_alpha_theta, low_rank_approx_method, apf_method, rank_revealing_metric)
 %
 % Given two polynomials f(x) and g(x) calculate the GCD d(x).
 %
@@ -31,19 +31,24 @@ function [] = o_gcd_Univariate_2Polys(ex_num, emin, emax, mean_method, ...
 %       'Standard Linear'
 %       'None'
 %
+% rank_revealing_metric
+%   * 'Minimum Singular Values'
+%   * 'Residuals'
+%   * 'R1 Row Diagonals'
+%   * 'R1 Row Norms'
+%
+%
+%
+%
 % % Example
 %
-% >> o_gcd_Univariate_2Polys('1', 1e-12, 1e-10, 'Geometric Mean Matlab Method', true, 'None', 'None')
-% >> o_gcd_Univariate_2Polys('1', 1e-12, 1e-10, 'Geometric Mean Matlab Method', true, 'Standard STLN', 'Standard APF Nonlinear')
-%
-% >> o_gcd_Univariate_2Polys(ex_num, 1e-12, 1e-10, 'Geometric Mean Matlab Method', true,'Standard STLN', 'Standard APF Nonlinear')
-% >> ex_num = 'Custom:m=10n=5t=2.low=-1high=2'
+% >> o_gcd_Univariate_2Polys('1', 1e-12, 1e-10, 'Geometric Mean Matlab Method', true, 'None', 'None', 'Minimum Singular Values')
+% >> o_gcd_Univariate_2Polys('1', 1e-12, 1e-10, 'Geometric Mean Matlab Method', true, 'Standard STLN', 'Standard APF Nonlinear', 'Minimum Singular Values')
 
 % Initialise global variables
 global SETTINGS
 
-% Set Problem Type : Either 'GCD' or 'Roots'
-problem_type = 'GCD';
+
 
 % Add subfolders
 restoredefaultpath
@@ -59,8 +64,8 @@ if emin > emax
 end
 
 % Set global variables
-SetGlobalVariables_GCDFinding(problem_type, ex_num, emin, emax, mean_method, ...
-    bool_alpha_theta, low_rank_approx_method, apf_method)
+SetGlobalVariables_GCDFinding(ex_num, emin, emax, mean_method, ...
+    bool_alpha_theta, low_rank_approx_method, apf_method, rank_revealing_metric)
 
 % Get coefficients of f(x,y) g(x,y) from example file
 [fx_exact, gx_exact, dx_exact,ux_exact, vx_exact] = Examples_GCD(ex_num);
@@ -151,26 +156,29 @@ end
 end
 
 
-function [dist] = GetDistance(f_exact,f_computed)
+function [dist] = GetDistance(f_exact, f_computed)
 % GetDistance(u_exact,u_computed,name)
 %
 % Get the distance between the coefficients of two vectors.
 %
 % Inputs.
 %
-% f_exact :
+% f_exact : (Vector) Coefficients of f(x) exactly
 %
-% f_computed :
+% f_computed : (Vector) Coefficients of f(x) as computed
 %
-% name : Name of function used for printing
+% name : (String) Name of function used for printing
 
 % Normalise f(x) and f(x) computed.
 f_exact = Normalise(f_exact);
 f_computed = Normalise(f_computed);
 
 % Get distance
+
 try
-dist = norm(f_exact - f_computed) ./ norm(f_exact);
+    
+    dist = norm(f_exact - f_computed) ./ norm(f_exact);
+    
 catch
     dist = 1000;
 end
@@ -216,7 +224,7 @@ end
     function WriteNewLine()
         
         % 19 fields
-        fprintf(fileID,'%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s \n',...
+        fprintf(fileID,'%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s \n',...
             datetime('now'),...,...
             SETTINGS.EX_NUM,...
             int2str(m),...
@@ -234,14 +242,13 @@ end
             num2str(SETTINGS.LOW_RANK_APPROX_REQ_ITE),...
             SETTINGS.APF_METHOD,...
             num2str(SETTINGS.APF_REQ_ITE),...
-            SETTINGS.BOOL_LOG,...
             SETTINGS.GCD_COEFFICIENT_METHOD...
             );
             
     end
 
     function WriteHeader()
-        fprintf(fileID,'DATE,EX_NUM,m,n,t_exact,t_comp,ERROR_UX,ERROR_VX,ERROR_DX,MEAN_METHOD,BOOL_ALPHA_THETA, EMIN, EMAX, LOW_RANK_APPROX_METHOD,LOW_RANK_ITE, APF_METHOD, APF_ITE,BOOL_LOG,GCD_METHOD \n');
+        fprintf(fileID,'DATE,EX_NUM,m,n,t_exact,t_comp,ERROR_UX,ERROR_VX,ERROR_DX,MEAN_METHOD,BOOL_ALPHA_THETA, EMIN, EMAX, LOW_RANK_APPROX_METHOD,LOW_RANK_ITE, APF_METHOD, APF_ITE,GCD_METHOD \n');
     end
 
 

@@ -26,7 +26,7 @@ n = GetDegree(gx);
 % GCD of f(x) and f'(x) = m-1 = n.
 
 lowerLimit_k = 1;
-upperLimit_k = min(m,n);
+upperLimit_k = min(m, n);
 limits_k = [lowerLimit_k upperLimit_k];
 
 % Get the number of subresultants which must be constructed.
@@ -67,12 +67,12 @@ for i = 1 : 1 : nSubresultants
     
     if i > 1
         % update C_f and C_g by removing rows and columns
-        arr_Tf{i} = arr_Tf{i-1}(1:m+n-k+1, 1:n-k+1);
-        arr_Tg{i} = arr_Tg{i-1}(1:m+n-k+1, 1:m-k+1);
+        arr_Tf{i} = arr_Tf{i-1}(1 : m + n- k + 1, 1 : n - k + 1);
+        arr_Tg{i} = arr_Tg{i-1}(1 : m + n - k + 1, 1 : m - k + 1);
     else
        
-        arr_Tf{1} = BuildT1(fx, n-k);
-        arr_Tg{1} = BuildT1(gx, m-k);
+        arr_Tf{1} = BuildT1(fx, n - k);
+        arr_Tg{1} = BuildT1(gx, m - k);
         
     end
     % Update S_{k}
@@ -123,7 +123,7 @@ fprintf('Metric to compute GCD degree : %s \n', SETTINGS.METRIC);
 
 switch SETTINGS.METRIC
     
-    case 'Singular Values'
+    case 'Minimum Singular Values'
         
         % Initialise a vector to store the minimum singular values for each
         % S_{k}.
@@ -133,6 +133,7 @@ switch SETTINGS.METRIC
             
             % Add to the vector of minimum Singular values from SVD of S_{k}.
             arr_SingularValues{i} = svd(arr_Sk{i});
+            
             % Get the minimum Singular value from SVD of S_{k}
             vMinimumSingularValues(i) = min(arr_SingularValues{i});
             

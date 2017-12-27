@@ -24,38 +24,12 @@ function [fx, gx, dx, ux, vx] = Examples_GCD(ex_num)
 % vx : column vector of coefficients of polynomail v(x) where v(x) is given
 % by g(x) divided by d(x)
 
-EXAMPLE_TYPE = 'From Coefficients';
 
-switch EXAMPLE_TYPE
-    case 'From Roots'
-        % Get inputs f and g and
-        [...
-            root_mult_array_fx,...
-            root_mult_array_gx,...
-            root_mult_array_dx,...
-            root_mult_array_ux,...
-            root_mult_array_vx] = Examples_GCD_FromRoots(ex_num);
-        
-               
-        % Given the roots and multiplicities of f(x), get the coefficients
-        fx = GetCoefficientsFromRoots(root_mult_array_fx);
-        gx = GetCoefficientsFromRoots(root_mult_array_gx);
-        dx = GetCoefficientsFromRoots(root_mult_array_dx);
-        ux = GetCoefficientsFromRoots(root_mult_array_ux);
-        vx = GetCoefficientsFromRoots(root_mult_array_vx);
 
-        
-        
-    case 'From Coefficients'
-        
-        [fx, gx, dx, ux, vx] = Examples_GCD_FromCoefficients(ex_num);
-       
-        
-        
-    otherwise
-        error('err')
-        
-end
+[fx, gx, dx, ux, vx] = Examples_GCD_FromCoefficients(ex_num);
+
+
+
 
 end
 

@@ -32,13 +32,27 @@ for i = 1 : 1 : nSubresultants
     % Get vector of singular values of S_{i}
     vSingularValues = arr_SingularValues{i};
     
-    vec_k = k.*ones(length(vSingularValues));
+    vec_k = k.*ones(length(vSingularValues),1);
     
     plot(vec_k, log10(vSingularValues), '*')
     
 end
 vline(lowerLimit);
 vline(upperLimit);
+
+xlabel('$k$','Interpreter', 'latex', 'FontSize', 20)
+ylabel('$\log_{10} \left( \sigma_{k,i} \right)$', 'Interpreter', 'latex', 'FontSize', 20)
+
+
+% Figure size and location
+myplot = gca;
+myval_side = 0.10;
+myval_base = 0.08;
+set(myplot, 'Position', [ myval_side myval_base 0.98 - myval_side 0.98 - myval_base])
+set(gcf, 'Position', [100, 100, 710, 650])
+
+grid on
+box on
 hold off
 
 

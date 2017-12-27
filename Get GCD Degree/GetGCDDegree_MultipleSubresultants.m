@@ -1,4 +1,4 @@
-function [t] = GetGCDDegree_MultipleSubresultants(vMetric, limits_k, rank_range)
+function [t] = GetGCDDegree_MultipleSubresultants(vMetric, limits_k, limits_t, rank_range)
 % Get the problem type, dependent on the vector of singular values from the
 % series s_{k}
 %
@@ -7,6 +7,8 @@ function [t] = GetGCDDegree_MultipleSubresultants(vMetric, limits_k, rank_range)
 % vMinimumSingularValues : (Vector)
 %
 % limits_k : [Int Int] 
+%
+% limits_t : [Int Int]
 %
 % rank_range : [Float Float]
 %

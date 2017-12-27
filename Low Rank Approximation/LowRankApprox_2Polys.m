@@ -1,4 +1,4 @@
-function [fx_lr, gx_lr, ux_lr, vx_lr, alpha_lr, theta_lr] = LowRankApprox_2Polys(fx, gx, alpha, theta, k)
+function [fx_lr, gx_lr, ux_lr, vx_lr, alpha_lr, theta_lr] = LowRankApprox_2Polys(fx, gx, alpha, theta, t)
 % Get the low rank approximation of the kth Sylvester subresultant matrix
 % S_{k}(f,g)
 %
@@ -12,7 +12,7 @@ function [fx_lr, gx_lr, ux_lr, vx_lr, alpha_lr, theta_lr] = LowRankApprox_2Polys
 %
 % theta : (Float) Optimal value of \theta
 %
-% k : (Int) Index of Sylvester subresultant matrix S_{k}(f,g)
+% t : (Int) Index of Sylvester subresultant matrix S_{k}(f,g)
 %
 % % Outputs
 %
@@ -38,7 +38,7 @@ switch SETTINGS.LOW_RANK_APPROXIMATION_METHOD
         a_gw = alpha.* GetWithThetas(gx, theta);
         
         % Get Low Rank Approximation of S_{k}(f,g)
-        [fw_lr, a_gw_lr, uw_lr, vw_lr] = STLN(fw, a_gw, k);
+        [fw_lr, a_gw_lr, uw_lr, vw_lr] = STLN(fw, a_gw, t);
         
         % Get f(x) and g(x) output
         fx_lr = GetWithoutThetas(fw_lr, theta);
@@ -55,10 +55,10 @@ switch SETTINGS.LOW_RANK_APPROXIMATION_METHOD
         
         if(SETTINGS.PLOT_GRAPHS)
             
-                S1 = BuildT(fx,gx,k);
-                S2 = BuildT(fw,a_gw,k);
-                S3 = BuildT(fx_lr,gx_lr,k);
-                S4 = BuildT(fw_lr,a_gw_lr,k);
+                S1 = BuildT(fx,gx,t);
+                S2 = BuildT(fw,a_gw,t);
+                S3 = BuildT(fx_lr,gx_lr,t);
+                S4 = BuildT(fw_lr,a_gw_lr,t);
                 
                 vSingularValues1 = svd(S1);
                 vSingularValues2 = svd(S2);
@@ -81,7 +81,7 @@ switch SETTINGS.LOW_RANK_APPROXIMATION_METHOD
         % Get f(\omega)
         fw = GetWithThetas(fx,theta);
         
-        [fw_lr, a_gw_lr, uw_lr, vw_lr] = STLN_Derivative_Constraint(fw,k);
+        [fw_lr, a_gw_lr, uw_lr, vw_lr] = STLN_Derivative_Constraint(fw,t);
         
         % Get f(x) = f(x) + \delta f(x)
         fx_lr = GetWithoutThetas(fw_lr, theta);
@@ -95,7 +95,7 @@ switch SETTINGS.LOW_RANK_APPROXIMATION_METHOD
         
     case 'Standard SNTLN'
         
-        [fx_lr, gx_lr, ux_lr, vx_lr, alpha_lr, theta_lr] = SNTLN(fx, gx, alpha, theta, k);
+        [fx_lr, gx_lr, ux_lr, vx_lr, alpha_lr, theta_lr] = SNTLN(fx, gx, alpha, theta, t);
         
         
         
@@ -107,7 +107,7 @@ switch SETTINGS.LOW_RANK_APPROXIMATION_METHOD
         a_gw = alpha.* GetWithThetas(gx,theta);
         
         % Get u(\omega) and v(\omega)
-        [uw,vw] = GetCofactorsCoefficients_2Polys(fw,a_gw,k);
+        [uw,vw] = GetCofactorsCoefficients_2Polys(fw, a_gw, t);
         
         % Get u(x) and v(x)
         ux_lr = GetWithoutThetas(uw,theta);
@@ -123,6 +123,8 @@ switch SETTINGS.LOW_RANK_APPROXIMATION_METHOD
         
         SETTINGS.LOW_RANK_APPROX_REQ_ITE = 0;
         
+        
+
     otherwise
         
         error('error')

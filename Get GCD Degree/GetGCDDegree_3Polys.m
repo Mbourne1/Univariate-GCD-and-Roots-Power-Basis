@@ -1,4 +1,4 @@
-function t = GetGCDDegree_3Polys(fx, gx, hx, limits)
+function t = GetGCDDegree_3Polys(fx, gx, hx, limits_t, rank_range)
 % GetGCDDegree(fx,gx)
 %
 % Get the degree of the GCD d(x) of f(x) and g(x), by Sylvester matrix method.
@@ -27,12 +27,12 @@ o = GetDegree(hx);
 % GCD of f(x) and f'(x) = m-1 = n.
 
 % set upper and lower bound of subresultants to be computed
-myLowerLimit = 1;
-myUpperLimit = min([m,n,o]);
-myLimits = [myLowerLimit myUpperLimit];
+lowerLimit_k = 1;
+upperLimit_k = min([m,n,o]);
+limits_k = [lowerLimit_k upperLimit_k];
 
 % Get the number of subresultants which must be constructed.
-nSubresultants = myUpperLimit - myLowerLimit +1 ;
+nSubresultants = upperLimit_k - lowerLimit_k +1 ;
 
 % Initialise a vector to store the minimum singular values for each
 % S_{k}.
@@ -47,10 +47,6 @@ vMaxRowNormR1   = zeros(1, nSubresultants);
 vMinRowNormR1   = zeros(1, nSubresultants);
 
 
-% Set the initial value of k to be the lower limit of the possible degree
-% of the GCD.
-k = myLowerLimit;
-
 % Initialise some arrays
 arr_Sk = cell(1, nSubresultants);
 arr_R = cell(1, nSubresultants);
@@ -58,66 +54,52 @@ arr_R1 = cell(1, nSubresultants);
 arr_SingularValues = cell(1, nSubresultants);
 
 
-% Build the Sylvester Matrix
-C_f1 = BuildT1(fx, n-k);
-C_f2 = BuildT1(fx, o-k);
-
-C_g = BuildT1(gx, m-k);
-C_h = BuildT1(hx, m-k);
-
-block = blkdiag(C_f1,C_f2);
-col = [C_g ; C_h];
-
-% Get the first Sylvester subresultant matrix
-arr_Sk{1} = [block col];
-
-% Get QR Decomposition of S_k(f,g)
-[~,arr_R{1}] = qr(arr_Sk{1});
-
 
 
 
 % For each possible value of k, k = 0,...,min(m,n)
-for k = myLowerLimit : 1 : myUpperLimit
+for i = 1 : 1 : nSubresultants
     
     % Set index i
-    i = k - myLowerLimit + 1;
+    k = i + lowerLimit_k - 1;
     
-    % If not the first subresultant, build by removing rows and columns.
-    if i > 1
-        
-        % update C_f and C_g by removing rows and columns
-        C_f1 = C_f1(1:m+n-k+1, 1:n-k+1);
-        C_f2 = C_f2(1:m+o-k+1, 1:o-k+1);
-        
-        C_g = C_g(1:m+n-k+1, 1:m-k+1);
-        C_h = C_h(1:m+o-k+1, 1:m-k+1);
-        
-        block = blkdiag(C_f1,C_f2);
-        col = [C_g ; C_h];
-        
-        arr_Sk{i} = [block col];
-        [~,R] = qr(arr_Sk{i});
-        
-        arr_R{i} = abs(R);
-        
-        %         % Perform QR Decomposition of Sk, by QR delete.
-        %         % Remove the last column
-        %         [Q,R] = qrdelete(Q,R,m+n+2-((2*k)-2),'col');
-        %
-        %         % Remove last column of C_{1}(f)
-        %         [Q,R] = qrdelete(Q,R,n+2-k,'col');
-        %
-        %         % Remove last row
-        %         [Q,R] = qrdelete(Q,R,m+n+2-k,'row');
-        
-    end
+    arr_Sk{i} = BuildSubresultant_3Polys(fx, gx, hx, k);
     
-    % Get number of rows in R1_{k}
-    [nRowsR1,~] = size(diag(arr_R{i}));
+%     % If not the first subresultant, build by removing rows and columns.
+%     if i > 1
+%         
+%         % update C_f and C_g by removing rows and columns
+%         C_f1 = C_f1(1:m+n-k+1, 1:n-k+1);
+%         C_f2 = C_f2(1:m+o-k+1, 1:o-k+1);
+%         
+%         C_g = C_g(1:m+n-k+1, 1:m-k+1);
+%         C_h = C_h(1:m+o-k+1, 1:m-k+1);
+%         
+%         block = blkdiag(C_f1,C_f2);
+%         col = [C_g ; C_h];
+%         
+%         arr_Sk{i} = [block col];
+%         [~,R] = qr(arr_Sk{i});
+%         
+%         arr_R{i} = abs(R);
+%         
+%         %         % Perform QR Decomposition of Sk, by QR delete.
+%         %         % Remove the last column
+%         %         [Q,R] = qrdelete(Q,R,m+n+2-((2*k)-2),'col');
+%         %
+%         %         % Remove last column of C_{1}(f)
+%         %         [Q,R] = qrdelete(Q,R,n+2-k,'col');
+%         %
+%         %         % Remove last row
+%         %         [Q,R] = qrdelete(Q,R,m+n+2-k,'row');
+%         
+%     end
     
-    % Obtain R1 the top square of the |R| matrix.
-    arr_R1{i} = arr_R{i}(1:nRowsR1, 1:nRowsR1);
+%     % Get number of rows in R1_{k}
+%     [nRowsR1,~] = size(diag(arr_R{i}));
+%     
+%     % Obtain R1 the top square of the |R| matrix.
+%     arr_R1{i} = arr_R{i}(1:nRowsR1, 1:nRowsR1);
     
     
     
@@ -135,7 +117,7 @@ global SETTINGS
 
 switch SETTINGS.METRIC
     
-    case 'Singular Values'
+    case 'Minimum Singular Values'
         
         for i = 1:1:nSubresultants
             
@@ -147,10 +129,10 @@ switch SETTINGS.METRIC
             
         end
         
-        plotSingularValues(arr_SingularValues, myLimits, limits);
-        plotMinimumSingularValues(vMinimumSingularValues, myLimits, limits);
+        plotSingularValues(arr_SingularValues, limits_k, limits_t);
+        %plotMinimumSingularValues(vMinimumSingularValues, limits_k, limits_t, rank_range);
         
-        metric = vMinimumSingularValues;
+        metric = log10(vMinimumSingularValues);
         
     case 'Residuals'
         
@@ -196,9 +178,9 @@ switch SETTINGS.METRIC
 end
 
 % If only one subresultant exists, use an alternative method.
-if (myUpperLimit == myLowerLimit ) % If only one Subresultant Exists
+if (upperLimit_k == lowerLimit_k ) % If only one Subresultant Exists
     
-    if (myLowerLimit == 1)
+    if (lowerLimit_k == 1)
         % Use the singular values from the only subresultant S_{1} to determine
         % if S_{1} is full rank or rank deficient.
         
@@ -206,7 +188,7 @@ if (myUpperLimit == myLowerLimit ) % If only one Subresultant Exists
     else
         % Since can not be corpime, and only one subresultant exists
         
-        t = myLowerLimit;
+        t = lowerLimit_k;
         fprintf([mfilename ' : ' sprintf('One subresultant : t = %i \n',t)]);
     end
     
@@ -218,7 +200,7 @@ else
     % Mixed         : Some Subresultants are Singular, others are Non-Singular.
     
     % PlotGraphs_3Polys()
-    [t] = GetGCDDegree_MultipleSubresultants(metric, myLimits);
+    [t] = GetGCDDegree_MultipleSubresultants(metric, limits_k, limits_t, rank_range);
     
 end
 

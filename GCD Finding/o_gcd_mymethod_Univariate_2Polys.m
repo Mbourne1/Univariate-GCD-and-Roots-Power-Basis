@@ -10,7 +10,7 @@ function [fx_o, gx_o, dx_o, ux_o, vx_o, alpha_o, theta_o, t , GM_fx, GM_gx, rank
 %
 % gx : (Vector) Coefficients of polynomial g(x).
 %
-% t_limits : [(Int) (Int)] The interval which contains t
+% limits_t : [(Int) (Int)] The interval which contains t
 %
 % % Outputs
 % 
